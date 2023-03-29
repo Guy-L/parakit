@@ -96,7 +96,8 @@ def get_greyscale_screenshot(): #Note: fails if the window is inactive!
     # Convert the RGB image to a greyscale image
     grey_screenshot = cv2.cvtColor(rgb_screenshot, cv2.COLOR_BGR2GRAY) # can be saved with imwrite
     
-    return grey_screenshot
+    # Add a channel dimension to the greyscale image    
+    return np.expand_dims(grey_screenshot, axis=-1)
  
 def get_normalized_greyscale_screenshot(): #apparently not needed
    return get_greyscale_screenshot().astype(np.float32) / 255.0
@@ -117,6 +118,7 @@ def apply_action(action_flag):
 
 def restart_run():  
     apply_action(0) #ensure no residual input
+    _two_frame_input('enter')
     _two_frame_input('esc')
     _two_frame_input('up')
     _two_frame_input('up')

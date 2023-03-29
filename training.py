@@ -19,7 +19,20 @@ def main():
     print("Setting up PPO agent...")
     if(low_mem):
         print_available_memory()
-    model = PPO("MultiInputPolicy", env, n_steps=256, ent_coef=0.01, learning_rate=2.5e-4, n_epochs=4, clip_range=0.2, verbose=1)
+    #model = PPO("MultiInputPolicy", env, n_steps=256, ent_coef=0.01, learning_rate=2.5e-4, n_epochs=4, clip_range=0.2, verbose=1)
+    model = PPO(
+        "CnnPolicy",
+        env,
+        tensorboard_log="./training/ppo2_bullettest_2/",
+        batch_size=256,
+        ent_coef=0.01,
+        n_steps=2048,
+        n_epochs=5,
+        learning_rate=5e-5,
+        clip_range=0.1,
+        policy_kwargs=dict(net_arch=[64, 64]),
+        verbose=1
+    )
 
     # Train the agent
     print("Training PPO agent...")

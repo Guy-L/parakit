@@ -20,16 +20,17 @@ class TouhouEnvironment(gym.Env):
         self.frame_buffer = deque(maxlen=self.num_frames)
         
         # Concatenated greyscale frames + game variables
-        self.observation_space = gym.spaces.Dict({
-            'frames': gym.spaces.Box(low=0, high=255, shape=(screen_height, screen_width, self.num_frames), dtype=np.uint8),
-            'game_variables': gym.spaces.Box(low=0, high=np.array([9, 2, 9, 2, 1000, 400, 
-                                                                    np.iinfo(np.int32).max, 
-                                                                    np.iinfo(np.int32).max, 
-                                                                    2**len(keys)-1], 
-                                                                  dtype=np.int32), 
-                                                    shape=(num_game_variables,), 
-                                                    dtype=np.int32)
-        })
+        #self.observation_space = gym.spaces.Dict({
+        #    'frames': gym.spaces.Box(low=0, high=255, shape=(screen_height, screen_width, self.num_frames), dtype=np.uint8),
+        #    'game_variables': gym.spaces.Box(low=0, high=np.array([9, 2, 9, 2, 1000, 400, 
+        #                                                            np.iinfo(np.int32).max, 
+        #                                                            np.iinfo(np.int32).max, 
+        #                                                            2**len(keys)-1], 
+        #                                                          dtype=np.int32), 
+        #                                            shape=(num_game_variables,), 
+        #                                            dtype=np.int32)
+        #})
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(screen_height, screen_width, 1), dtype=np.uint8)
 
     def step(self, action):
         #print("Taking step: " + bin(action))
@@ -63,7 +64,7 @@ class TouhouEnvironment(gym.Env):
             'action': action
         }
         
-        return state, reward, done, info
+        return state, float(reward), bool(done), info
 
     def reset(self):
         print("Attempting reset...")
@@ -100,7 +101,9 @@ class TouhouEnvironment(gym.Env):
             ], dtype=np.int32)
 
         # Combine the concatenated frames and game variables into the state dictionary
-        return {
-            'frames': concatenated_frames,
-            'game_variables': game_variables
-        }
+        #return {
+        #    'frames': concatenated_frames,
+        #    'game_variables': game_variables
+        #}
+        
+        return game_screen
