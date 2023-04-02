@@ -5,11 +5,12 @@ import ctypes
 import win32process
 import win32api
 import win32con
-import cv2
 import numpy as np
+import cv2
 import time #debug
 import random #debug
 import keyboard #debug
+import struct
 
 # Set these to select the game before training
 _game_title = 'Double Dealing Character. ver 1.00b'
@@ -27,6 +28,40 @@ power = 0xF5858
 piv = 0xF584C
 graze = 0xF5840
 
+player_pointer = 0x4db67c 
+zPlayer_pos = 0x5e0
+zPlayer_iframes = 0x182c0 + 0x4
+zPlayer_hurtbox = 0x630
+zPlayer_focused = 0x184b0
+
+bullet_manager_pointer = 0x4db530
+zBulletManager_list = 0x7c
+zBullet_pos = 0xbc0
+zBullet_speed = 0xbd8
+zBullet_velocity = 0xbcc
+zBullet_angle = 0xbdc
+zBullet_scale = 0x13bc
+zBullet_hitbox_radius = 0xbe0
+
+enemy_manager_pointer = 0x4db544
+zEnemyManager_list = 0xd0
+zEnemy_data = 0x11f0
+zEnemy_pos = 0x44
+zEnemy_hurtbox = 0x110
+zEnemy_hp = 0x3f74
+zEnemy_hp_max = 0x3f74 + 0x4
+zEnemy_flags = 0x5244
+
+item_manager_pointer = 0x4db660
+zItemManager_array = 0x14
+zItemManager_array_len = 0xddd854
+zItem_len = 0xc18
+zItem_state = 0xbf0 
+zItem_type = 0xbf4
+zItem_pos = 0xbac
+zItem_vel = 0xbb8
+
+item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Cancel", "Cancel"]
 #game_over = 0xF9620 #always 0 on startup & 1 on the game over screen, stays at 1 after continuing unless player pauses (zun wtf)
 game_state = 0xF7AC8 #seems to be: 0 = pausing/stage transition, 
                      #             1 = end of playable run (ending/practice end/game over/main menu), 
@@ -101,36 +136,102 @@ def get_greyscale_screenshot(): #Note: fails if the window is inactive!
  
 def get_normalized_greyscale_screenshot(): #apparently not needed
    return get_greyscale_screenshot().astype(np.float32) / 255.0
+
+def read_int(offset):
+    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
+    return int.from_bytes(_read_memory(offset, 4), byteorder='little')
     
 def read_game_int(offset):
-    return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
+    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
+    return int.from_bytes(_read_game_memory(offset, 4), byteorder='little')
+    
+def read_game_float(offset):
+    return struct.unpack('f', _read_game_memory(offset, 4))[0]
 
-def apply_action(action_flag):
+def read_float(offset):
+    return struct.unpack('f', _read_memory(offset, 4))[0]
+    
+def read_byte(offset):
+    return int.from_bytes(_read_memory(offset, 1), byteorder='big')
+    
+def apply_action_int(action_int):
     # Iterate through the list of keys and hold/release keys depending on the bit value
-    for index, key in enumerate(keys):
+    for index, key in enumerate(reversed(keys)):
         # Check if the bit at the current position is set (1) or not (0)
-        bit_set = (action_flag >> index) & 1
-
+        bit_set = (action_int >> index) & 1
+        
         if bit_set:
             keyboard.press(key)
         else:
             keyboard.release(key)
+            
+def apply_action_bin(action_binstr):
+    # Iterate through the list of keys and hold/release keys depending on the bit value
+    for index, key in enumerate(keys):
+        # Check if the bit at the current position is set (1) or not (0)
+        bit_set = (action_binstr[index] == '1')
+        
+        if bit_set:
+            keyboard.press(key)
+        else:
+            keyboard.release(key)
+            
+def apply_action_str(action_text):
+    key_presses = action_text.split()
+    for key in keys:
+        if key in key_presses:
+            keyboard.press(key)
+        else:
+            keyboard.release(key)
+           
+def wait_frame():
+    time.sleep(1 / _frame_rate)
 
 def restart_run():  
-    apply_action(0) #ensure no residual input
+    apply_action_int(0) #ensure no residual input
     _two_frame_input('enter')
     _two_frame_input('esc')
     _two_frame_input('up')
     _two_frame_input('up')
     _two_frame_input('z')
-
     
+def pause_game():
+    if read_game_int(game_state) != 0:
+        _two_frame_input('esc')
+        
+def unpause_game():
+    if read_game_int(game_state) != 2:
+        _two_frame_input('esc')
+        time.sleep(10 / _frame_rate)
+        
+def enact_game_actions_bin(actions): #space-separated action binary strings
+    _get_focus()
+    action_array = actions.split()
+    for action in action_array:
+        apply_action_bin(action)
+        wait_frame()
+    apply_action_int(0)
+
+def enact_game_actions_text(actions): #line-separated sets of space-seperates key press names
+    _get_focus()
+    action_array = actions.split('\n')
+    for action in action_array:
+        apply_action_str(action)
+        wait_frame()
+    apply_action_int(0)
+
 # Private Method Definitions
 
 def _read_game_memory(offset, size):
     buffer = ctypes.create_string_buffer(size)
     bytesRead = ctypes.c_ulonglong()
     ctypes.windll.kernel32.ReadProcessMemory(_process_handle, _base_address + offset, buffer, size, ctypes.byref(bytesRead))
+    return buffer.raw
+    
+def _read_memory(address, size):
+    buffer = ctypes.create_string_buffer(size)
+    bytesRead = ctypes.c_ulonglong()
+    ctypes.windll.kernel32.ReadProcessMemory(_process_handle, address, buffer, size, ctypes.byref(bytesRead))
     return buffer.raw
 
 def _two_frame_input(key):
@@ -170,7 +271,7 @@ def _random_player():
     while(keep_running):
         #user terminates the process (T press / change window)
         if keyboard.is_pressed('t') or _game_window != gw.getActiveWindow(): 
-            apply_action(0) #un-press everything
+            apply_action_int(0) #un-press everything
             keep_running = False
         
         #calculate step delay
@@ -198,7 +299,7 @@ def _random_player():
                     read_game_int(game_state),
                     '{:08b}'.format(action), 
                     "{:.2f}".format(delay)])))
-        apply_action(action)
+        apply_action_int(action)
         
 
 # Step 5 - Optionally put the game in focus for training activities
