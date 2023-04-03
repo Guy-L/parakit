@@ -1,6 +1,6 @@
 from interface import *
 from gpt4_prompt import *
-from le_secrets import openai_api_key
+from le_secrets import openai_api_key #make your own secrets (don't call it secrets.py tho that makes numpy act up lol)
 import datetime
 import openai
 
@@ -127,5 +127,3 @@ while(True):
     else:
         print("Bank account succesfully drained")
         exit()
-    
-    
