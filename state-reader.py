@@ -172,23 +172,25 @@ def print_game_state(gs: GameState):
     print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
     print(f"| Player at {gs.player_position} with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
 
-    print("\nList of on-screen bullets:")
-    print("  Position        Velocity         Hitbox Radius")
-    for bullet in gs.bullets:
-        print(f"• {tabulate(str(bullet.position), 16)}{tabulate(str(bullet.velocity), 16)} {bullet.hitbox_radius}")
+    if gs.bullets:
+        print("\nList of on-screen bullets:")
+        print("  Position        Velocity         Hitbox Radius")
+        for bullet in gs.bullets:
+            print(f"• {tabulate(str(bullet.position), 16)}{tabulate(str(bullet.velocity), 16)} {bullet.hitbox_radius}")
         
-    print("\nList of on-screen enemies:")
-    print("  Position         HP / Max HP")
-    for enemy in gs.enemies:
-        print(f"• {tabulate(str(enemy.position), 16)} {enemy.hp} / {enemy.hp_max}")
+    if gs.enemies:
+        print("\nList of on-screen enemies:")
+        print("  Position         HP / Max HP")
+        for enemy in gs.enemies:
+            print(f"• {tabulate(str(enemy.position), 16)} {enemy.hp} / {enemy.hp_max}")
     
-    print("\nList of on-screen items:")
-    print("  Type            Position         Velocity")
-    for item in gs.items:
-        print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(str(item.position), 16)} {item.velocity}")    
+    if gs.items:
+        print("\nList of on-screen items:")
+        print("  Type            Position         Velocity")
+        for item in gs.items:
+            print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(str(item.position), 16)} {item.velocity}")    
         
 def on_exit():
-    print('a')
     game_process.resume() #just in case!!
 
 atexit.register(on_exit)
