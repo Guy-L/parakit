@@ -2,11 +2,11 @@
 (that's not actually why the repo's named that lesanae)
 
 Simple python tool to extract game state data: player coords and state, resources, list of on-screen enemies, bullets and items
-Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork)
-For instance: over the next 5 seconds, when/where will the biggest bullet cluster in a certain radius be?
+\nMeant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork)
+\nFor instance: over the next 5 seconds, when/where will the biggest bullet cluster in a certain radius be?
 
 Doesn't yet work with every game and will definitely need some changes to maximize accuracy/usability
-If you have feature requests or need help making your own tool let me know
+\nIf you have feature requests or need help making your own tool let me know
 
 Supported games:
 * DDC
@@ -19,7 +19,7 @@ Goals:
 
 ## Setup 
 (using a venv to minimize python headaches)
-(you might be prompted to install virtualenv if you haven't, it'll tell you how)
+\n(you might be prompted to install virtualenv if you haven't, it'll tell you how)
 
 Windows:
 ```bash
