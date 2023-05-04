@@ -21,7 +21,7 @@ Goals:
 * Extracting more useful things
 * Visualization methods (drawing shapes, etc)
 
-To add your analysis code, go to `state-reader.py` and look for these lines: `#Initialize analysis vars here`, `#YOUR ANALYSIS HERE!`, `print("Analysis results: (your print code here)")`. If you need screenshots, change the `requiresScreenshots` on line 8 (you can also convert them to greyscale if needs be). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively. 
+To add your analysis code, go to `state-reader.py` and look for these lines: `#Initialize analysis vars here`, `#YOUR ANALYSIS HERE!`, `print("Analysis results: (your print code here)")`. If you need screenshots, set the `requiresScreenshots` boolean on line 8 to True (you can also convert them to greyscale if needs be). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively (True by default).
 
 ## Setup 
 (using a venv to minimize python headaches)
