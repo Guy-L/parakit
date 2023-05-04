@@ -15,7 +15,7 @@ import struct
 # Set these to select the game before training
 _game_title = 'Double Dealing Character. ver 1.00b'
 _module_name = 'th14.exe'
-_frame_rate = 60
+frame_rate = 60
 
 # Offsets (public)
 score = 0xF5830
@@ -27,6 +27,8 @@ bonus_count = 0xF5894
 power = 0xF5858
 piv = 0xF584C
 graze = 0xF5840
+
+time_in_stage = 0x4f58b0
 
 player_pointer = 0x4db67c 
 zPlayer_pos = 0x5e0
@@ -93,6 +95,9 @@ if _game_pid is not None:
 else:
     print('Game process not found')
     exit()
+    
+#for suspending/resuming
+game_process = psutil.Process(_game_pid)
 
 # Step 3 - Get the process's base address
 _base_address = None
@@ -185,8 +190,11 @@ def apply_action_str(action_text):
             keyboard.release(key)
            
 def wait_frame():
-    time.sleep(1 / _frame_rate)
+    _sleep(1 / frame_rate)
 
+def wait_to_next_frame():
+    _sleep(1 / frame_rate)
+    
 def restart_run():  
     apply_action_int(0) #ensure no residual input
     _two_frame_input('enter')
@@ -202,7 +210,7 @@ def pause_game():
 def unpause_game():
     if read_game_int(game_state) != 2:
         _two_frame_input('esc')
-        time.sleep(10 / _frame_rate)
+        _sleep(10 / frame_rate)
         
 def enact_game_actions_bin(actions): #space-separated action binary strings
     _get_focus()
@@ -236,9 +244,19 @@ def _read_memory(address, size):
 
 def _two_frame_input(key):
     keyboard.press(key)
-    time.sleep(1 / _frame_rate)
+    _sleep(1 / frame_rate)
     keyboard.release(key)
-    time.sleep(1 / _frame_rate) #allows pressing the same key twice in a row
+    _sleep(1 / frame_rate) #allows pressing the same key twice in a row
+    
+def _sleep(duration, get_now=time.perf_counter):
+    now = get_now()
+    end = now + duration
+    while now < end:
+        now = get_now()
+        
+#def ???():
+#    while now < end:
+#        now = get_now()
     
     
 
@@ -246,7 +264,7 @@ def _two_frame_input(key):
 
 def _get_focus():
     _game_window.activate()
-    time.sleep(0.2)
+    _sleep(0.2)
     
 def _render_normalized_greyscale_screenshot(normalized_grey_screenshot):
     # Convert the normalized greyscale screenshot back to the range of 0 to 255
@@ -282,7 +300,7 @@ def _random_player():
         else:
             prev_step = time.time()
             
-        if delay < 1.0 / _frame_rate: 
+        if delay < 1.0 / frame_rate: 
             continue  #synchronize action rate with framerate
             
         prev_step = time.time()
