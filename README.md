@@ -17,6 +17,8 @@ Goals:
 * Extracting more useful things
 * Visualization methods (storing screenshots, drawing shapes, etc)
 
+To add your analysis code, go to `state-reader.py` and look for these lines: `#Initialize analysis vars here`, `#YOUR ANALYSIS HERE!`, `print("Analysis results: (your print code here)")`.
+
 ## Setup 
 (using a venv to minimize python headaches)
 \n(you might be prompted to install virtualenv if you haven't, it'll tell you how)

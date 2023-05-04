@@ -27,11 +27,15 @@ def tabulate(str, min_size=10):
 class Bullet:
     position: Tuple[float, float]
     velocity: Tuple[float, float]
+    speed: float
+    angle: float
+    scale: float
     hitbox_radius: float
     
 @dataclass
 class Enemy:
     position: Tuple[float, float]
+    hurtbox: Tuple[float, float]
     hp: int
     hp_max: int
 
@@ -78,13 +82,19 @@ def extract_game_state():
         bullet_y      = round(read_float(zBullet + zBullet_pos + 0x4), 1)
         bullet_vel_x  = round(read_float(zBullet + zBullet_velocity), 1)
         bullet_vel_y  = round(read_float(zBullet + zBullet_velocity + 0x4), 1)
+        bullet_speed = '%g'%(round(read_float(zBullet + zBullet_speed), 1))
+        bullet_angle = '%g'%(round(read_float(zBullet + zBullet_angle), 1))
+        bullet_scale = '%g'%(round(read_float(zBullet + zBullet_scale), 1))
         bullet_radius = round(read_float(zBullet + zBullet_hitbox_radius), 1)
         
         bullets.append(Bullet(
             position      = (bullet_x, bullet_y), 
             velocity      = (bullet_vel_x, bullet_vel_y), 
-            hitbox_radius = bullet_radius)
-        )
+            speed = bullet_speed,
+            angle = bullet_angle,
+            scale = bullet_scale,
+            hitbox_radius = bullet_radius
+        ))
         
     # Enemies
     enemies = []
@@ -98,15 +108,18 @@ def extract_game_state():
         enemy_y      = round(read_float(zEnemy + zEnemy_data + zEnemy_pos + 0x4), 1)
         enemy_hp     = read_int(zEnemy + zEnemy_data + zEnemy_hp)
         enemy_hp_max = read_int(zEnemy + zEnemy_data + zEnemy_hp_max)
+        enemy_hurtbox_x = round(read_float(zEnemy + zEnemy_data + zEnemy_hurtbox), 1)
+        enemy_hurtbox_y = round(read_float(zEnemy + zEnemy_data + zEnemy_hurtbox + 0x4), 1)
                
         if read_byte(zEnemy + zEnemy_flags) & 0x31 != 0:
             continue
                     
         enemies.append(Enemy(
             position = (enemy_x, enemy_y), 
+            hurtbox = (enemy_hurtbox_x, enemy_hurtbox_y), 
             hp       = enemy_hp, 
-            hp_max   = enemy_hp_max)
-        )
+            hp_max   = enemy_hp_max
+        ))
     
     # Items
     items = []
@@ -131,8 +144,8 @@ def extract_game_state():
         items.append(Item(
             item_type = item_type, 
             position  = (item_x, item_y), 
-            velocity  = (item_vel_x, item_vel_y))
-        )    
+            velocity  = (item_vel_x, item_vel_y)
+        ))
         
     gs = GameState(
         frame_id        = read_int(time_in_stage),
