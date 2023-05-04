@@ -3,6 +3,7 @@ import sys
 import math
 from dataclasses import dataclass
 from typing import List, Tuple
+import atexit
 
 zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)
@@ -21,7 +22,6 @@ def get_item_type(item_type):
 def tabulate(str, min_size=10):
     to_append = min_size - len(str)
     return str + " "*to_append
-    
     
 @dataclass
 class Bullet:
@@ -186,7 +186,12 @@ def print_game_state(gs: GameState):
     print("  Type            Position         Velocity")
     for item in gs.items:
         print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(str(item.position), 16)} {item.velocity}")    
+        
+def on_exit():
+    print('a')
+    game_process.resume() #just in case!!
 
+atexit.register(on_exit)
 print("================================")
 
 if len(sys.argv) <= 1:
