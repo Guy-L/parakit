@@ -1,10 +1,11 @@
 # thgym - Superplayer Gym environment for Touhou
 (that's not actually why the repo's named that lesanae)
 
-Simple python tool to extract game state data: 
+Simple python tool to extract game state data for a given frame: 
 * player coords and movement state, 
 * resources, 
-* list of on-screen enemies, bullets and items
+* list of on-screen enemies, bullets and items, 
+* screenshot (optional, slow)
 
 <br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster in a certain radius be?
 
@@ -18,9 +19,9 @@ Goals:
 * Multi-game support (refactoring)
 * UM support
 * Extracting more useful things
-* Visualization methods (storing screenshots, drawing shapes, etc)
+* Visualization methods (drawing shapes, etc)
 
-To add your analysis code, go to `state-reader.py` and look for these lines: `#Initialize analysis vars here`, `#YOUR ANALYSIS HERE!`, `print("Analysis results: (your print code here)")`.
+To add your analysis code, go to `state-reader.py` and look for these lines: `#Initialize analysis vars here`, `#YOUR ANALYSIS HERE!`, `print("Analysis results: (your print code here)")`. If you need screenshots, change the `requiresScreenshots` on line 8 (you can also convert them to greyscale if needs be). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively. 
 
 ## Setup 
 (using a venv to minimize python headaches)

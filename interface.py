@@ -126,6 +126,13 @@ _process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS
 
 # Interface Method Definitions
 
+def get_rgb_screenshot(): #Note: fails if the window is inactive!    
+    # Take a screenshot of the game window (cropping bleed pixels only; might not look as expected on non-Win10?)
+    screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
+
+    # Convert the PIL image to a NumPy array
+    return np.array(screenshot)
+
 def get_greyscale_screenshot(): #Note: fails if the window is inactive!    
     # Take a screenshot of the game window with a predetermined crop (note that there's 3 extra pixels on every side of the screenshot by default)
     screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
@@ -139,7 +146,7 @@ def get_greyscale_screenshot(): #Note: fails if the window is inactive!
     # Add a channel dimension to the greyscale image    
     return np.expand_dims(grey_screenshot, axis=-1)
  
-def get_normalized_greyscale_screenshot(): #apparently not needed
+def get_normalized_greyscale_screenshot():
    return get_greyscale_screenshot().astype(np.float32) / 255.0
 
 def read_int(offset):

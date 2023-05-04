@@ -2,8 +2,13 @@ from interface import *
 import sys
 import math
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import atexit
+
+requiresBullets = True
+requiresEnemies = True
+requiresItems = True
+requiresScreenshots = False
 
 zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)
@@ -59,16 +64,12 @@ class GameState:
     player_position: Tuple[float, float]
     player_iframes: int
     player_focused: bool
-    bullets: List[Bullet]
-    enemies: List[Enemy]
-    items: List[Item]
+    bullets: Optional[List[Bullet]]
+    enemies: Optional[List[Enemy]]
+    items: Optional[List[Item]]
+    screen: Optional[np.ndarray]
 
-def extract_game_state():
-    # Player
-    player_x = round(read_float(zPlayer + zPlayer_pos), 1)
-    player_y = round(read_float(zPlayer + zPlayer_pos + 0x4), 1)
-    
-    # Bullets
+def extract_bullets():
     bullets = []
     current_bullet_list = read_zList(zBulletManager + zBulletManager_list)
     bullet_counter = 0
@@ -96,7 +97,9 @@ def extract_game_state():
             hitbox_radius = bullet_radius
         ))
         
-    # Enemies
+    return bullets
+    
+def extract_enemies():
     enemies = []
     current_enemy_list = {"entry": 0, "next": read_int(zEnemyManager + zEnemyManager_list)}
         
@@ -121,7 +124,9 @@ def extract_game_state():
             hp_max   = enemy_hp_max
         ))
     
-    # Items
+    return enemies
+    
+def extract_items():
     items = []
     current_item = zItemManager + zItemManager_array
     
@@ -146,7 +151,10 @@ def extract_game_state():
             position  = (item_x, item_y), 
             velocity  = (item_vel_x, item_vel_y)
         ))
-        
+    
+    return items
+    
+def extract_game_state():        
     gs = GameState(
         frame_id        = read_int(time_in_stage),
         score           = read_game_int(score) * 10,
@@ -157,12 +165,13 @@ def extract_game_state():
         power           = read_game_int(power),
         piv             = int(read_game_int(piv) / 100),
         graze           = read_game_int(graze),
-        player_position = (player_x, player_y),
+        player_position = (round(read_float(zPlayer + zPlayer_pos), 1), round(read_float(zPlayer + zPlayer_pos + 0x4), 1)),
         player_iframes  = read_int(zPlayer + zPlayer_iframes),
         player_focused  = read_int(zPlayer + zPlayer_focused) == 1,
-        bullets         = bullets,
-        enemies         = enemies,
-        items           = items
+        bullets         = extract_bullets() if requiresBullets else None,
+        enemies         = extract_enemies() if requiresEnemies else None,
+        items           = extract_items() if requiresItems else None,
+        screen          = get_rgb_screenshot() if requiresScreenshots else None
     )
     
     return gs
