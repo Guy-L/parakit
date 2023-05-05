@@ -25,21 +25,21 @@ To add your analysis code, go to `analysis.py` and implement `__init__`, `step` 
 <br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively (True for all by default).
 
 ## Setup 
-(using a venv to minimize python headaches)
+Let's use a venv to minimize python headaches; you'll need to activate it every time.
 <br>(you might be prompted to install virtualenv if you haven't, it'll tell you how)
 
 Windows:
 ```bash
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements.txt #only do this the first time
 ```
 
 Linux/Mac:
 ```bash
 python -m venv venv
 source venv_name/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt #only do this the first time
 ```
 
 If you need to exit the venv for whatever reason (script will no longer work), type `deactivate`.
