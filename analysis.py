@@ -19,7 +19,7 @@ class Analysis:
         
 
 #Ex1: "Get the frame with most bullets (and save the screen it if screenshots are on)" (only requires bullets & optionally screenshots)
-class AnalysisExample1:
+class AnalysisMostBulletsFrame:
     #Called right before extraction starts
     def __init__(self):
         self.frame_with_most_bullets = None
@@ -40,7 +40,7 @@ class AnalysisExample1:
             save_screenshot("most_bullets.png", self.frame_with_most_bullets.screen)
 
 #Ex2: "Track the number of bullets near the player across time and plot that as a graph"  (only requires bullets)
-class AnalysisExample2:
+class AnalysisCloseBulletsOverTime:
     def __init__(self):
         self.bulletcounts = []
     
@@ -61,7 +61,7 @@ class AnalysisExample2:
         plt.show()
         
 #Ex3: "Plot the bullet positions (+player) of the last frame at game scale"  (only requires bullets)
-class AnalysisExample3:
+class AnalysisPlotBullets:
     def __init__(self):
         self.lastframe = None
     
@@ -77,7 +77,7 @@ class AnalysisExample3:
         plt.scatter(x_coords, y_coords)
         plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='red')
         plt.xlim(-184, 184)
-        plt.ylim(0, 432)
+        plt.ylim(0, 440)
         plt.gca().invert_yaxis()
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')

@@ -75,3 +75,9 @@ Single state extraction:
 Analysis over 50 frames (`exact`):
 
 ![analysis over 50 frames](https://i.imgur.com/voSiS0I.png)
+
+Various analyses:
+
+![9head bullet count over time](https://i.imgur.com/nLY7TPQ.png)
+![FMH close bullets over time](https://i.imgur.com/o11hOLC.png)
+![SUR bullet scatter plot](https://i.imgur.com/zXazVcT.png)
