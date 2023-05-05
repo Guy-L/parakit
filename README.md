@@ -15,6 +15,7 @@ Supported games:
 * DDC
 
 Goals:
+* Lasers...
 * Multi-game support (refactoring)
 * UM support
 * LoLK support
