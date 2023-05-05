@@ -4,6 +4,7 @@ from interface import save_screenshot
 #EXAMPLE ANALYSIS: "Get the frame with most bullets (and save the screen it if screenshots are on)"
 
 class Analysis:
+    #Called right before extraction starts
     def __init__(self):
         self.frame_with_most_bullets = None
         self.max_bullets = 0
