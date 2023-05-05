@@ -21,7 +21,7 @@ Goals:
 * Extracting more useful things
 * Visualization methods (drawing shapes, etc)
 
-To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a basic example there to help you ("finding the frame with the highest number of spawned bullets and optionally displaying it"). I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup). 
+To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
 <br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively (True for all by default).
 
 ## Setup 

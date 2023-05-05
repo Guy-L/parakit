@@ -196,10 +196,15 @@ else:
     print(f"Extracting for {frame_count} frames")
     exact = (len(sys.argv) == 3)
     
-    unpause_game()
+    #unpause_game()
+    print("(unpause the game to begin)")
     analysis = Analysis()
+    end_of_play = False
     
     for i in range(frame_count):
+        if end_of_play:
+            break
+            
         frame_timestamp = read_int(time_in_stage)
         print(f"Extracting frame #{i+1} (in-stage: #{frame_timestamp})")
         
@@ -212,8 +217,12 @@ else:
         if exact:
             game_process.resume()
             
-        while read_int(time_in_stage) == frame_timestamp:
-            pass
+        #busy wait for next frame
+        while read_int(time_in_stage) == frame_timestamp: 
+            if read_game_int(game_state) == 1:
+                print("End of play detected; terminating now")
+                end_of_play = True
+                break
             
     pause_game()
         
