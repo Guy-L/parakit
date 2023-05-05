@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import math
 
 class Analysis:
+    #Called right before extraction starts
     def __init__(self):
         #Your initialization code here
         pass
-        
+    
+    #Called for each extracted frame 
     def step(self, state: GameState):
         #Your analysis code here
         pass
@@ -18,20 +20,17 @@ class Analysis:
         #Your printing code here
         
 
-#Ex1: "Get the frame with most bullets (and save the screen it if screenshots are on)" (only requires bullets & optionally screenshots)
+#Ex1: "Get the frame with the most bullets (and save the screen if screenshots are on)" (only requires bullets & optionally screenshots)
 class AnalysisMostBulletsFrame:
-    #Called right before extraction starts
     def __init__(self):
         self.frame_with_most_bullets = None
         self.max_bullets = 0
     
-    #Called for each extracted frame
     def step(self, state: GameState):
         if state.bullets and len(state.bullets) > self.max_bullets:
             self.max_bullets = len(state.bullets)
             self.frame_with_most_bullets = state
 
-    #Called after extraction finishes
     def done(self, hasScreenshots):
         print(f"Analysis results: frame with most bullet was #{self.frame_with_most_bullets.frame_id} at {self.max_bullets} bullets")
         
