@@ -1,14 +1,14 @@
 from interface import *
+from analysis import *
+from game_entities import *
 import sys
 import math
-from dataclasses import dataclass
-from typing import List, Tuple, Optional
 import atexit
 
 requiresBullets = True
-requiresEnemies = True
-requiresItems = True
-requiresScreenshots = False
+requiresEnemies = False
+requiresItems = False
+requiresScreenshots = True
 
 zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)
@@ -27,47 +27,6 @@ def get_item_type(item_type):
 def tabulate(str, min_size=10):
     to_append = min_size - len(str)
     return str + " "*to_append
-    
-@dataclass
-class Bullet:
-    position: Tuple[float, float]
-    velocity: Tuple[float, float]
-    speed: float
-    angle: float
-    scale: float
-    hitbox_radius: float
-    
-@dataclass
-class Enemy:
-    position: Tuple[float, float]
-    hurtbox: Tuple[float, float]
-    hp: int
-    hp_max: int
-
-@dataclass
-class Item:
-    item_type: str
-    position: Tuple[float, float]
-    velocity: Tuple[float, float]
-    
-@dataclass
-class GameState:
-    frame_id: int
-    score: int
-    lives: int
-    life_pieces: int
-    bombs: int
-    bomb_pieces: int
-    power: int
-    piv: int
-    graze: int
-    player_position: Tuple[float, float]
-    player_iframes: int
-    player_focused: bool
-    bullets: Optional[List[Bullet]]
-    enemies: Optional[List[Enemy]]
-    items: Optional[List[Item]]
-    screen: Optional[np.ndarray]
 
 def extract_bullets():
     bullets = []
@@ -238,8 +197,7 @@ else:
     exact = (len(sys.argv) == 3)
     
     unpause_game()
-    
-    #Initialize analysis vars here
+    analysis = Analysis()
     
     for i in range(frame_count):
         frame_timestamp = read_int(time_in_stage)
@@ -249,7 +207,7 @@ else:
             game_process.suspend()
         
         state = extract_game_state()
-        #YOUR ANALYSIS HERE!
+        analysis.step(state)
         
         if exact:
             game_process.resume()
@@ -260,4 +218,4 @@ else:
     pause_game()
         
     print("================================")
-    print("Analysis results: (your print code here)")
+    analysis.done(requiresScreenshots)
