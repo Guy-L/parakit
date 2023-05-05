@@ -1,5 +1,4 @@
-# thgym - Superplayer Gym environment for Touhou
-(that's not actually why the repo's named that lesanae)
+# state-reader: Touhou Data Analysis
 
 Simple python tool to extract game state data for a given frame: 
 * player coords and movement state, 
