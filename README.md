@@ -30,14 +30,14 @@ Let's use a venv to minimize python headaches; you'll need to activate it every 
 
 Windows:
 ```bash
-python -m venv venv
+python -m venv venv #only do this the first time
 venv\Scripts\activate
 pip install -r requirements.txt #only do this the first time
 ```
 
 Linux/Mac:
 ```bash
-python -m venv venv
+python -m venv venv #only do this the first time
 source venv_name/bin/activate
 pip install -r requirements.txt #only do this the first time
 ```
