@@ -6,9 +6,9 @@ import math
 import atexit
 
 requiresBullets = True
-requiresEnemies = False
-requiresItems = False
-requiresScreenshots = True
+requiresEnemies = True
+requiresItems = True
+requiresScreenshots = False
 
 zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)

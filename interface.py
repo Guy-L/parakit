@@ -203,9 +203,6 @@ def apply_action_str(action_text):
            
 def wait_frame():
     _sleep(1 / frame_rate)
-
-def wait_to_next_frame():
-    _sleep(1 / frame_rate)
     
 def restart_run():  
     apply_action_int(0) #ensure no residual input
@@ -265,10 +262,6 @@ def _sleep(duration, get_now=time.perf_counter):
     end = now + duration
     while now < end:
         now = get_now()
-        
-#def ???():
-#    while now < end:
-#        now = get_now()
     
     
 
