@@ -6,17 +6,19 @@ Simple python tool to extract game state data for a given frame:
 * list of on-screen enemies, bullets and items, 
 * screenshot (optional, slow)
 
-<br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster in a certain radius be?
+<br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster of a given radius be?
 
 Doesn't yet work with every game and will definitely need some changes to maximize usability
-<br>If you have feature requests or need help making your own tool let me know
+<br>If you have feature requests or need help making your own custom analysis let me know
 
 Supported games:
 * DDC
 
 Goals:
+* Lasers...
 * Multi-game support (refactoring)
 * UM support
+* LoLK support
 * Extracting more useful things
 * Visualization methods (drawing shapes, etc)
 
@@ -31,14 +33,14 @@ Let's use a venv to minimize python headaches; you'll need to activate it every 
 
 Windows:
 ```bash
-python -m venv venv
+python -m venv venv #only do this the first time
 venv\Scripts\activate
 pip install -r requirements.txt #only do this the first time
 ```
 
 Linux/Mac:
 ```bash
-python -m venv venv
+python -m venv venv #only do this the first time
 source venv_name/bin/activate
 pip install -r requirements.txt #only do this the first time
 ```
