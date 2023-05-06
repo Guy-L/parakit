@@ -19,6 +19,7 @@ Goals:
 * Multi-game support (refactoring)
 * UM support
 * LoLK support
+* MoF support
 * Extracting more useful things
 * Visualization methods (drawing shapes, etc)
 
