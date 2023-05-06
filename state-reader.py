@@ -86,9 +86,6 @@ def extract_items():
             
         item_type = get_item_type(read_int(current_item + zItem_type))
         
-        if item_type == "Cancel":
-            continue
-        
         item_x     = round(read_float(current_item + zItem_pos), 1)
         item_y     = round(read_float(current_item + zItem_pos + 0x4), 1)
         item_vel_x = round(read_float(current_item + zItem_vel), 1)
