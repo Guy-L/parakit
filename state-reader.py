@@ -127,19 +127,19 @@ def print_game_state(gs: GameState):
     print(f"| Player at {gs.player_position} with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
 
     if gs.bullets:
-        print("\nList of on-screen bullets:")
+        print("\nList of bullets:")
         print("  Position        Velocity         Hitbox Radius")
         for bullet in gs.bullets:
             print(f"• {tabulate(str(bullet.position), 16)}{tabulate(str(bullet.velocity), 16)} {bullet.hitbox_radius}")
         
     if gs.enemies:
-        print("\nList of on-screen enemies:")
+        print("\nList of enemies:")
         print("  Position         HP / Max HP")
         for enemy in gs.enemies:
             print(f"• {tabulate(str(enemy.position), 16)} {enemy.hp} / {enemy.hp_max}")
     
     if gs.items:
-        print("\nList of on-screen items:")
+        print("\nList of items:")
         print("  Type            Position         Velocity")
         for item in gs.items:
             print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(str(item.position), 16)} {item.velocity}")    
