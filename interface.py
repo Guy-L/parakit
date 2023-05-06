@@ -10,6 +10,7 @@ import cv2
 import time #debug
 import random #debug
 import keyboard #debug
+import json #debug
 import struct
 
 # Set these to select the game before training
@@ -171,6 +172,15 @@ def read_float(offset):
 def read_byte(offset):
     return int.from_bytes(_read_memory(offset, 1), byteorder='big')
     
+def read_zList(offset):
+    return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
+    
+def get_item_type(item_type):
+    if(item_type < len(item_types)):
+        return item_types[item_type]
+    else:
+        return item_type
+    
 def apply_action_int(action_int):
     # Iterate through the list of keys and hold/release keys depending on the bit value
     for index, key in enumerate(reversed(keys)):
@@ -323,7 +333,23 @@ def _random_player():
                     '{:08b}'.format(action), 
                     "{:.2f}".format(delay)])))
         apply_action_int(action)
-        
+
+def _expJSON_to_guyJSON(filename, filename_new):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+
+    transformed_data = {}
+
+    for key, value_list in data.items():
+        transformed_value = {}
+        for value in value_list:
+            if value[1] != "__end":
+                #transformed_value[value[1]] = (value[0], value[2])
+                transformed_value[value[1]] = value[0]
+        transformed_data[key] = transformed_value
+
+    with open(filename_new, 'w') as file_new:
+        json.dump(transformed_data, file_new, indent=2)            
 
 # Step 5 - Optionally put the game in focus for training activities
 _get_focus()

@@ -14,15 +14,6 @@ zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)
 zEnemyManager  = read_int(enemy_manager_pointer)
 zItemManager   = read_int(item_manager_pointer)
-
-def read_zList(offset):
-    return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
-    
-def get_item_type(item_type):
-    if(item_type < len(item_types)):
-        return item_types[item_type]
-    else:
-        return item_type
         
 def tabulate(str, min_size=10):
     to_append = min_size - len(str)
@@ -31,20 +22,18 @@ def tabulate(str, min_size=10):
 def extract_bullets():
     bullets = []
     current_bullet_list = read_zList(zBulletManager + zBulletManager_list)
-    bullet_counter = 0
         
-    while current_bullet_list["next"] and bullet_counter < 200:
+    while current_bullet_list["next"]:
         current_bullet_list = read_zList(current_bullet_list["next"]) 
-        bullet_counter = bullet_counter + 1
             
         zBullet       = current_bullet_list["entry"]
         bullet_x      = round(read_float(zBullet + zBullet_pos), 1)
         bullet_y      = round(read_float(zBullet + zBullet_pos + 0x4), 1)
         bullet_vel_x  = round(read_float(zBullet + zBullet_velocity), 1)
         bullet_vel_y  = round(read_float(zBullet + zBullet_velocity + 0x4), 1)
-        bullet_speed = '%g'%(round(read_float(zBullet + zBullet_speed), 1))
-        bullet_angle = '%g'%(round(read_float(zBullet + zBullet_angle), 1))
-        bullet_scale = '%g'%(round(read_float(zBullet + zBullet_scale), 1))
+        bullet_speed = round(read_float(zBullet + zBullet_speed), 1)
+        bullet_angle = round(read_float(zBullet + zBullet_angle), 1)
+        bullet_scale = round(read_float(zBullet + zBullet_scale), 1)
         bullet_radius = round(read_float(zBullet + zBullet_hitbox_radius), 1)
         
         bullets.append(Bullet(
