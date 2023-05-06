@@ -16,6 +16,7 @@ Supported games:
 
 Goals:
 * Lasers...
+* UX - remove need to use command line
 * Multi-game support (refactoring)
 * UM support
 * LoLK support
