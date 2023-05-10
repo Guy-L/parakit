@@ -3,7 +3,7 @@
 Simple python tool to extract game state data for a given frame: 
 * player coords and movement state, 
 * resources, 
-* list of on-screen enemies, bullets and items, 
+* list of on-screen enemies, bullets, items and lasers, 
 * screenshot (optional, slow)
 
 <br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster of a given radius be?
@@ -15,7 +15,7 @@ Supported games:
 * DDC
 
 Goals:
-* Lasers...
+* More lasers (Infinite/Curve)
 * UX - remove need to use command line
 * Multi-game support (refactoring)
 * UM support
@@ -25,7 +25,7 @@ Goals:
 * Visualization methods (drawing shapes, etc)
 
 To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
-<br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies and items to make extraction faster with the `requiresBullets`, `requiresEnemies` and `requiresItems` booleans respectively (True for all by default).
+<br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies, items and lasers to make extraction faster with the `requiresBullets`, `requiresEnemies`, `requiresItems` and `requiresLasers` booleans respectively (True for all by default).
 
 Huge credits to ExpHP for helping out with the extraction.
 
@@ -87,3 +87,4 @@ Various analyses:
 ![9head bullet count over time](https://i.imgur.com/nLY7TPQ.png)
 ![FMH close bullets over time](https://i.imgur.com/o11hOLC.png)
 ![SUR bullet scatter plot](https://i.imgur.com/zXazVcT.png)
+![Shimmy laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105889947241693396/image.png)
