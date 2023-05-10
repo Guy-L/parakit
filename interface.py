@@ -45,6 +45,8 @@ zBullet_velocity = 0xbcc
 zBullet_angle = 0xbdc
 zBullet_scale = 0x13bc
 zBullet_hitbox_radius = 0xbe0
+zBullet_type = 0x13ec
+zBullet_color = 0x13ee
 
 enemy_manager_pointer = 0x4db544
 zEnemyManager_list = 0xd0
@@ -63,6 +65,32 @@ zItem_state = 0xbf0
 zItem_type = 0xbf4
 zItem_pos = 0xbac
 zItem_vel = 0xbb8
+
+laser_manager_pointer  = 0x4db664
+zLaserManager_list     = 0x5d0
+zLaserBaseClass_next   = 0x4
+zLaserBaseClass_state  = 0x10    
+zLaserBaseClass_type   = 0x14     
+zLaserBaseClass_offset = 0x54
+zLaserBaseClass_angle  = 0x6c
+zLaserBaseClass_length = 0x70
+zLaserBaseClass_width  = 0x74
+zLaserBaseClass_speed  = 0x78
+zLaserBaseClass_id     = 0x80     
+zLaserBaseClass_sprite = 0x5b8  
+zLaserBaseClass_color  = 0x5bc
+
+zLaserLine_start_pos  = 0x5c0 
+zLaserLine_angle      = 0x5cc    
+zLaserLine_max_length = 0x5d0 
+zLaserLine_width      = 0x5dc    
+zLaserLine_speed      = 0x5e0    
+zLaserLine_sprite     = 0x5e4     
+zLaserLine_color      = 0x5e8    
+
+sprites = ['Pellet', 'Pellet2', 'Popcorn', 'Pellet3', 'Ball', 'Ball2', 'Outline', 'Outline2', 'Rice', 'Kunai', 'Shard', 'Amulet', 'Arrowhead', 'Bullet', 'LaserHead', 'Bacteria', 'Star', 'Coin', 'Mentos', 'Mentos2', 'Jellybean', 'Knife', 'Butterfly', 'Big Star', 'Big Star2', 'Red Fireball', 'Purple Fireball', 'Blue Fireball', 'Yellow Fireball', 'Heart', 'Pulse', 'Arrow', 'Bubble', 'Orb', 'Droplet', 'Spinning Rice', 'Spinning Shard', 'Star2', 'Laser', 'Red Note', 'Blue Note', 'Green Note', 'Purple note', 'Rest'] 
+color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
+color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
 
 item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Cancel", "Cancel"]
 #game_over = 0xF9620 #always 0 on startup & 1 on the game over screen, stays at 1 after continuing unless player pauses (zun wtf)
@@ -155,11 +183,11 @@ def save_screenshot(filename, screenshot):
     bgr_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
     cv2.imwrite(filename, bgr_screenshot)
 
-def read_int(offset):
+def read_int(offset, bytes = 4):
     #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
-    return int.from_bytes(_read_memory(offset, 4), byteorder='little')
+    return int.from_bytes(_read_memory(offset, bytes), byteorder='little')
     
-def read_game_int(offset):
+def read_game_int(offset, bytes = 4):
     #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
     return int.from_bytes(_read_game_memory(offset, 4), byteorder='little')
     
@@ -174,7 +202,7 @@ def read_byte(offset):
     
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
-    
+        
 def get_item_type(item_type):
     if(item_type < len(item_types)):
         return item_types[item_type]

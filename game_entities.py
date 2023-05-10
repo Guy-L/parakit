@@ -10,6 +10,8 @@ class Bullet:
     angle: float
     scale: float
     hitbox_radius: float
+    bullet_type: int
+    color: int
     
 @dataclass
 class Enemy:
@@ -23,6 +25,34 @@ class Item:
     item_type: str
     position: Tuple[float, float]
     velocity: Tuple[float, float]
+
+@dataclass
+class LaserInner:
+    pass
+    
+@dataclass
+class LaserInnerLine(LaserInner):
+    start_pos: Tuple[float, float]
+    angle: float
+    max_length: float
+    width: float
+    speed: float
+    sprite: int
+    color: int
+
+@dataclass 
+class Laser:
+    state: int
+    laser_type: int
+    position: Tuple[float, float]
+    angle: float
+    length: float
+    width: float
+    speed: float
+    id: int
+    sprite: int
+    color: int
+    inner: LaserInner
     
 @dataclass
 class GameState:
@@ -41,4 +71,5 @@ class GameState:
     bullets: Optional[List[Bullet]]
     enemies: Optional[List[Enemy]]
     items: Optional[List[Item]]
+    lasers: Optional[List[Laser]]
     screen: Optional[np.ndarray]

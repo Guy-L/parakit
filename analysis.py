@@ -1,5 +1,5 @@
 from game_entities import GameState
-from interface import save_screenshot
+from interface import save_screenshot, color8, color16, np
 import matplotlib.pyplot as plt
 import math
 
@@ -59,7 +59,7 @@ class AnalysisCloseBulletsOverTime:
         plt.title('Bullet Count Over Time')
         plt.show()
         
-#Ex3: "Plot the bullet positions (+player) of the last frame at game scale"  (only requires bullets)
+#Ex3: "Plot the bullet positions of the last frame at game scale (+player)"  (only requires bullets)
 class AnalysisPlotBullets:
     def __init__(self):
         self.lastframe = None
@@ -81,5 +81,32 @@ class AnalysisPlotBullets:
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
         plt.title('Scatter Plot of Extracted Bullet Positions')
-        plt.show()
+        plt.show()    
         
+#Ex4: "Plot the lasers of the last frame at game scale (+player) "  (only requires lasers)
+class AnalysisPlotLineLasers:
+    def __init__(self):
+        self.lastframe = None
+    
+    def step(self, state: GameState):
+        self.lastframe = state
+
+    def done(self, hasScreenshots):
+        plt.figure(figsize=(4.6, 5.4))
+        plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='red')
+        
+        for laser in self.lastframe.lasers:
+            if laser.laser_type == 0:
+                tail_x = laser.position[0]
+                tail_y = laser.position[1]
+                head_x = tail_x + laser.length * np.cos(laser.angle)
+                head_y = tail_y + laser.length * np.sin(laser.angle)
+                plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width/3.2, color=color8[laser.color])
+        
+        plt.xlim(-184, 184)
+        plt.ylim(0, 440)
+        plt.gca().invert_yaxis()
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.title('Plot of Extracted Line Lasers')        
+        plt.show()    

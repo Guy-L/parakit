@@ -5,19 +5,22 @@ import sys
 import math
 import atexit
 
-requiresBullets = True
-requiresEnemies = True
-requiresItems = True
+requiresBullets     = True
+requiresEnemies     = True
+requiresItems       = True
+requiresLasers      = True
 requiresScreenshots = False
 
 zPlayer        = read_int(player_pointer)
 zBulletManager = read_int(bullet_manager_pointer)
 zEnemyManager  = read_int(enemy_manager_pointer)
 zItemManager   = read_int(item_manager_pointer)
+zLaserManager  = read_int(laser_manager_pointer)
         
-def tabulate(str, min_size=10):
-    to_append = min_size - len(str)
-    return str + " "*to_append
+def tabulate(x, min_size=10):
+    x_str = str(x)
+    to_append = min_size - len(x_str)
+    return x_str + " "*to_append
 
 def extract_bullets():
     bullets = []
@@ -31,18 +34,22 @@ def extract_bullets():
         bullet_y      = round(read_float(zBullet + zBullet_pos + 0x4), 1)
         bullet_vel_x  = round(read_float(zBullet + zBullet_velocity), 1)
         bullet_vel_y  = round(read_float(zBullet + zBullet_velocity + 0x4), 1)
-        bullet_speed = round(read_float(zBullet + zBullet_speed), 1)
-        bullet_angle = round(read_float(zBullet + zBullet_angle), 1)
-        bullet_scale = round(read_float(zBullet + zBullet_scale), 1)
+        bullet_speed  = round(read_float(zBullet + zBullet_speed), 1)
+        bullet_angle  = round(read_float(zBullet + zBullet_angle), 1)
+        bullet_scale  = round(read_float(zBullet + zBullet_scale), 1)
         bullet_radius = round(read_float(zBullet + zBullet_hitbox_radius), 1)
+        bullet_type   = read_int(zBullet + zBullet_type, 2)
+        bullet_color  = read_int(zBullet + zBullet_color, 2)
         
         bullets.append(Bullet(
             position      = (bullet_x, bullet_y), 
             velocity      = (bullet_vel_x, bullet_vel_y), 
-            speed = bullet_speed,
-            angle = bullet_angle,
-            scale = bullet_scale,
-            hitbox_radius = bullet_radius
+            speed         = bullet_speed,
+            angle         = bullet_angle,
+            scale         = bullet_scale,
+            hitbox_radius = bullet_radius,
+            bullet_type   = bullet_type,
+            color         = bullet_color
         ))
         
     return bullets
@@ -99,6 +106,73 @@ def extract_items():
     
     return items
     
+def extract_lasers():
+    lasers = []
+    current_laser_ptr = read_int(zLaserManager + zLaserManager_list) #pointer to head laser 
+    
+    while read_int(current_laser_ptr + zLaserBaseClass_next): #excludes last (dummy) laser
+  
+        laser_state    = read_int(current_laser_ptr + zLaserBaseClass_state)
+        laser_type     = read_int(current_laser_ptr + zLaserBaseClass_type)
+        laser_offset_x = read_float(current_laser_ptr + zLaserBaseClass_offset)
+        laser_offset_y = read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)
+        laser_angle    = read_float(current_laser_ptr + zLaserBaseClass_angle)
+        laser_length   = read_float(current_laser_ptr + zLaserBaseClass_length)
+        laser_width    = read_float(current_laser_ptr + zLaserBaseClass_width)
+        laser_speed    = read_float(current_laser_ptr + zLaserBaseClass_speed)
+        laser_id       = read_int(current_laser_ptr + zLaserBaseClass_id)
+        laser_sprite   = read_int(current_laser_ptr + zLaserBaseClass_sprite, 2)
+        laser_color    = read_int(current_laser_ptr + zLaserBaseClass_color, 2)
+        laser_inner    = None #type-dependent (subclass) vars
+                
+        if laser_type == 0: #LINE
+            line_start_pos_x = read_float(current_laser_ptr + zLaserLine_start_pos)
+            line_start_pos_y = read_float(current_laser_ptr + zLaserLine_start_pos + 0x4)
+            line_angle       = read_float(current_laser_ptr + zLaserLine_angle)           #same as laser
+            line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)      
+            line_width       = read_float(current_laser_ptr + zLaserLine_width)           #same as laser
+            line_speed       = read_float(current_laser_ptr + zLaserLine_speed)           #same as laser
+            line_sprite      = read_int(current_laser_ptr + zLaserLine_sprite)            #same as laser
+            line_color       = read_int(current_laser_ptr + zLaserLine_color)             #same as laser
+                        
+            laser_inner = LaserInnerLine(
+                start_pos = (line_start_pos_x, line_start_pos_y),
+                angle = line_angle,
+                max_length = line_max_length,
+                width = line_width, 
+                speed = line_speed, 
+                sprite = line_sprite,
+                color = line_color, 
+            )
+            
+        elif laser_type == 1: #INFINITE
+            pass
+        
+        elif laser_type == 2: #CURVE
+            pass
+        
+        elif laser_type == 3: #BEAM 
+            pass
+
+        lasers.append(Laser(
+            state = laser_state,
+            laser_type = laser_type,
+            position = (laser_offset_x, laser_offset_y), 
+            angle = laser_angle,
+            length = laser_length,
+            width = laser_width,
+            speed = laser_speed,
+            id = laser_id,
+            sprite = laser_sprite,
+            color = laser_color,
+            inner = laser_inner,
+        ))
+        
+        current_laser_ptr = read_int(current_laser_ptr + zLaserBaseClass_next)
+        
+    return lasers
+        
+
 def extract_game_state():        
     gs = GameState(
         frame_id        = read_int(time_in_stage),
@@ -116,6 +190,7 @@ def extract_game_state():
         bullets         = extract_bullets() if requiresBullets else None,
         enemies         = extract_enemies() if requiresEnemies else None,
         items           = extract_items() if requiresItems else None,
+        lasers          = extract_lasers() if requiresLasers else None,
         screen          = get_rgb_screenshot() if requiresScreenshots else None
     )
     
@@ -128,30 +203,73 @@ def print_game_state(gs: GameState):
 
     if gs.bullets:
         print("\nList of bullets:")
-        print("  Position        Velocity         Hitbox Radius")
+        print("  Position         Velocity         Radius  Color   Type")
         for bullet in gs.bullets:
-            print(f"• {tabulate(str(bullet.position), 16)}{tabulate(str(bullet.velocity), 16)} {bullet.hitbox_radius}")
+            description = "• "
+            print(f"• {tabulate(bullet.position, 17)}{tabulate(bullet.velocity, 17)}{tabulate(bullet.hitbox_radius, 8)}{tabulate(color16[bullet.color], 8)}{sprites[bullet.bullet_type]}")
+            
+    if gs.lasers:
+        line_lasers = [laser for laser in gs.lasers if laser.laser_type == 0]
+        infinite_lasers = [laser for laser in gs.lasers if laser.laser_type == 1]
+        curve_lasers = [laser for laser in gs.lasers if laser.laser_type == 2]
+        beam_lasers = [laser for laser in gs.lasers if laser.laser_type == 3]
+        
+        if line_lasers:
+            print("\nList of segment (\"line\") lasers:")
+            print("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite")
+            for laser in line_lasers:
+                description = "• "
+                description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
+                description += tabulate(round(laser.speed, 1), 8)
+                description += tabulate(round(laser.angle, 2), 8)
+                description += tabulate(round(laser.length, 1), 6) + " / "
+                description += tabulate(round(laser.inner.max_length, 1), 8)
+                description += tabulate(round(laser.width, 1), 8)
+                description += tabulate(color8[laser.color], 8)
+                description += tabulate(sprites[laser.sprite], 8)
+                print(description)
+            
+        if infinite_lasers:
+            print("\nList of telegraphed (\"infinite\") lasers:")
+            print("Not yet supported!")
+            
+        if curve_lasers:
+            print("\nList of curvy lasers:")
+            print("Not yet supported!")
+            
+        if beam_lasers:
+            print("\nnList of curvy lasers:")
+            print("Not yet supported!")
+        
         
     if gs.enemies:
         print("\nList of enemies:")
         print("  Position         HP / Max HP")
         for enemy in gs.enemies:
-            print(f"• {tabulate(str(enemy.position), 16)} {enemy.hp} / {enemy.hp_max}")
+            print(f"• {tabulate(enemy.position, 17)}{enemy.hp} / {enemy.hp_max}")
     
     if gs.items:
         print("\nList of items:")
         print("  Type            Position         Velocity")
         for item in gs.items:
-            print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(str(item.position), 16)} {item.velocity}")    
+            print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(item.position, 16)} {item.velocity}")    
         
 def on_exit():
     game_process.resume() #just in case!!
 
 atexit.register(on_exit)
+
 print("================================")
 
 if len(sys.argv) <= 1:
-    print_game_state(extract_game_state())
+    analysis = Analysis()
+    
+    state = extract_game_state()
+    analysis.step(state)
+    print_game_state(state)
+    
+    print("================================")
+    analysis.done(requiresScreenshots)
 
 elif len(sys.argv) > 3:
     print("Too many arguments!")
