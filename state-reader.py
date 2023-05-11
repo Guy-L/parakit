@@ -128,12 +128,13 @@ def extract_lasers():
         if laser_type == 0: #LINE
             line_start_pos_x = read_float(current_laser_ptr + zLaserLine_start_pos)
             line_start_pos_y = read_float(current_laser_ptr + zLaserLine_start_pos + 0x4)
-            line_angle       = read_float(current_laser_ptr + zLaserLine_angle)           #same as laser
+            line_angle       = read_float(current_laser_ptr + zLaserLine_angle)           #same as laser's
             line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)      
-            line_width       = read_float(current_laser_ptr + zLaserLine_width)           #same as laser
-            line_speed       = read_float(current_laser_ptr + zLaserLine_speed)           #same as laser
-            line_sprite      = read_int(current_laser_ptr + zLaserLine_sprite)            #same as laser
-            line_color       = read_int(current_laser_ptr + zLaserLine_color)             #same as laser
+            line_width       = read_float(current_laser_ptr + zLaserLine_width)           #same as laser's
+            line_speed       = read_float(current_laser_ptr + zLaserLine_speed)           #same as laser's
+            line_sprite      = read_int(current_laser_ptr + zLaserLine_sprite)            #same as laser's
+            line_color       = read_int(current_laser_ptr + zLaserLine_color)             #same as laser's
+            line_distance    = read_float(current_laser_ptr + zLaserLine_distance)        #(of spawn pos from boss? 0 in most cases)
                         
             laser_inner = LaserInnerLine(
                 start_pos = (line_start_pos_x, line_start_pos_y),
@@ -143,14 +144,54 @@ def extract_lasers():
                 speed = line_speed, 
                 sprite = line_sprite,
                 color = line_color, 
+                distance = line_distance,
             )
             
         elif laser_type == 1: #INFINITE
             pass
         
         elif laser_type == 2: #CURVE
-            pass
-        
+            curve_start_pos_x = read_float(current_laser_ptr + zLaserCurve_start_pos)       #same as laser offset x
+            curve_start_pos_y = read_float(current_laser_ptr + zLaserCurve_start_pos + 0x4) #same as laser offset y
+            curve_angle       = read_float(current_laser_ptr + zLaserCurve_angle)           #same as laser's
+            curve_width       = read_float(current_laser_ptr + zLaserCurve_width)           #same as laser's
+            curve_speed       = read_float(current_laser_ptr + zLaserCurve_speed)           #same as laser's
+            curve_sprite      = read_int(current_laser_ptr + zLaserCurve_sprite)            #same as laser's
+            curve_color       = read_int(current_laser_ptr + zLaserCurve_color)             #same as laser's
+            curve_max_length  = read_int(current_laser_ptr + zLaserCurve_max_length)
+            curve_distance    = read_float(current_laser_ptr + zLaserCurve_distance)        #(of spawn pos from boss? 0 in most cases)
+            
+            curve_nodes = []
+            current_node_ptr  = read_int(current_laser_ptr + zLaserCurve_array)
+            for i in range(0, curve_max_length):
+                curve_node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
+                curve_node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
+                curve_node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
+                curve_node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
+                curve_node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
+                curve_node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
+                
+                curve_nodes.append(CurveNode(
+                    position = (curve_node_pos_x, curve_node_pos_y),
+                    velocity = (curve_node_vel_x, curve_node_vel_y),
+                    angle = curve_node_angle,
+                    speed = curve_node_speed,
+                ))
+                
+                current_node_ptr += zLaserCurveNode_size
+                
+            laser_inner = LaserInnerCurve(
+                start_pos = (curve_start_pos_x, curve_start_pos_y),
+                angle = curve_angle,
+                width = curve_width, 
+                speed = curve_speed, 
+                sprite = curve_sprite,
+                color = curve_color, 
+                max_length = curve_max_length,
+                distance = curve_distance,
+                nodes = curve_nodes,
+            )
+            
         elif laser_type == 3: #BEAM 
             pass
 
@@ -203,10 +244,17 @@ def print_game_state(gs: GameState):
 
     if gs.bullets:
         print("\nList of bullets:")
-        print("  Position         Velocity         Radius  Color   Type")
+        print("  Position         Velocity         Speed   Angle   Radius  Color   Type")
         for bullet in gs.bullets:
             description = "• "
-            print(f"• {tabulate(bullet.position, 17)}{tabulate(bullet.velocity, 17)}{tabulate(bullet.hitbox_radius, 8)}{tabulate(color16[bullet.color], 8)}{sprites[bullet.bullet_type]}")
+            description += tabulate(bullet.position, 17)
+            description += tabulate(bullet.velocity, 17)
+            description += tabulate(round(bullet.speed, 1), 8)
+            description += tabulate(round(bullet.angle, 2), 8)
+            description += tabulate(round(bullet.hitbox_radius, 1), 8)
+            description += tabulate(get_color(bullet.bullet_type, bullet.color), 8)
+            description += tabulate(sprites[bullet.bullet_type][0], 8)
+            print(description)
             
     if gs.lasers:
         line_lasers = [laser for laser in gs.lasers if laser.laser_type == 0]
@@ -225,8 +273,8 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.length, 1), 6) + " / "
                 description += tabulate(round(laser.inner.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
-                description += tabulate(color8[laser.color], 8)
-                description += tabulate(sprites[laser.sprite], 8)
+                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                description += tabulate(sprites[laser.sprite][0], 8)
                 print(description)
             
         if infinite_lasers:
@@ -235,18 +283,29 @@ def print_game_state(gs: GameState):
             
         if curve_lasers:
             print("\nList of curvy lasers:")
-            print("Not yet supported!")
+            print("  Spawn Position  Head Position      Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
+            for laser in curve_lasers:
+                description = "• "
+                description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
+                description += tabulate(f"({round(laser.inner.nodes[0].position[0], 1)}, {round(laser.inner.nodes[0].position[1], 1)})", 19)
+                description += tabulate(f"({round(laser.inner.nodes[0].velocity[0], 1)}, {round(laser.inner.nodes[0].velocity[1], 1)})", 16)
+                description += tabulate(round(laser.inner.nodes[0].speed, 1), 8)
+                description += tabulate(round(laser.inner.nodes[0].angle, 2), 8)
+                description += tabulate(round(laser.inner.max_length, 1), 8)
+                description += tabulate(round(laser.width, 1), 8)
+                description += tabulate(color16[laser.color], 8)
+                description += tabulate(curve_sprites[laser.sprite], 8)
+                print(description)
             
         if beam_lasers:
-            print("\nnList of curvy lasers:")
+            print("\nList of curvy lasers:")
             print("Not yet supported!")
-        
-        
+         
     if gs.enemies:
         print("\nList of enemies:")
-        print("  Position         HP / Max HP")
+        print("  Position         Hurtbox          HP / Max HP")
         for enemy in gs.enemies:
-            print(f"• {tabulate(enemy.position, 17)}{enemy.hp} / {enemy.hp_max}")
+            print(f"• {tabulate(enemy.position, 17)}{tabulate(enemy.hurtbox, 17)}{enemy.hp} / {enemy.hp_max}")
     
     if gs.items:
         print("\nList of items:")

@@ -25,6 +25,13 @@ class Item:
     item_type: str
     position: Tuple[float, float]
     velocity: Tuple[float, float]
+    
+@dataclass
+class CurveNode:
+    position: Tuple[float, float]
+    velocity: Tuple[float, float]
+    angle: float
+    speed: float
 
 @dataclass
 class LaserInner:
@@ -38,7 +45,20 @@ class LaserInnerLine(LaserInner):
     width: float
     speed: float
     sprite: int
+    color: int 
+    distance: float
+    
+@dataclass
+class LaserInnerCurve(LaserInner):
+    start_pos: Tuple[float, float]
+    angle: float
+    width: float
+    speed: float
+    sprite: int
     color: int
+    max_length: int 
+    distance: float
+    nodes: List[CurveNode] 
 
 @dataclass 
 class Laser:

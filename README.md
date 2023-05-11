@@ -15,7 +15,8 @@ Supported games:
 * DDC
 
 Goals:
-* More lasers (Infinite/Curve)
+* More lasers (Infinite (they don't exist in DDC but still))
+* Remove dumb game/non-game memory destinction
 * UX - remove need to use command line
 * Multi-game support (refactoring)
 * UM support

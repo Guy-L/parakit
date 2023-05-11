@@ -1,7 +1,19 @@
 from game_entities import GameState
-from interface import save_screenshot, color8, color16, np
+from interface import save_screenshot, get_color, color16, np
 import matplotlib.pyplot as plt
+import matplotlib.colors
 import math
+
+_pyplot_factor = 1/3.2 #to convert sizes in game units to pyplot point/line size; can be tweaked
+_bullet_factor = 15 #makes bullets bigger than their hitbox in bullet plot (1 = real size)
+
+def _pyplot_color(color_str):
+    if color_str == 'Dark Yellow':
+        return 'Olive'
+    elif color_str == 'Bronze':
+        return 'Sienna'
+    else:
+        return color_str.replace(" ", "")
 
 class Analysis:
     #Called right before extraction starts
@@ -71,9 +83,11 @@ class AnalysisPlotBullets:
         # Separate the x and y coordinates
         x_coords = [bullet.position[0] for bullet in self.lastframe.bullets]
         y_coords = [bullet.position[1] for bullet in self.lastframe.bullets]
+        colors = [_pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in self.lastframe.bullets]
+        size = [bullet.scale * bullet.hitbox_radius * _bullet_factor * _pyplot_factor for bullet in self.lastframe.bullets]
 
         plt.figure(figsize=(4.6, 5.4))
-        plt.scatter(x_coords, y_coords)
+        plt.scatter(x_coords, y_coords, color=colors, s=size)
         plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='red')
         plt.xlim(-184, 184)
         plt.ylim(0, 440)
@@ -83,7 +97,7 @@ class AnalysisPlotBullets:
         plt.title('Scatter Plot of Extracted Bullet Positions')
         plt.show()    
         
-#Ex4: "Plot the lasers of the last frame at game scale (+player) "  (only requires lasers)
+#Ex4: "Plot the line lasers of the last frame at game scale (+player)"  (only requires lasers)
 class AnalysisPlotLineLasers:
     def __init__(self):
         self.lastframe = None
@@ -101,7 +115,7 @@ class AnalysisPlotLineLasers:
                 tail_y = laser.position[1]
                 head_x = tail_x + laser.length * np.cos(laser.angle)
                 head_y = tail_y + laser.length * np.sin(laser.angle)
-                plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width/3.2, color=color8[laser.color])
+                plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * _pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)))
         
         plt.xlim(-184, 184)
         plt.ylim(0, 440)
@@ -109,4 +123,56 @@ class AnalysisPlotLineLasers:
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
         plt.title('Plot of Extracted Line Lasers')        
+        plt.show()    
+
+#Ex5: "Plot the curve lasers of the last frame at game scale (+player)"  (only requires lasers)
+class AnalysisPlotCurveLasers:
+    def __init__(self):
+        self.lastframe = None
+        self.has_points = False
+        self.has_line = True
+        self.smooth = True #more computation; closer to game visuals for lasers n>15, but not to hitboxes
+        self.smooth_steepness = 0.1 #seems accurate?
+    
+    def step(self, state: GameState):
+        self.lastframe = state
+
+    def __sigmoid_factor(self, x, left, right): #note: looks bad with small lasers (<15 nodes)
+        shift = (self.smooth_steepness ** -1) 
+        return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))        
+        
+    def done(self, hasScreenshots):
+        plt.figure(figsize=(4.6, 5.4))
+        plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='red')
+        
+        for laser in self.lastframe.lasers:
+            if laser.laser_type == 2:
+            
+                if self.smooth:       
+                    sizes = [laser.width * _pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.inner.nodes)) for node_i in range(len(laser.inner.nodes))]
+
+                    if self.has_points:
+                        x_coords = [nodes.position[0] for nodes in laser.inner.nodes]
+                        y_coords = [nodes.position[1] for nodes in laser.inner.nodes]
+                        plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=sizes) 
+                    
+                    if self.has_line:
+                        for i in range(len(laser.inner.nodes) - 1): #i hate this
+                            plt.plot([laser.inner.nodes[i].position[0], laser.inner.nodes[i+1].position[0]], [laser.inner.nodes[i].position[1], laser.inner.nodes[i+1].position[1]], color=_pyplot_color(color16[laser.color]), linewidth=(sizes[i]+sizes[i+1])/2)
+                else: 
+                    x_coords = [nodes.position[0] for nodes in laser.inner.nodes]
+                    y_coords = [nodes.position[1] for nodes in laser.inner.nodes]
+
+                    if self.has_points:
+                        plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=laser.width * _pyplot_factor)
+                        
+                    if self.has_line:
+                        plt.plot(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), linewidth=laser.width * _pyplot_factor)
+        
+        plt.xlim(-184, 184)
+        plt.ylim(0, 440)
+        plt.gca().invert_yaxis()
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.title('Plot of Extracted Curvy Lasers\nwith Points ' + ('on' if self.has_points else 'off') + ', Line ' + ('on' if self.has_line else 'off') + ' and Smoothing ' + (f'on ({self.smooth_steepness})' if self.smooth else 'off'))        
         plt.show()    

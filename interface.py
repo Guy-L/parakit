@@ -86,11 +86,33 @@ zLaserLine_max_length = 0x5d0
 zLaserLine_width      = 0x5dc    
 zLaserLine_speed      = 0x5e0    
 zLaserLine_sprite     = 0x5e4     
-zLaserLine_color      = 0x5e8    
+zLaserLine_color      = 0x5e8
+zLaserLine_distance   = 0x5ec
 
-sprites = ['Pellet', 'Pellet2', 'Popcorn', 'Pellet3', 'Ball', 'Ball2', 'Outline', 'Outline2', 'Rice', 'Kunai', 'Shard', 'Amulet', 'Arrowhead', 'Bullet', 'LaserHead', 'Bacteria', 'Star', 'Coin', 'Mentos', 'Mentos2', 'Jellybean', 'Knife', 'Butterfly', 'Big Star', 'Big Star2', 'Red Fireball', 'Purple Fireball', 'Blue Fireball', 'Yellow Fireball', 'Heart', 'Pulse', 'Arrow', 'Bubble', 'Orb', 'Droplet', 'Spinning Rice', 'Spinning Shard', 'Star2', 'Laser', 'Red Note', 'Blue Note', 'Green Note', 'Purple note', 'Rest'] 
+zLaserCurve_start_pos  = 0x5c0           
+zLaserCurve_angle      = 0x5cc
+zLaserCurve_width      = 0x5d0
+zLaserCurve_speed      = 0x5d4
+zLaserCurve_sprite     = 0x5d8
+zLaserCurve_color      = 0x5dc
+zLaserCurve_max_length = 0x5e0
+zLaserCurve_distance   = 0x5e4
+zLaserCurve_array      = 0x14ac
+
+zLaserCurveNode_pos   = 0x0 
+zLaserCurveNode_vel   = 0xc 
+zLaserCurveNode_angle = 0x18
+zLaserCurveNode_speed = 0x1c
+zLaserCurveNode_size  = 0x20
+
+color_coin = ['Gold', 'Silver', 'Bronze']       #color type '3'
+color4 = ['Red', 'Blue', 'Green', 'Yellow']     
 color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
 color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
+
+sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)] 
+curve_sprites = ['Standard', 'Thunder']
+
 
 item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Cancel", "Cancel"]
 #game_over = 0xF9620 #always 0 on startup & 1 on the game over screen, stays at 1 after continuing unless player pauses (zun wtf)
@@ -208,6 +230,22 @@ def get_item_type(item_type):
         return item_types[item_type]
     else:
         return item_type
+        
+def get_color(sprite, color):
+    if sprites[sprite][1] == 0:
+        return "N/A"
+        
+    elif sprites[sprite][1] == 3:
+        return color_coin[color]
+        
+    elif sprites[sprite][1] == 4:
+        return color4[color]
+        
+    elif sprites[sprite][1] == 8:
+        return color8[color]
+        
+    elif sprites[sprite][1] == 16:
+        return color16[color]
     
 def apply_action_int(action_int):
     # Iterate through the list of keys and hold/release keys depending on the bit value
