@@ -77,11 +77,11 @@ Either way, extraction will most likely take longer than the actual time specifi
 
 Single state extraction:
 
-![single state extraction](https://i.imgur.com/mKAfFJ0.png)
+<img alt="single state extraction" src="https://i.imgur.com/mKAfFJ0.png" width="600px">
 
 Analysis over 50 frames (`exact`):
 
-![analysis over 50 frames](https://i.imgur.com/voSiS0I.png)
+<img alt="analysis over 50 frames" src="https://i.imgur.com/voSiS0I.png" width="300px">
 
 Various analyses:
 
