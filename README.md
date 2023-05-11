@@ -89,3 +89,4 @@ Various analyses:
 ![FMH close bullets over time](https://i.imgur.com/o11hOLC.png)
 ![SUR bullet scatter plot](https://i.imgur.com/zXazVcT.png)
 ![Shimmy laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105889947241693396/image.png)
+![Benben laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105993194233139351/image.png)
