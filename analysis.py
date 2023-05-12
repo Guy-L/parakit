@@ -51,16 +51,17 @@ class AnalysisMostBulletsFrame:
             print("Saved screenshot of frame in most_bullets.png")
             save_screenshot("most_bullets.png", self.frame_with_most_bullets.screen)
 
-#Ex2: "Track the number of bullets near the player across time and plot that as a graph"  (only requires bullets)
+#Ex2: "Track the number of visible bullets near the player across time and plot that as a graph"  (only requires bullets)
 class AnalysisCloseBulletsOverTime:
     def __init__(self):
         self.bulletcounts = []
+        self.radius = 100
     
     def step(self, state: GameState):
         if state.bullets:
             nearby_bullets = 0
             for bullet in state.bullets:
-                if math.dist(state.player_position, bullet.position) < 100:
+                if bullet.show_delay == 0 and math.dist(state.player_position, bullet.position) < self.radius:
                     nearby_bullets = nearby_bullets + 1
                     
             self.bulletcounts.append(nearby_bullets)
@@ -86,9 +87,10 @@ class AnalysisPlotBullets:
         y_coords = [bullet.position[1] for bullet in self.lastframe.bullets]
         colors = [_pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in self.lastframe.bullets]
         sizes = [bullet.scale * bullet.hitbox_radius * _bullet_factor * _pyplot_factor for bullet in self.lastframe.bullets]
+        alphas = [0.05 if bullet.show_delay else 1 for bullet in self.lastframe.bullets]
 
         plt.figure(figsize=(4.6, 5.4))
-        plt.scatter(x_coords, y_coords, color=colors, s=sizes)
+        plt.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
         plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='red')
         plt.xlim(-184, 184)
         plt.ylim(0, 440)

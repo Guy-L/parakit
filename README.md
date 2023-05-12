@@ -15,13 +15,13 @@ Supported games:
 * DDC
 
 Goals:
-* Relevant bullet transform info (invisible/invincible)
 * UX - remove need to use command line
 * Save-stating and sending inputs
 * Multi-game support (refactoring)
 * UM support
 * LoLK support
 * MoF support 
+* Player bullet/bomb data?
 
 To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
 <br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies, items and lasers to make extraction faster with the `requiresBullets`, `requiresEnemies`, `requiresItems` and `requiresLasers` booleans respectively (True for all by default).

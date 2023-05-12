@@ -10,6 +10,8 @@ class Bullet:
     angle: float
     scale: float
     hitbox_radius: float
+    show_delay: int
+    iframes: int
     bullet_type: int
     color: int
     
@@ -17,8 +19,12 @@ class Bullet:
 class Enemy:
     position: Tuple[float, float]
     hurtbox: Tuple[float, float]
+    hitbox: Tuple[float, float]
+    rotation: float
+    score_reward: int
     hp: int
     hp_max: int
+    iframes: int
 
 @dataclass
 class Item:
@@ -37,6 +43,7 @@ class Laser:
     width: float
     speed: float
     id: int
+    iframes: int
     sprite: int
     color: int
     

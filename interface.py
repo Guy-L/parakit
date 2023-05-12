@@ -7,10 +7,10 @@ import win32api
 import win32con
 import numpy as np
 import cv2
-import time #debug
-import random #debug
+import time
+import random   #debug
 import keyboard #debug
-import json #debug
+import json     #debug
 import struct
 
 # Set these to select the game before training
@@ -18,68 +18,74 @@ _game_title = 'Touhou Kishinjou - Double Dealing Character v1.00b'
 _module_name = 'th14.exe'
 frame_rate = 60
 
-# Offsets (public)
-score = 0xF5830
-lives = 0xF5864
-life_pieces = 0xF5868
-bombs = 0xF5870
-bomb_pieces = 0xF5874
-bonus_count = 0xF5894
-power = 0xF5858
-piv = 0xF584C
-graze = 0xF5840
-
+# Offsets
+score         = 0xf5830
+lives         = 0xf5864
+life_pieces   = 0xf5868
+bombs         = 0xf5870
+bomb_pieces   = 0xf5874
+bonus_count   = 0xf5894
+power         = 0xf5858
+piv           = 0xf584c
+graze         = 0xf5840
 time_in_stage = 0xf58b0
 
-player_pointer = 0xdb67c 
-zPlayer_pos = 0x5e0
-zPlayer_iframes = 0x182c0 + 0x4
+player_pointer  = 0xdb67c 
+zPlayer_pos     = 0x5e0
 zPlayer_hurtbox = 0x630
+zPlayer_iframes = 0x182c4
 zPlayer_focused = 0x184b0
 
 bullet_manager_pointer = 0xdb530
-zBulletManager_list = 0x7c
-zBullet_pos = 0xbc0
-zBullet_speed = 0xbd8
-zBullet_velocity = 0xbcc
-zBullet_angle = 0xbdc
-zBullet_scale = 0x13bc
-zBullet_hitbox_radius = 0xbe0
-zBullet_type = 0x13ec
-zBullet_color = 0x13ee
+zBulletManager_list    = 0x7c
+zBullet_iframes        = 0x24
+zBullet_pos            = 0xbc0
+zBullet_velocity       = 0xbcc
+zBullet_speed          = 0xbd8
+zBullet_angle          = 0xbdc
+zBullet_hitbox_radius  = 0xbe0
+zBullet_ex_delay_timer = 0x12ec #only DDC/ISC/HBM
+zBullet_scale          = 0x13bc
+zBullet_type           = 0x13ec
+zBullet_color          = 0x13ee
 
 enemy_manager_pointer = 0xdb544
-zEnemyManager_list = 0xd0
-zEnemy_data = 0x11f0
-zEnemy_pos = 0x44
-zEnemy_hurtbox = 0x110
-zEnemy_hp = 0x3f74
-zEnemy_hp_max = 0x3f74 + 0x4
-zEnemy_flags = 0x5244
+zEnemyManager_list    = 0xd0
+zEnemy_data           = 0x11f0
+zEnemy_pos            = zEnemy_data + 0x44
+zEnemy_hurtbox        = zEnemy_data + 0x110
+zEnemy_hitbox         = zEnemy_data + 0x118
+zEnemy_rotation       = zEnemy_data + 0x120
+zEnemy_score_reward   = zEnemy_data + 0x3f70
+zEnemy_hp             = zEnemy_data + 0x3f74
+zEnemy_hp_max         = zEnemy_data + 0x3f78
+zEnemy_iframes        = zEnemy_data + 0x3ff0
+zEnemy_flags          = 0x5244
 
-item_manager_pointer = 0xdb660
-zItemManager_array = 0x14
+item_manager_pointer   = 0xdb660
+zItemManager_array     = 0x14
 zItemManager_array_len = 0xddd854
-zItem_len = 0xc18
-zItem_state = 0xbf0 
-zItem_type = 0xbf4
-zItem_pos = 0xbac
-zItem_vel = 0xbb8
+zItem_len              = 0xc18
+zItem_state            = 0xbf0 
+zItem_type             = 0xbf4
+zItem_pos              = 0xbac
+zItem_vel              = 0xbb8
 
-laser_manager_pointer  = 0xdb664
-zLaserManager_list     = 0x5d0
-zLaserBaseClass_next   = 0x4
-zLaserBaseClass_state  = 0x10    
-zLaserBaseClass_type   = 0x14     
-zLaserBaseClass_timer  = 0x1c
-zLaserBaseClass_offset = 0x54
-zLaserBaseClass_angle  = 0x6c
-zLaserBaseClass_length = 0x70
-zLaserBaseClass_width  = 0x74
-zLaserBaseClass_speed  = 0x78
-zLaserBaseClass_id     = 0x80     
-zLaserBaseClass_sprite = 0x5b8  
-zLaserBaseClass_color  = 0x5bc
+laser_manager_pointer   = 0xdb664
+zLaserManager_list      = 0x5d0
+zLaserBaseClass_next    = 0x4
+zLaserBaseClass_state   = 0x10    
+zLaserBaseClass_type    = 0x14     
+zLaserBaseClass_timer   = 0x1c
+zLaserBaseClass_offset  = 0x54
+zLaserBaseClass_angle   = 0x6c
+zLaserBaseClass_length  = 0x70
+zLaserBaseClass_width   = 0x74
+zLaserBaseClass_speed   = 0x78
+zLaserBaseClass_id      = 0x80     
+zLaserBaseClass_iframes = 0x5b4     
+zLaserBaseClass_sprite  = 0x5b8  
+zLaserBaseClass_color   = 0x5bc
 
 zLaserLine_start_pos    = 0x5c0 
 zLaserLine_mgr_angle    = 0x5cc    

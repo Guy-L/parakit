@@ -29,18 +29,20 @@ def extract_bullets():
     while current_bullet_list["next"]:
         current_bullet_list = read_zList(current_bullet_list["next"]) 
             
-        zBullet       = current_bullet_list["entry"]
-        bullet_x      = round(read_float(zBullet + zBullet_pos), 1)
-        bullet_y      = round(read_float(zBullet + zBullet_pos + 0x4), 1)
-        bullet_vel_x  = round(read_float(zBullet + zBullet_velocity), 1)
-        bullet_vel_y  = round(read_float(zBullet + zBullet_velocity + 0x4), 1)
-        bullet_speed  = round(read_float(zBullet + zBullet_speed), 1)
-        bullet_angle  = round(read_float(zBullet + zBullet_angle), 1)
-        bullet_scale  = round(read_float(zBullet + zBullet_scale), 1)
-        bullet_radius = round(read_float(zBullet + zBullet_hitbox_radius), 1)
-        bullet_type   = read_int(zBullet + zBullet_type, 2)
-        bullet_color  = read_int(zBullet + zBullet_color, 2)
-        
+        zBullet        = current_bullet_list["entry"]
+        bullet_x       = read_float(zBullet + zBullet_pos)
+        bullet_y       = read_float(zBullet + zBullet_pos + 0x4)
+        bullet_vel_x   = read_float(zBullet + zBullet_velocity)
+        bullet_vel_y   = read_float(zBullet + zBullet_velocity + 0x4)
+        bullet_speed   = read_float(zBullet + zBullet_speed)
+        bullet_angle   = read_float(zBullet + zBullet_angle)
+        bullet_scale   = read_float(zBullet + zBullet_scale)
+        bullet_radius  = read_float(zBullet + zBullet_hitbox_radius)
+        bullet_delay   = read_int(zBullet + zBullet_ex_delay_timer)
+        bullet_iframes = read_int(zBullet + zBullet_iframes)
+        bullet_type    = read_int(zBullet + zBullet_type, 2)
+        bullet_color   = read_int(zBullet + zBullet_color, 2)
+                        
         bullets.append(Bullet(
             position      = (bullet_x, bullet_y), 
             velocity      = (bullet_vel_x, bullet_vel_y), 
@@ -48,8 +50,10 @@ def extract_bullets():
             angle         = bullet_angle,
             scale         = bullet_scale,
             hitbox_radius = bullet_radius,
+            show_delay    = bullet_delay,
+            iframes       = bullet_iframes,
             bullet_type   = bullet_type,
-            color         = bullet_color
+            color         = bullet_color,
         ))
         
     return bullets
@@ -61,22 +65,32 @@ def extract_enemies():
     while current_enemy_list["next"]:
         current_enemy_list = read_zList(current_enemy_list["next"]) 
         
-        zEnemy       = current_enemy_list["entry"]
-        enemy_x      = round(read_float(zEnemy + zEnemy_data + zEnemy_pos), 1)
-        enemy_y      = round(read_float(zEnemy + zEnemy_data + zEnemy_pos + 0x4), 1)
-        enemy_hp     = read_int(zEnemy + zEnemy_data + zEnemy_hp)
-        enemy_hp_max = read_int(zEnemy + zEnemy_data + zEnemy_hp_max)
-        enemy_hurtbox_x = round(read_float(zEnemy + zEnemy_data + zEnemy_hurtbox), 1)
-        enemy_hurtbox_y = round(read_float(zEnemy + zEnemy_data + zEnemy_hurtbox + 0x4), 1)
-               
+        zEnemy = current_enemy_list["entry"]
+        
         if read_byte(zEnemy + zEnemy_flags) & 0x31 != 0:
             continue
-                    
+            
+        enemy_x            = read_float(zEnemy + zEnemy_pos)
+        enemy_y            = read_float(zEnemy + zEnemy_pos + 0x4)
+        enemy_hurtbox_x    = read_float(zEnemy + zEnemy_hurtbox)
+        enemy_hurtbox_y    = read_float(zEnemy + zEnemy_hurtbox + 0x4)
+        enemy_hitbox_x     = read_float(zEnemy + zEnemy_hitbox)
+        enemy_hitbox_y     = read_float(zEnemy + zEnemy_hitbox + 0x4)
+        enemy_rotation     = read_float(zEnemy + zEnemy_rotation)
+        enemy_score_reward = read_int(zEnemy + zEnemy_score_reward)
+        enemy_hp           = read_int(zEnemy + zEnemy_hp)
+        enemy_hp_max       = read_int(zEnemy + zEnemy_hp_max)
+        enemy_iframes      = read_int(zEnemy + zEnemy_iframes)
+                
         enemies.append(Enemy(
-            position = (enemy_x, enemy_y), 
-            hurtbox = (enemy_hurtbox_x, enemy_hurtbox_y), 
-            hp       = enemy_hp, 
-            hp_max   = enemy_hp_max
+            position     = (enemy_x, enemy_y), 
+            hurtbox      = (enemy_hurtbox_x, enemy_hurtbox_y), 
+            hitbox       = (enemy_hitbox_x, enemy_hitbox_y), 
+            rotation     = enemy_rotation,
+            score_reward = enemy_score_reward,
+            hp           = enemy_hp, 
+            hp_max       = enemy_hp_max,
+            iframes      = enemy_iframes,
         ))
     
     return enemies
@@ -93,15 +107,15 @@ def extract_items():
             
         item_type = get_item_type(read_int(current_item + zItem_type))
         
-        item_x     = round(read_float(current_item + zItem_pos), 1)
-        item_y     = round(read_float(current_item + zItem_pos + 0x4), 1)
-        item_vel_x = round(read_float(current_item + zItem_vel), 1)
-        item_vel_y = round(read_float(current_item + zItem_vel + 0x4), 1)
+        item_x     = read_float(current_item + zItem_pos)
+        item_y     = read_float(current_item + zItem_pos + 0x4)
+        item_vel_x = read_float(current_item + zItem_vel)
+        item_vel_y = read_float(current_item + zItem_vel + 0x4)
         
         items.append(Item(
             item_type = item_type, 
             position  = (item_x, item_y), 
-            velocity  = (item_vel_x, item_vel_y)
+            velocity  = (item_vel_x, item_vel_y),
         ))
     
     return items
@@ -121,9 +135,10 @@ def extract_lasers():
         laser_width    = read_float(current_laser_ptr + zLaserBaseClass_width)
         laser_speed    = read_float(current_laser_ptr + zLaserBaseClass_speed)
         laser_id       = read_int(current_laser_ptr + zLaserBaseClass_id)
+        laser_iframes  = read_int(current_laser_ptr + zLaserBaseClass_iframes)
         laser_sprite   = read_int(current_laser_ptr + zLaserBaseClass_sprite, 2)
         laser_color    = read_int(current_laser_ptr + zLaserBaseClass_color, 2)
-
+        
         laser_base = {
             'state': laser_state,
             'laser_type': laser_type,
@@ -134,6 +149,7 @@ def extract_lasers():
             'width': laser_width,
             'speed': laser_speed,
             'id': laser_id,
+            'iframes': laser_iframes,
             'sprite': laser_sprite,
             'color': laser_color,
         }
@@ -266,13 +282,21 @@ def print_game_state(gs: GameState):
         print("  Position         Velocity         Speed   Angle   Radius  Color   Type")
         for bullet in gs.bullets:
             description = "• "
-            description += tabulate(bullet.position, 17)
-            description += tabulate(bullet.velocity, 17)
+            description += tabulate(f"({round(bullet.position[0], 1)}, {round(bullet.position[1], 1)})", 17)
+            description += tabulate(f"({round(bullet.velocity[0], 1)}, {round(bullet.velocity[1], 1)})", 17)
             description += tabulate(round(bullet.speed, 1), 8)
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
             description += tabulate(get_color(bullet.bullet_type, bullet.color), 8)
             description += tabulate(sprites[bullet.bullet_type][0], 8)
+            
+            #not in table since rare
+            if bullet.iframes > 0: 
+                description += f" ({bullet.iframes} iframes)" 
+                
+            if bullet.show_delay > 0: 
+                description += f" ({bullet.show_delay} invis frames)" 
+                
             print(description)
             
     if gs.lasers:
@@ -355,15 +379,27 @@ def print_game_state(gs: GameState):
          
     if gs.enemies:
         print("\nList of enemies:")
-        print("  Position         Hurtbox          HP / Max HP")
+        print("  Position         Hurtbox          Hitbox           Rotation  IFrames  HP / Max HP")
         for enemy in gs.enemies:
-            print(f"• {tabulate(enemy.position, 17)}{tabulate(enemy.hurtbox, 17)}{enemy.hp} / {enemy.hp_max}")
+            description = "• "
+            description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 17)
+            description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 17)
+            description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 17)
+            description += tabulate(round(enemy.rotation, 2), 10)
+            description += tabulate(enemy.iframes, 9)
+            description += f"{enemy.hp} / {enemy.hp_max}"
+                
+            print(description)
     
     if gs.items:
         print("\nList of items:")
         print("  Type            Position         Velocity")
         for item in gs.items:
-            print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(item.position, 16)} {item.velocity}")    
+            description = "• "
+            description += tabulate(item.item_type + ' Item', 16)
+            description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
+            description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
+            print(description)
         
 def on_exit():
     game_process.resume()
