@@ -14,7 +14,7 @@ import json #debug
 import struct
 
 # Set these to select the game before training
-_game_title = 'Double Dealing Character. ver 1.00b'
+_game_title = 'Touhou Kishinjou - Double Dealing Character v1.00b'
 _module_name = 'th14.exe'
 frame_rate = 60
 
@@ -71,6 +71,7 @@ zLaserManager_list     = 0x5d0
 zLaserBaseClass_next   = 0x4
 zLaserBaseClass_state  = 0x10    
 zLaserBaseClass_type   = 0x14     
+zLaserBaseClass_timer  = 0x1c
 zLaserBaseClass_offset = 0x54
 zLaserBaseClass_angle  = 0x6c
 zLaserBaseClass_length = 0x70
@@ -80,21 +81,37 @@ zLaserBaseClass_id     = 0x80
 zLaserBaseClass_sprite = 0x5b8  
 zLaserBaseClass_color  = 0x5bc
 
-zLaserLine_start_pos  = 0x5c0 
-zLaserLine_angle      = 0x5cc    
-zLaserLine_max_length = 0x5d0 
-zLaserLine_width      = 0x5dc    
-zLaserLine_speed      = 0x5e0    
-zLaserLine_sprite     = 0x5e4     
-zLaserLine_color      = 0x5e8
-zLaserLine_distance   = 0x5ec
+zLaserLine_start_pos    = 0x5c0 
+zLaserLine_mgr_angle    = 0x5cc    
+zLaserLine_max_length   = 0x5d0 
+#zLaserLine_mgr_width    = 0x5dc  storing manager value is redundant  
+zLaserLine_mgr_speed    = 0x5e0   
+#zLaserLine_mgr_sprite   = 0x5e4  storing manager value is redundant
+#zLaserLine_mgr_color    = 0x5e8  storing manager value is redundant
+zLaserLine_distance     = 0x5ec
 
-zLaserCurve_start_pos  = 0x5c0           
-zLaserCurve_angle      = 0x5cc
-zLaserCurve_width      = 0x5d0
-zLaserCurve_speed      = 0x5d4
-zLaserCurve_sprite     = 0x5d8
-zLaserCurve_color      = 0x5dc
+zLaserInfinite_start_pos    = 0x5c0
+zLaserInfinite_velocity     = 0x5cc
+zLaserInfinite_mgr_angle    = 0x5d8
+zLaserInfinite_angle_vel    = 0x5dc
+zLaserInfinite_final_len    = 0x5e0
+zLaserInfinite_mgr_len      = 0x5e4
+zLaserInfinite_final_width  = 0x5e8
+zLaserInfinite_mgr_speed    = 0x5ec
+zLaserInfinite_start_time   = 0x5f0
+zLaserInfinite_expand_time  = 0x5f4
+zLaserInfinite_active_time  = 0x5f8
+zLaserInfinite_shrink_time  = 0x5fc
+zLaserInfinite_mgr_distance = 0x60c
+#zLaserInfinite_mgr_sprite   = 0x610  storing manager value is redundant
+#zLaserInfinite_mgr_color    = 0x614  storing manager value is redundant
+
+#zLaserCurve_start_pos  = 0x5c0  storing value is redundant          
+#zLaserCurve_angle      = 0x5cc  storing manager value is redundant
+#zLaserCurve_width      = 0x5d0  storing manager value is redundant
+#zLaserCurve_speed      = 0x5d4  storing manager value is redundant
+#zLaserCurve_sprite     = 0x5d8  storing manager value is redundant
+#zLaserCurve_color      = 0x5dc  storing manager value is redundant
 zLaserCurve_max_length = 0x5e0
 zLaserCurve_distance   = 0x5e4
 zLaserCurve_array      = 0x14ac
@@ -110,9 +127,8 @@ color4 = ['Red', 'Blue', 'Green', 'Yellow']
 color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
 color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
 
-sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)] 
+sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)]
 curve_sprites = ['Standard', 'Thunder']
-
 
 item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Cancel", "Cancel"]
 #game_over = 0xF9620 #always 0 on startup & 1 on the game over screen, stays at 1 after continuing unless player pauses (zun wtf)
@@ -226,10 +242,10 @@ def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
         
 def get_item_type(item_type):
-    if(item_type < len(item_types)):
+    if item_type < len(item_types) :
         return item_types[item_type]
     else:
-        return item_type
+        return "Unknown " + str(item_type)
         
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:

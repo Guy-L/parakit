@@ -29,9 +29,9 @@ class Item:
 @dataclass
 class CurveNode:
     position: Tuple[float, float]
-    velocity: Tuple[float, float]
-    angle: float
-    speed: float
+    velocity: Optional[Tuple[float, float]]
+    angle: Optional[float]
+    speed: Optional[float]
 
 @dataclass
 class LaserInner:
@@ -40,30 +40,39 @@ class LaserInner:
 @dataclass
 class LaserInnerLine(LaserInner):
     start_pos: Tuple[float, float]
-    angle: float
+    init_angle: float
     max_length: float
-    width: float
-    speed: float
-    sprite: int
-    color: int 
+    init_speed: float
     distance: float
-    
+
+@dataclass
+class LaserInnerInfinite(LaserInner):
+    start_pos: Tuple[float, float]
+    origin_vel: Tuple[float, float]
+    default_angle: float
+    angular_vel: float
+    init_length: float
+    max_length: float
+    max_width: float
+    default_speed: float
+    start_time: int
+    expand_time: int
+    active_time: int
+    shrink_time: int
+    distance: float
+
 @dataclass
 class LaserInnerCurve(LaserInner):
-    start_pos: Tuple[float, float]
-    angle: float
-    width: float
-    speed: float
-    sprite: int
-    color: int
+    #start_pos: stored as laser pos
     max_length: int 
     distance: float
-    nodes: List[CurveNode] 
+    nodes: List[CurveNode]   
 
 @dataclass 
 class Laser:
     state: int
     laser_type: int
+    timer: int
     position: Tuple[float, float]
     angle: float
     length: float

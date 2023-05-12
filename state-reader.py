@@ -111,9 +111,9 @@ def extract_lasers():
     current_laser_ptr = read_int(zLaserManager + zLaserManager_list) #pointer to head laser 
     
     while read_int(current_laser_ptr + zLaserBaseClass_next): #excludes last (dummy) laser
-  
         laser_state    = read_int(current_laser_ptr + zLaserBaseClass_state)
         laser_type     = read_int(current_laser_ptr + zLaserBaseClass_type)
+        laser_timer    = read_int(current_laser_ptr + zLaserBaseClass_timer)
         laser_offset_x = read_float(current_laser_ptr + zLaserBaseClass_offset)
         laser_offset_y = read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)
         laser_angle    = read_float(current_laser_ptr + zLaserBaseClass_angle)
@@ -124,80 +124,97 @@ def extract_lasers():
         laser_sprite   = read_int(current_laser_ptr + zLaserBaseClass_sprite, 2)
         laser_color    = read_int(current_laser_ptr + zLaserBaseClass_color, 2)
         laser_inner    = None #type-dependent (subclass) vars
-                
+        
         if laser_type == 0: #LINE
             line_start_pos_x = read_float(current_laser_ptr + zLaserLine_start_pos)
             line_start_pos_y = read_float(current_laser_ptr + zLaserLine_start_pos + 0x4)
-            line_angle       = read_float(current_laser_ptr + zLaserLine_angle)           #same as laser's
-            line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)      
-            line_width       = read_float(current_laser_ptr + zLaserLine_width)           #same as laser's
-            line_speed       = read_float(current_laser_ptr + zLaserLine_speed)           #same as laser's
-            line_sprite      = read_int(current_laser_ptr + zLaserLine_sprite)            #same as laser's
-            line_color       = read_int(current_laser_ptr + zLaserLine_color)             #same as laser's
-            line_distance    = read_float(current_laser_ptr + zLaserLine_distance)        #(of spawn pos from boss? 0 in most cases)
-                        
+            line_init_angle  = read_float(current_laser_ptr + zLaserLine_mgr_angle)           
+            line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)
+            line_init_speed  = read_float(current_laser_ptr + zLaserLine_mgr_speed)           
+            line_distance    = read_float(current_laser_ptr + zLaserLine_distance)
+                                    
             laser_inner = LaserInnerLine(
                 start_pos = (line_start_pos_x, line_start_pos_y),
-                angle = line_angle,
+                init_angle = line_init_angle,
                 max_length = line_max_length,
-                width = line_width, 
-                speed = line_speed, 
-                sprite = line_sprite,
-                color = line_color, 
+                init_speed = line_init_speed, 
                 distance = line_distance,
             )
             
         elif laser_type == 1: #INFINITE
-            pass
+            infinite_start_pos_x   = read_float(current_laser_ptr + zLaserInfinite_start_pos)       
+            infinite_start_pos_y   = read_float(current_laser_ptr + zLaserInfinite_start_pos + 0x4) 
+            infinite_origin_vel_x  = read_float(current_laser_ptr + zLaserInfinite_velocity)
+            infinite_origin_vel_y  = read_float(current_laser_ptr + zLaserInfinite_velocity + 0x4)
+            infinite_default_angle = read_float(current_laser_ptr + zLaserInfinite_mgr_angle)
+            infinite_angular_vel   = read_float(current_laser_ptr + zLaserInfinite_angle_vel)                 
+            infinite_init_length   = read_float(current_laser_ptr + zLaserInfinite_mgr_len)                 
+            infinite_max_length    = read_float(current_laser_ptr + zLaserInfinite_final_len)                 
+            infinite_max_width     = read_float(current_laser_ptr + zLaserInfinite_final_width)         
+            infinite_default_speed = read_float(current_laser_ptr + zLaserInfinite_mgr_speed)
+            infinite_start_time    = read_int(current_laser_ptr + zLaserInfinite_start_time)
+            infinite_expand_time   = read_int(current_laser_ptr + zLaserInfinite_expand_time)
+            infinite_active_time   = read_int(current_laser_ptr + zLaserInfinite_active_time)
+            infinite_shrink_time   = read_int(current_laser_ptr + zLaserInfinite_shrink_time)
+            infinite_distance      = read_float(current_laser_ptr + zLaserInfinite_mgr_distance)   
+            
+            laser_inner = LaserInnerInfinite(
+                start_pos = (infinite_start_pos_x, infinite_start_pos_y),
+                origin_vel = (infinite_origin_vel_x, infinite_origin_vel_y),
+                default_angle = infinite_default_angle,
+                angular_vel = infinite_angular_vel,
+                init_length = infinite_init_length,
+                max_length = infinite_max_length,
+                max_width = infinite_max_width,
+                default_speed = infinite_default_speed,
+                start_time = infinite_start_time,
+                expand_time = infinite_expand_time,
+                active_time = infinite_active_time,
+                shrink_time = infinite_shrink_time,
+                distance = infinite_distance,
+            )
         
         elif laser_type == 2: #CURVE
-            curve_start_pos_x = read_float(current_laser_ptr + zLaserCurve_start_pos)       #same as laser offset x
-            curve_start_pos_y = read_float(current_laser_ptr + zLaserCurve_start_pos + 0x4) #same as laser offset y
-            curve_angle       = read_float(current_laser_ptr + zLaserCurve_angle)           #same as laser's
-            curve_width       = read_float(current_laser_ptr + zLaserCurve_width)           #same as laser's
-            curve_speed       = read_float(current_laser_ptr + zLaserCurve_speed)           #same as laser's
-            curve_sprite      = read_int(current_laser_ptr + zLaserCurve_sprite)            #same as laser's
-            curve_color       = read_int(current_laser_ptr + zLaserCurve_color)             #same as laser's
             curve_max_length  = read_int(current_laser_ptr + zLaserCurve_max_length)
-            curve_distance    = read_float(current_laser_ptr + zLaserCurve_distance)        #(of spawn pos from boss? 0 in most cases)
-            
+            curve_distance    = read_float(current_laser_ptr + zLaserCurve_distance)
+                        
             curve_nodes = []
             current_node_ptr  = read_int(current_laser_ptr + zLaserCurve_array)
             for i in range(0, curve_max_length):
-                curve_node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
-                curve_node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
-                curve_node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
-                curve_node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
-                curve_node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
-                curve_node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
+                node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
+                node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
+                node_vel_x = None #seems to always be 0 for all other non-head nodes, so no need to extract
+                node_vel_y = None #you can make angle/speed extraction optional too to speed things up
+                node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
+                node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
+                
+                if i == 0: 
+                    node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
+                    node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
                 
                 curve_nodes.append(CurveNode(
-                    position = (curve_node_pos_x, curve_node_pos_y),
-                    velocity = (curve_node_vel_x, curve_node_vel_y),
-                    angle = curve_node_angle,
-                    speed = curve_node_speed,
+                    position = (node_pos_x, node_pos_y),
+                    velocity = (node_vel_x, node_vel_y),
+                    angle = node_angle,
+                    speed = node_speed,
                 ))
                 
                 current_node_ptr += zLaserCurveNode_size
                 
             laser_inner = LaserInnerCurve(
-                start_pos = (curve_start_pos_x, curve_start_pos_y),
-                angle = curve_angle,
-                width = curve_width, 
-                speed = curve_speed, 
-                sprite = curve_sprite,
-                color = curve_color, 
                 max_length = curve_max_length,
                 distance = curve_distance,
                 nodes = curve_nodes,
             )
             
         elif laser_type == 3: #BEAM 
+            #sorry gfw ex fans
             pass
 
         lasers.append(Laser(
             state = laser_state,
             laser_type = laser_type,
+            timer = laser_timer,
             position = (laser_offset_x, laser_offset_y), 
             angle = laser_angle,
             length = laser_length,
@@ -279,15 +296,37 @@ def print_game_state(gs: GameState):
             
         if infinite_lasers:
             print("\nList of telegraphed (\"infinite\") lasers:")
-            print("Not yet supported!")
+            print("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)")
+            for laser in infinite_lasers:
+                description = "• "
+                description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
+                description += tabulate(f"({round(laser.inner.origin_vel[0], 1)}, {round(laser.inner.origin_vel[1], 1)})", 17)
+                description += tabulate(round(laser.angle, 2), 6)
+                description += tabulate(f"({format(laser.inner.angular_vel, '.3f').rstrip('0').rstrip('.')})", 9)
+                description += tabulate(f"{round(laser.length, 1)} ({int(100*(laser.length-laser.inner.init_length)/(laser.inner.max_length-laser.inner.init_length))}%)", 14)
+                description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.inner.max_width)}%)", 14)
+                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                
+                if laser.state == 3:
+                    description += f"Telegraph ({laser.inner.start_time - laser.timer}f)"
+                elif laser.state == 4:
+                    description += f"Expand ({laser.inner.expand_time - laser.timer}f)"
+                elif laser.state == 2:
+                    description += f"Active ({laser.inner.active_time - laser.timer}f)"
+                elif laser.state == 5:
+                    description += f"Shrink ({laser.inner.shrink_time - laser.timer}f)"
+                else:
+                    description += "Unknown"
+                
+                print(description)
             
         if curve_lasers:
             print("\nList of curvy lasers:")
-            print("  Spawn Position  Head Position      Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
+            print("  Spawn Position  Head Position   Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
             for laser in curve_lasers:
                 description = "• "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
-                description += tabulate(f"({round(laser.inner.nodes[0].position[0], 1)}, {round(laser.inner.nodes[0].position[1], 1)})", 19)
+                description += tabulate(f"({round(laser.inner.nodes[0].position[0], 1)}, {round(laser.inner.nodes[0].position[1], 1)})", 16)
                 description += tabulate(f"({round(laser.inner.nodes[0].velocity[0], 1)}, {round(laser.inner.nodes[0].velocity[1], 1)})", 16)
                 description += tabulate(round(laser.inner.nodes[0].speed, 1), 8)
                 description += tabulate(round(laser.inner.nodes[0].angle, 2), 8)
@@ -298,8 +337,19 @@ def print_game_state(gs: GameState):
                 print(description)
             
         if beam_lasers:
-            print("\nList of curvy lasers:")
-            print("Not yet supported!")
+            print("\nList of beam lasers:")
+            print("Note: Beam lasers are not fully supported; data may be inaccurate.")
+            print("  Position         Speed   Angle   Length  Width   Color   Sprite")
+            for laser in beam_lasers:
+                description = "• "
+                description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
+                description += tabulate(round(laser.speed, 1), 8)
+                description += tabulate(round(laser.angle, 2), 8)
+                description += tabulate(round(laser.length, 1), 8)
+                description += tabulate(round(laser.width, 1), 8)
+                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                description += tabulate(sprites[laser.sprite][0], 8)
+                print(description)
          
     if gs.enemies:
         print("\nList of enemies:")

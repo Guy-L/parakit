@@ -15,15 +15,15 @@ Supported games:
 * DDC
 
 Goals:
-* More lasers (Infinite (they don't exist in DDC but still))
+* Remove inner in entities (extend base laser)
 * Remove dumb game/non-game memory destinction
+* Relevant bullet transform info (invisible/invincible)
+* Save-stating and sending inputs
 * UX - remove need to use command line
 * Multi-game support (refactoring)
 * UM support
 * LoLK support
-* MoF support
-* Extracting more useful things
-* Visualization methods (drawing shapes, etc)
+* MoF support 
 
 To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
 <br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies, items and lasers to make extraction faster with the `requiresBullets`, `requiresEnemies`, `requiresItems` and `requiresLasers` booleans respectively (True for all by default).
@@ -90,3 +90,4 @@ Various analyses:
 ![SUR bullet scatter plot](https://i.imgur.com/zXazVcT.png)
 ![Shimmy laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105889947241693396/image.png)
 ![Benben laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105993194233139351/image.png)
+![Modded laser plot](https://cdn.discordapp.com/attachments/205514395566997514/1106354957281665034/image.png)
