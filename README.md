@@ -15,10 +15,9 @@ Supported games:
 * DDC
 
 Goals:
-* Remove dumb game/non-game memory destinction
 * Relevant bullet transform info (invisible/invincible)
-* Save-stating and sending inputs
 * UX - remove need to use command line
+* Save-stating and sending inputs
 * Multi-game support (refactoring)
 * UM support
 * LoLK support

@@ -11,11 +11,11 @@ requiresItems       = True
 requiresLasers      = True
 requiresScreenshots = False
 
-zPlayer        = read_int(player_pointer)
-zBulletManager = read_int(bullet_manager_pointer)
-zEnemyManager  = read_int(enemy_manager_pointer)
-zItemManager   = read_int(item_manager_pointer)
-zLaserManager  = read_int(laser_manager_pointer)
+zPlayer        = read_int(player_pointer, rel=True)
+zBulletManager = read_int(bullet_manager_pointer, rel=True)
+zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
+zItemManager   = read_int(item_manager_pointer, rel=True)
+zLaserManager  = read_int(laser_manager_pointer, rel=True)
         
 def tabulate(x, min_size=10):
     x_str = str(x)
@@ -233,16 +233,16 @@ def extract_lasers():
 
 def extract_game_state():        
     gs = GameState(
-        frame_id        = read_int(time_in_stage),
-        state           = read_game_int(game_state),
-        score           = read_game_int(score) * 10,
-        lives           = read_game_int(lives),
-        life_pieces     = read_game_int(life_pieces),
-        bombs           = read_game_int(bombs),
-        bomb_pieces     = read_game_int(bomb_pieces),
-        power           = read_game_int(power),
-        piv             = int(read_game_int(piv) / 100),
-        graze           = read_game_int(graze),
+        frame_id        = read_int(time_in_stage, rel=True),
+        state           = read_int(game_state, rel=True),
+        score           = read_int(score, rel=True) * 10,
+        lives           = read_int(lives, rel=True),
+        life_pieces     = read_int(life_pieces, rel=True),
+        bombs           = read_int(bombs, rel=True),
+        bomb_pieces     = read_int(bomb_pieces, rel=True),
+        power           = read_int(power, rel=True),
+        piv             = int(read_int(piv, rel=True) / 100),
+        graze           = read_int(graze, rel=True),
         player_position = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
         player_iframes  = read_int(zPlayer + zPlayer_iframes),
         player_focused  = read_int(zPlayer + zPlayer_focused) == 1,
@@ -434,7 +434,7 @@ else:
             
         #busy wait for next frame
         while read_int(time_in_stage) == frame_timestamp: 
-            if read_game_int(game_state) == 1:
+            if read_int(game_state, rel=True) == 1:
                 print("End of play detected; terminating now")
                 end_of_play = True
                 break

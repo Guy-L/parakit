@@ -29,15 +29,15 @@ power = 0xF5858
 piv = 0xF584C
 graze = 0xF5840
 
-time_in_stage = 0x4f58b0
+time_in_stage = 0xf58b0
 
-player_pointer = 0x4db67c 
+player_pointer = 0xdb67c 
 zPlayer_pos = 0x5e0
 zPlayer_iframes = 0x182c0 + 0x4
 zPlayer_hurtbox = 0x630
 zPlayer_focused = 0x184b0
 
-bullet_manager_pointer = 0x4db530
+bullet_manager_pointer = 0xdb530
 zBulletManager_list = 0x7c
 zBullet_pos = 0xbc0
 zBullet_speed = 0xbd8
@@ -48,7 +48,7 @@ zBullet_hitbox_radius = 0xbe0
 zBullet_type = 0x13ec
 zBullet_color = 0x13ee
 
-enemy_manager_pointer = 0x4db544
+enemy_manager_pointer = 0xdb544
 zEnemyManager_list = 0xd0
 zEnemy_data = 0x11f0
 zEnemy_pos = 0x44
@@ -57,7 +57,7 @@ zEnemy_hp = 0x3f74
 zEnemy_hp_max = 0x3f74 + 0x4
 zEnemy_flags = 0x5244
 
-item_manager_pointer = 0x4db660
+item_manager_pointer = 0xdb660
 zItemManager_array = 0x14
 zItemManager_array_len = 0xddd854
 zItem_len = 0xc18
@@ -66,7 +66,7 @@ zItem_type = 0xbf4
 zItem_pos = 0xbac
 zItem_vel = 0xbb8
 
-laser_manager_pointer  = 0x4db664
+laser_manager_pointer  = 0xdb664
 zLaserManager_list     = 0x5d0
 zLaserBaseClass_next   = 0x4
 zLaserBaseClass_state  = 0x10    
@@ -219,22 +219,15 @@ def save_screenshot(filename, screenshot):
     bgr_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
     cv2.imwrite(filename, bgr_screenshot)
 
-def read_int(offset, bytes = 4):
-    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
-    return int.from_bytes(_read_memory(offset, bytes), byteorder='little')
-    
-def read_game_int(offset, bytes = 4):
-    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4), byteorder='little'))
-    return int.from_bytes(_read_game_memory(offset, 4), byteorder='little')
-    
-def read_game_float(offset):
-    return struct.unpack('f', _read_game_memory(offset, 4))[0]
+def read_int(offset, bytes = 4, rel = False):
+    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4, rel), byteorder='little'))
+    return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little')
 
-def read_float(offset):
-    return struct.unpack('f', _read_memory(offset, 4))[0]
+def read_float(offset, rel = False):
+    return struct.unpack('f', _read_memory(offset, 4, rel))[0]
     
-def read_byte(offset):
-    return int.from_bytes(_read_memory(offset, 1), byteorder='big')
+def read_byte(offset, rel = False):
+    return int.from_bytes(_read_memory(offset, 1, rel), byteorder='big')
     
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
@@ -328,17 +321,11 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
     apply_action_int(0)
 
 # Private Method Definitions
-
-def _read_game_memory(offset, size):
-    buffer = ctypes.create_string_buffer(size)
-    bytesRead = ctypes.c_ulonglong()
-    ctypes.windll.kernel32.ReadProcessMemory(_process_handle, _base_address + offset, buffer, size, ctypes.byref(bytesRead))
-    return buffer.raw
     
-def _read_memory(address, size):
+def _read_memory(address, size, rel):
     buffer = ctypes.create_string_buffer(size)
     bytesRead = ctypes.c_ulonglong()
-    ctypes.windll.kernel32.ReadProcessMemory(_process_handle, address, buffer, size, ctypes.byref(bytesRead))
+    ctypes.windll.kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, ctypes.byref(bytesRead))
     return buffer.raw
 
 def _two_frame_input(key):
