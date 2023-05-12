@@ -123,42 +123,57 @@ def extract_lasers():
         laser_id       = read_int(current_laser_ptr + zLaserBaseClass_id)
         laser_sprite   = read_int(current_laser_ptr + zLaserBaseClass_sprite, 2)
         laser_color    = read_int(current_laser_ptr + zLaserBaseClass_color, 2)
-        laser_inner    = None #type-dependent (subclass) vars
+
+        laser_base = {
+            'state': laser_state,
+            'laser_type': laser_type,
+            'timer': laser_timer,
+            'position': (laser_offset_x, laser_offset_y), 
+            'angle': laser_angle,
+            'length': laser_length,
+            'width': laser_width,
+            'speed': laser_speed,
+            'id': laser_id,
+            'sprite': laser_sprite,
+            'color': laser_color,
+        }
         
         if laser_type == 0: #LINE
             line_start_pos_x = read_float(current_laser_ptr + zLaserLine_start_pos)
             line_start_pos_y = read_float(current_laser_ptr + zLaserLine_start_pos + 0x4)
-            line_init_angle  = read_float(current_laser_ptr + zLaserLine_mgr_angle)           
+            line_init_angle  = read_float(current_laser_ptr + zLaserLine_mgr_angle)
             line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)
-            line_init_speed  = read_float(current_laser_ptr + zLaserLine_mgr_speed)           
+            line_init_speed  = read_float(current_laser_ptr + zLaserLine_mgr_speed)
             line_distance    = read_float(current_laser_ptr + zLaserLine_distance)
                                     
-            laser_inner = LaserInnerLine(
+            lasers.append(LineLaser(
+                **laser_base,
                 start_pos = (line_start_pos_x, line_start_pos_y),
                 init_angle = line_init_angle,
                 max_length = line_max_length,
                 init_speed = line_init_speed, 
                 distance = line_distance,
-            )
+            ))
             
         elif laser_type == 1: #INFINITE
-            infinite_start_pos_x   = read_float(current_laser_ptr + zLaserInfinite_start_pos)       
-            infinite_start_pos_y   = read_float(current_laser_ptr + zLaserInfinite_start_pos + 0x4) 
+            infinite_start_pos_x   = read_float(current_laser_ptr + zLaserInfinite_start_pos)
+            infinite_start_pos_y   = read_float(current_laser_ptr + zLaserInfinite_start_pos + 0x4)
             infinite_origin_vel_x  = read_float(current_laser_ptr + zLaserInfinite_velocity)
             infinite_origin_vel_y  = read_float(current_laser_ptr + zLaserInfinite_velocity + 0x4)
             infinite_default_angle = read_float(current_laser_ptr + zLaserInfinite_mgr_angle)
-            infinite_angular_vel   = read_float(current_laser_ptr + zLaserInfinite_angle_vel)                 
-            infinite_init_length   = read_float(current_laser_ptr + zLaserInfinite_mgr_len)                 
-            infinite_max_length    = read_float(current_laser_ptr + zLaserInfinite_final_len)                 
-            infinite_max_width     = read_float(current_laser_ptr + zLaserInfinite_final_width)         
+            infinite_angular_vel   = read_float(current_laser_ptr + zLaserInfinite_angle_vel)    
+            infinite_init_length   = read_float(current_laser_ptr + zLaserInfinite_mgr_len)
+            infinite_max_length    = read_float(current_laser_ptr + zLaserInfinite_final_len)
+            infinite_max_width     = read_float(current_laser_ptr + zLaserInfinite_final_width)
             infinite_default_speed = read_float(current_laser_ptr + zLaserInfinite_mgr_speed)
             infinite_start_time    = read_int(current_laser_ptr + zLaserInfinite_start_time)
             infinite_expand_time   = read_int(current_laser_ptr + zLaserInfinite_expand_time)
             infinite_active_time   = read_int(current_laser_ptr + zLaserInfinite_active_time)
             infinite_shrink_time   = read_int(current_laser_ptr + zLaserInfinite_shrink_time)
-            infinite_distance      = read_float(current_laser_ptr + zLaserInfinite_mgr_distance)   
+            infinite_distance      = read_float(current_laser_ptr + zLaserInfinite_mgr_distance)
             
-            laser_inner = LaserInnerInfinite(
+            lasers.append(InfiniteLaser(
+                **laser_base,
                 start_pos = (infinite_start_pos_x, infinite_start_pos_y),
                 origin_vel = (infinite_origin_vel_x, infinite_origin_vel_y),
                 default_angle = infinite_default_angle,
@@ -172,7 +187,7 @@ def extract_lasers():
                 active_time = infinite_active_time,
                 shrink_time = infinite_shrink_time,
                 distance = infinite_distance,
-            )
+            ))
         
         elif laser_type == 2: #CURVE
             curve_max_length  = read_int(current_laser_ptr + zLaserCurve_max_length)
@@ -201,31 +216,16 @@ def extract_lasers():
                 
                 current_node_ptr += zLaserCurveNode_size
                 
-            laser_inner = LaserInnerCurve(
+            lasers.append(CurveLaser(
+                **laser_base,
                 max_length = curve_max_length,
                 distance = curve_distance,
                 nodes = curve_nodes,
-            )
+            ))
             
         elif laser_type == 3: #BEAM 
-            #sorry gfw ex fans
-            pass
+            lasers.append(Laser(**laser_base))
 
-        lasers.append(Laser(
-            state = laser_state,
-            laser_type = laser_type,
-            timer = laser_timer,
-            position = (laser_offset_x, laser_offset_y), 
-            angle = laser_angle,
-            length = laser_length,
-            width = laser_width,
-            speed = laser_speed,
-            id = laser_id,
-            sprite = laser_sprite,
-            color = laser_color,
-            inner = laser_inner,
-        ))
-        
         current_laser_ptr = read_int(current_laser_ptr + zLaserBaseClass_next)
         
     return lasers
@@ -234,6 +234,7 @@ def extract_lasers():
 def extract_game_state():        
     gs = GameState(
         frame_id        = read_int(time_in_stage),
+        state           = read_game_int(game_state),
         score           = read_game_int(score) * 10,
         lives           = read_game_int(lives),
         life_pieces     = read_game_int(life_pieces),
@@ -242,7 +243,7 @@ def extract_game_state():
         power           = read_game_int(power),
         piv             = int(read_game_int(piv) / 100),
         graze           = read_game_int(graze),
-        player_position = (round(read_float(zPlayer + zPlayer_pos), 1), round(read_float(zPlayer + zPlayer_pos + 0x4), 1)),
+        player_position = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
         player_iframes  = read_int(zPlayer + zPlayer_iframes),
         player_focused  = read_int(zPlayer + zPlayer_focused) == 1,
         bullets         = extract_bullets() if requiresBullets else None,
@@ -258,6 +259,7 @@ def print_game_state(gs: GameState):
     print(f"[Frame #{gs.frame_id}] SCORE: {gs.score}")
     print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
     print(f"| Player at {gs.player_position} with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
+    print(f"| Game state: {game_states[gs.state]}")
 
     if gs.bullets:
         print("\nList of bullets:")
@@ -288,7 +290,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.speed, 1), 8)
                 description += tabulate(round(laser.angle, 2), 8)
                 description += tabulate(round(laser.length, 1), 6) + " / "
-                description += tabulate(round(laser.inner.max_length, 1), 8)
+                description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
@@ -300,21 +302,21 @@ def print_game_state(gs: GameState):
             for laser in infinite_lasers:
                 description = "• "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
-                description += tabulate(f"({round(laser.inner.origin_vel[0], 1)}, {round(laser.inner.origin_vel[1], 1)})", 17)
+                description += tabulate(f"({round(laser.origin_vel[0], 1)}, {round(laser.origin_vel[1], 1)})", 17)
                 description += tabulate(round(laser.angle, 2), 6)
-                description += tabulate(f"({format(laser.inner.angular_vel, '.3f').rstrip('0').rstrip('.')})", 9)
-                description += tabulate(f"{round(laser.length, 1)} ({int(100*(laser.length-laser.inner.init_length)/(laser.inner.max_length-laser.inner.init_length))}%)", 14)
-                description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.inner.max_width)}%)", 14)
+                description += tabulate(f"({format(laser.angular_vel, '.3f').rstrip('0').rstrip('.')})", 9)
+                description += tabulate(f"{round(laser.length, 1)} ({int(100*(laser.length-laser.init_length)/(laser.max_length-laser.init_length))}%)", 14)
+                description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.max_width)}%)", 14)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 
                 if laser.state == 3:
-                    description += f"Telegraph ({laser.inner.start_time - laser.timer}f)"
+                    description += f"Telegraph ({laser.start_time - laser.timer}f)"
                 elif laser.state == 4:
-                    description += f"Expand ({laser.inner.expand_time - laser.timer}f)"
+                    description += f"Expand ({laser.expand_time - laser.timer}f)"
                 elif laser.state == 2:
-                    description += f"Active ({laser.inner.active_time - laser.timer}f)"
+                    description += f"Active ({laser.active_time - laser.timer}f)"
                 elif laser.state == 5:
-                    description += f"Shrink ({laser.inner.shrink_time - laser.timer}f)"
+                    description += f"Shrink ({laser.shrink_time - laser.timer}f)"
                 else:
                     description += "Unknown"
                 
@@ -326,11 +328,11 @@ def print_game_state(gs: GameState):
             for laser in curve_lasers:
                 description = "• "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
-                description += tabulate(f"({round(laser.inner.nodes[0].position[0], 1)}, {round(laser.inner.nodes[0].position[1], 1)})", 16)
-                description += tabulate(f"({round(laser.inner.nodes[0].velocity[0], 1)}, {round(laser.inner.nodes[0].velocity[1], 1)})", 16)
-                description += tabulate(round(laser.inner.nodes[0].speed, 1), 8)
-                description += tabulate(round(laser.inner.nodes[0].angle, 2), 8)
-                description += tabulate(round(laser.inner.max_length, 1), 8)
+                description += tabulate(f"({round(laser.nodes[0].position[0], 1)}, {round(laser.nodes[0].position[1], 1)})", 16)
+                description += tabulate(f"({round(laser.nodes[0].velocity[0], 1)}, {round(laser.nodes[0].velocity[1], 1)})", 16)
+                description += tabulate(round(laser.nodes[0].speed, 1), 8)
+                description += tabulate(round(laser.nodes[0].angle, 2), 8)
+                description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(color16[laser.color], 8)
                 description += tabulate(curve_sprites[laser.sprite], 8)
@@ -364,7 +366,7 @@ def print_game_state(gs: GameState):
             print(f"• {tabulate(item.item_type + ' Item', 16)}{tabulate(item.position, 16)} {item.velocity}")    
         
 def on_exit():
-    game_process.resume() #just in case!!
+    game_process.resume()
 
 atexit.register(on_exit)
 

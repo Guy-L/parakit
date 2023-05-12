@@ -26,19 +26,22 @@ class Item:
     position: Tuple[float, float]
     velocity: Tuple[float, float]
     
-@dataclass
-class CurveNode:
+@dataclass 
+class Laser:
+    state: int
+    laser_type: int
+    timer: int
     position: Tuple[float, float]
-    velocity: Optional[Tuple[float, float]]
-    angle: Optional[float]
-    speed: Optional[float]
-
-@dataclass
-class LaserInner:
-    pass
+    angle: float
+    length: float
+    width: float
+    speed: float
+    id: int
+    sprite: int
+    color: int
     
 @dataclass
-class LaserInnerLine(LaserInner):
+class LineLaser(Laser):
     start_pos: Tuple[float, float]
     init_angle: float
     max_length: float
@@ -46,7 +49,7 @@ class LaserInnerLine(LaserInner):
     distance: float
 
 @dataclass
-class LaserInnerInfinite(LaserInner):
+class InfiniteLaser(Laser):
     start_pos: Tuple[float, float]
     origin_vel: Tuple[float, float]
     default_angle: float
@@ -62,30 +65,23 @@ class LaserInnerInfinite(LaserInner):
     distance: float
 
 @dataclass
-class LaserInnerCurve(LaserInner):
+class CurveNode:
+    position: Tuple[float, float]
+    velocity: Optional[Tuple[float, float]]
+    angle: Optional[float]
+    speed: Optional[float]
+    
+@dataclass
+class CurveLaser(Laser):
     #start_pos: stored as laser pos
     max_length: int 
     distance: float
     nodes: List[CurveNode]   
-
-@dataclass 
-class Laser:
-    state: int
-    laser_type: int
-    timer: int
-    position: Tuple[float, float]
-    angle: float
-    length: float
-    width: float
-    speed: float
-    id: int
-    sprite: int
-    color: int
-    inner: LaserInner
     
 @dataclass
 class GameState:
     frame_id: int
+    state: int
     score: int
     lives: int
     life_pieces: int

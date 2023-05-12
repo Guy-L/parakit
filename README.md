@@ -15,7 +15,6 @@ Supported games:
 * DDC
 
 Goals:
-* Remove inner in entities (extend base laser)
 * Remove dumb game/non-game memory destinction
 * Relevant bullet transform info (invisible/invincible)
 * Save-stating and sending inputs

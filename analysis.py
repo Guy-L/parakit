@@ -180,19 +180,19 @@ class AnalysisPlotCurveLasers:
             if laser.laser_type == 2:
             
                 if self.smooth:       
-                    sizes = [laser.width * _pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.inner.nodes)) for node_i in range(len(laser.inner.nodes))]
+                    sizes = [laser.width * _pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
 
                     if self.has_points:
-                        x_coords = [nodes.position[0] for nodes in laser.inner.nodes]
-                        y_coords = [nodes.position[1] for nodes in laser.inner.nodes]
+                        x_coords = [nodes.position[0] for nodes in laser.nodes]
+                        y_coords = [nodes.position[1] for nodes in laser.nodes]
                         plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=sizes) 
                     
                     if self.has_line:
-                        for i in range(len(laser.inner.nodes) - 1): #i hate this
-                            plt.plot([laser.inner.nodes[i].position[0], laser.inner.nodes[i+1].position[0]], [laser.inner.nodes[i].position[1], laser.inner.nodes[i+1].position[1]], color=_pyplot_color(color16[laser.color]), linewidth=(sizes[i]+sizes[i+1])/2)
+                        for i in range(len(laser.nodes) - 1): #i hate this
+                            plt.plot([laser.nodes[i].position[0], laser.nodes[i+1].position[0]], [laser.nodes[i].position[1], laser.nodes[i+1].position[1]], color=_pyplot_color(color16[laser.color]), linewidth=(sizes[i]+sizes[i+1])/2)
                 else: 
-                    x_coords = [nodes.position[0] for nodes in laser.inner.nodes]
-                    y_coords = [nodes.position[1] for nodes in laser.inner.nodes]
+                    x_coords = [nodes.position[0] for nodes in laser.nodes]
+                    y_coords = [nodes.position[1] for nodes in laser.nodes]
 
                     if self.has_points:
                         plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=laser.width * _pyplot_factor)
