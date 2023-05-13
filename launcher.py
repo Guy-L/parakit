@@ -16,7 +16,7 @@ except ImportError as e:
 
 _venv_path   = 'venv'
 _reqs_path   = 'requirements.txt'
-_script_path = 'state-reader.py'
+_script_path = 'state_reader.py'
     
 #Create venv if not already created
 if not os.path.isfile(os.path.join(_venv_path, 'pyvenv.cfg')):
