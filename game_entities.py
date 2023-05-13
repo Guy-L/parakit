@@ -88,7 +88,9 @@ class CurveLaser(Laser):
 @dataclass
 class GameState:
     frame_id: int
+    frame_global: int
     state: int
+    mode: int
     score: int
     lives: int
     life_pieces: int

@@ -15,9 +15,10 @@ Supported games:
 * DDC
 
 Goals:
-* UX - remove need to use command line
-* Save-stating and sending inputs
+* Minor stuff to add: seija flip data, current RNG value, Grow Bigger & You Grow Bigger
+* Save-stating
 * Multi-game support (refactoring)
+  * Re-examine need for storing values prior to declaring dataclasses
 * UM support
 * LoLK support
 * MoF support 
@@ -29,6 +30,7 @@ To add your analysis code, go to `analysis.py` and implement `__init__`, `step` 
 Huge credits to ExpHP for helping out with the extraction.
 
 ## Setup 
+TODO: UPDATE
 Let's use a venv to minimize python headaches; you'll need to activate it every time.
 <br>(you might be prompted to install virtualenv if you haven't, it'll tell you how)
 
@@ -49,6 +51,7 @@ pip install -r requirements.txt #only do this the first time
 If you need to exit the venv for whatever reason (script will no longer work), type `deactivate`.
 
 ## Running
+TODO: UPDATE
 
 To get the state once:
 ```bash

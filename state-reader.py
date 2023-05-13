@@ -1,15 +1,10 @@
+from options import *
 from interface import *
-from analysis import *
 from game_entities import *
+import analysis
 import sys
 import math
 import atexit
-
-requiresBullets     = True
-requiresEnemies     = True
-requiresItems       = True
-requiresLasers      = True
-requiresScreenshots = False
 
 zPlayer        = read_int(player_pointer, rel=True)
 zBulletManager = read_int(bullet_manager_pointer, rel=True)
@@ -247,10 +242,12 @@ def extract_lasers():
     return lasers
         
 
-def extract_game_state():        
+def extract_game_state():
     gs = GameState(
         frame_id        = read_int(time_in_stage, rel=True),
+        frame_global    = read_int(global_timer),
         state           = read_int(game_state, rel=True),
+        mode            = read_int(supervisor_addr + zSupervisor_gamemode, rel=True),
         score           = read_int(score, rel=True) * 10,
         lives           = read_int(lives, rel=True),
         life_pieces     = read_int(life_pieces, rel=True),
@@ -272,10 +269,10 @@ def extract_game_state():
     return gs
 
 def print_game_state(gs: GameState):
-    print(f"[Frame #{gs.frame_id}] SCORE: {gs.score}")
+    print(f"[Stage Frame #{gs.frame_id} | Global Frame #{gs.frame_global}] SCORE: {gs.score}")
     print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
     print(f"| Player at {gs.player_position} with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
-    print(f"| Game state: {game_states[gs.state]}")
+    print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
 
     if gs.bullets:
         print("\nList of bullets:")
@@ -391,7 +388,7 @@ def print_game_state(gs: GameState):
                 
             print(description)
     
-    if gs.items:
+    if gs.mode == 7 and gs.items:
         print("\nList of items:")
         print("  Type            Position         Velocity")
         for item in gs.items:
@@ -402,14 +399,62 @@ def print_game_state(gs: GameState):
             print(description)
         
 def on_exit():
-    game_process.resume()
+    if game_process.is_running:
+        game_process.resume()
+    
+def parse_frame_count(expr):
+    unit = expr[-1:]
+    if unit.lower() not in "fs":
+        return None
+    
+    frame_count = 0
+    if unit == "s":
+        try:
+            frame_count = math.floor(float(expr[:-1]) * frame_rate)
+        except ValueError:
+            return None
+    else:
+        try:
+            frame_count = int(expr[:-1])
+        except ValueError:
+            return None
+            
+    return frame_count
 
 atexit.register(on_exit)
 
 print("================================")
 
-if len(sys.argv) <= 1:
-    analysis = Analysis()
+if not analyzer:
+    analyzer = 'AnalysisTemplate'
+
+if only_game_world and read_int(supervisor_addr + zSupervisor_gamemode, rel=True) != 4:
+    print("Error: Game world not loaded.")
+    exit()
+
+frame_count = 0
+if ingame_duration:
+    parsed_frame_count = parse_frame_count(ingame_duration)
+        
+    if parsed_frame_count:
+        frame_count = parsed_frame_count
+    
+if len(sys.argv) > 1:
+    for arg in sys.argv[1:]:
+        parsed_frame_count = parse_frame_count(arg)
+        
+        if parsed_frame_count:
+            frame_count = parsed_frame_count
+            
+        elif arg == 'exact':
+            exact = True #overwrites options
+            
+        else:
+            print(f"Error: Unrecognized argument '{arg}'.")
+            exit()
+
+if frame_count == 0:
+    analysis = getattr(analysis, analyzer)()
     
     state = extract_game_state()
     analysis.step(state)
@@ -417,46 +462,28 @@ if len(sys.argv) <= 1:
     
     print("================================")
     analysis.done(requiresScreenshots)
+    
+    if exact:
+        print("Note: Exact mode was enabled but no well-formed duration was found.")
 
-elif len(sys.argv) > 3:
-    print("Too many arguments!")
+else:   
+    print(f"Extracting {frame_count} frames{' (exact mode)' if exact else ''}.")
     
-elif len(sys.argv) == 3 and sys.argv[2].lower() != "exact":
-    print(f"Unrecognized second argument {sys.argv[2]} (should be \"exact\", won't proceed)")
-    
-else:    
-    units = sys.argv[1][-1:]
-    if units.lower() not in "fs":
-        print("Could not parse time unit")
-        exit()
-    
-    frame_count = 0
-    if units == "s":
-        try:
-            frame_count = math.floor(float(sys.argv[1][:-1]) * frame_rate)
-        except ValueError:
-            print("Could not parse second count")
-            exit()
+    if auto_unpause:
+        unpause_game()
     else:
-        try:
-            frame_count = int(sys.argv[1][:-1])
-        except ValueError:
-            print("Could not parse frame count")
-            exit()
-            
-    print(f"Extracting for {frame_count} frames")
-    exact = (len(sys.argv) == 3)
-    
-    #unpause_game()
-    print("(unpause the game to begin)")
-    analysis = Analysis()
+        if auto_focus:
+            get_focus()
+        print("(Unpause the game to begin extraction)")
+        
+    analysis = getattr(analysis, analyzer)()
     end_of_play = False
     
     for i in range(frame_count):
         if end_of_play:
             break
             
-        frame_timestamp = read_int(time_in_stage)
+        frame_timestamp = read_int(time_in_stage, rel=True)
         print(f"Extracting frame #{i+1} (in-stage: #{frame_timestamp})")
         
         if exact:
@@ -469,13 +496,14 @@ else:
             game_process.resume()
             
         #busy wait for next frame
-        while read_int(time_in_stage) == frame_timestamp: 
-            if read_int(game_state, rel=True) == 1:
-                print("End of play detected; terminating now")
-                end_of_play = True
-                break
-            
-    pause_game()
+        wait_return = wait_game_frame(frame_timestamp, need_active)
+        if wait_return:
+            print(f"{wait_return}; terminating now.")
+            end_of_play = True
+            break
+    
+    if auto_repause:   
+        pause_game()
         
     print("================================")
     analysis.done(requiresScreenshots)

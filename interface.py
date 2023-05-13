@@ -1,3 +1,4 @@
+from options import game, thcrap_enabled, termination_key
 import pygetwindow as gw
 import pyautogui
 import psutil
@@ -7,16 +8,13 @@ import win32api
 import win32con
 import numpy as np
 import cv2
-import time
 import random   #debug
-import keyboard #debug
-import json     #debug
+import keyboard 
 import struct
 
 # Set these to select the game before training
-_game_title = 'Touhou Kishinjou - Double Dealing Character v1.00b'
+_game_title = '“Œ•û‹Pjé@` Double Dealing Character. ver 1.00b'
 _module_name = 'th14.exe'
-frame_rate = 60
 
 # Offsets
 score         = 0xf5830
@@ -128,6 +126,15 @@ zLaserCurveNode_angle = 0x18
 zLaserCurveNode_speed = 0x1c
 zLaserCurveNode_size  = 0x20
 
+ascii_manager_pointer = 0xdb520
+global_timer          = 0x191e0 #frames the ascii manager has been alive = global frame counter (it never dies)
+
+supervisor_addr      = 0xd8f60
+zSupervisor_gamemode = 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
+zSupervisor_rng_seed = 0x728
+
+game_state = 0xF7AC8
+
 color_coin = ['Gold', 'Silver', 'Bronze']       #color type '3'
 color4 = ['Red', 'Blue', 'Green', 'Yellow']     
 color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
@@ -137,8 +144,8 @@ sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16)
 curve_sprites = ['Standard', 'Thunder']
 
 item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Green", "Cancel"]
-game_state = 0xF7AC8
-game_states = ["Pause or Stage Transition", "Not in Run (Ending/Practice End/Game Over/Menu)", "Actively Playing"]
+game_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
+game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
 
 # Ordered set of available keys (public)
 keys = ['shift', 'z', 'left', 'right', 'up', 'down', 'x']
@@ -216,9 +223,6 @@ def get_greyscale_screenshot(): #Note: fails if the window is inactive!
     
     # Add a channel dimension to the greyscale image    
     return np.expand_dims(grey_screenshot, axis=-1)
- 
-def get_normalized_greyscale_screenshot():
-   return get_greyscale_screenshot().astype(np.float32) / 255.0
    
 def save_screenshot(filename, screenshot): 
     # Swap the R and B channels to match OpenCV's BGR format (no effect for greyscale pics)
@@ -226,7 +230,7 @@ def save_screenshot(filename, screenshot):
     cv2.imwrite(filename, bgr_screenshot)
 
 def read_int(offset, bytes = 4, rel = False):
-    #return np.uint32(int.from_bytes(_read_game_memory(offset, 4, rel), byteorder='little'))
+    #return np.uint32(int.from_bytes(_read_memory(offset, 4, rel), byteorder='little'))
     return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little')
 
 def read_float(offset, rel = False):
@@ -290,139 +294,127 @@ def apply_action_str(action_text):
         else:
             keyboard.release(key)
            
-def wait_frame():
-    _sleep(1 / frame_rate)
+def wait_global_frame(cur_global_frame=None, count=0):
+    if not cur_global_frame:
+        cur_global_frame = read_int(global_timer)
+        
+    while read_int(global_timer) <= cur_global_frame + count:
+        pass
+    
+def wait_game_frame(cur_game_frame=None, need_active=False):
+    if not cur_game_frame:
+        cur_game_frame = read_int(time_in_stage, rel=True)
+
+    while read_int(time_in_stage, rel=True) == cur_game_frame: 
+        if read_int(game_state, rel=True) == 1:
+            return "Non-run game state detected"
+        elif not game_process.is_running():
+            return "Game was closed"  #bugged, but not worth fixing (edge case)
+        elif keyboard.is_pressed(termination_key):
+            return "User pressed termination key"
+        elif need_active and _game_window != gw.getActiveWindow():
+            return "Game no longer active (need_active set to True)"
+    return None
+
+def press_key(key):
+    keyboard.press(key)
+    wait_global_frame()
+    keyboard.release(key)
+    wait_global_frame()
     
 def restart_run():  
     apply_action_int(0) #ensure no residual input
-    _two_frame_input('enter')
-    _two_frame_input('esc')
-    _two_frame_input('up')
-    _two_frame_input('up')
-    _two_frame_input('z')
+    press_key('enter')
+    press_key('esc')
+    press_key('up')
+    press_key('up')
+    press_key('z')
     
 def pause_game():
-    if read_game_int(game_state) != 0:
-        _two_frame_input('esc')
+    if get_focus() and read_int(game_state, rel=True) == 2:
+        press_key('esc')
+        
+        while read_int(game_state, rel=True) != 0:
+            pass
+        
+        #seems to be a hardcoded 8-frame delay between 
+        #when pause starts and when pause menu can take inputs
+        wait_global_frame(count=8)
         
 def unpause_game():
-    if read_game_int(game_state) != 2:
-        _two_frame_input('esc')
-        _sleep(10 / frame_rate)
+    if get_focus() and read_int(game_state, rel=True) == 0:
+        press_key('esc')
         
+        while read_int(game_state, rel=True) != 2:
+            pass
+
+def get_focus():
+    if not game_process.is_running():
+        return False
+
+    if _game_window != gw.getActiveWindow():
+        _game_window.activate()
+        while _game_window != gw.getActiveWindow():
+            pass
+    return True
+    
 def enact_game_actions_bin(actions): #space-separated action binary strings
-    _get_focus()
+    get_focus()
     action_array = actions.split()
     for action in action_array:
         apply_action_bin(action)
-        wait_frame()
+        wait_game_frame(need_active=True)
     apply_action_int(0)
 
 def enact_game_actions_text(actions): #line-separated sets of space-seperates key press names
-    _get_focus()
+    get_focus()
     action_array = actions.split('\n')
     for action in action_array:
         apply_action_str(action)
-        wait_frame()
+        wait_game_frame(need_active=True)
     apply_action_int(0)
 
+
 # Private Method Definitions
-    
+
+_buffers = {} #caching helps!
+_kernel32 = ctypes.windll.kernel32 # minor optimization
+_byref = ctypes.byref(ctypes.c_ulonglong()) # minor optimization
 def _read_memory(address, size, rel):
-    buffer = ctypes.create_string_buffer(size)
-    bytesRead = ctypes.c_ulonglong()
-    ctypes.windll.kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, ctypes.byref(bytesRead))
+    if size not in _buffers:
+        _buffers[size] = ctypes.create_string_buffer(size)
+    buffer = _buffers[size]
+    _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref)
     return buffer.raw
 
-def _two_frame_input(key):
-    keyboard.press(key)
-    _sleep(1 / frame_rate)
-    keyboard.release(key)
-    _sleep(1 / frame_rate) #allows pressing the same key twice in a row
-    
-def _sleep(duration, get_now=time.perf_counter):
-    now = get_now()
-    end = now + duration
-    while now < end:
-        now = get_now()
-    
-    
 
-# Debug Method Definitions    
+# Debug Method Definitions
 
-def _get_focus():
-    _game_window.activate()
-    _sleep(0.2)
-    
-def _render_normalized_greyscale_screenshot(normalized_grey_screenshot):
-    # Convert the normalized greyscale screenshot back to the range of 0 to 255
-    grey_screenshot = (normalized_grey_screenshot * 255).astype(np.uint8)
-
-    # Save the greyscale screenshot as an image file
-    cv2.imwrite("normalized_greyscale_screenshot.png", grey_screenshot)
-    
-    #example where you render a 100x100 rectangle at the top left of the normalized greyscale screenshot:
-    #_get_focus()
-    #normalized_grey_screenshot = get_normalized_greyscale_screenshot()
-    #_render_normalized_greyscale_screenshot(normalized_grey_screenshot[0:100, 0:100]) 
-    
 def _random_player():
-    _get_focus()
-    keep_running = True
-    prev_step = -1
+    get_focus()
 
     np.set_printoptions(linewidth=np.inf)
-    print(np.array(["Lives", "L.Pieces", "Bombs", "B.Pieces", "Bonus", "Power", "PIV", "Graze", "Game State", "Action", "Step Delay"]))
+    print(np.array(["Lives", "L.Pieces", "Bombs", "B.Pieces", "Bonus", "Power", "PIV", "Graze", "Game State", "Action", "Time in Stage"]))
     
-    while(keep_running):
-        #user terminates the process (T press / change window)
-        if keyboard.is_pressed('t') or _game_window != gw.getActiveWindow(): 
+    while True:            
+        cur_frame = read_int(time_in_stage, rel=True)
+        if wait_game_frame(cur_frame, True):
             apply_action_int(0) #un-press everything
-            keep_running = False
-        
-        #calculate step delay
-        delay = 0
-        
-        if prev_step != -1:
-            delay = time.time() - prev_step
-        else:
-            prev_step = time.time()
-            
-        if delay < 1.0 / frame_rate: 
-            continue  #synchronize action rate with framerate
-            
-        prev_step = time.time()
+            return
         
         #display game variables and take random actions
         action = random.randint(0, 2**len(keys))
         print(list(np.array([
-                    read_game_int(lives), read_game_int(life_pieces),
-                    read_game_int(bombs), read_game_int(bomb_pieces),
-                    read_game_int(bonus_count), 
-                    read_game_int(power), 
-                    read_game_int(piv), 
-                    read_game_int(graze),
-                    read_game_int(game_state),
-                    '{:08b}'.format(action), 
-                    "{:.2f}".format(delay)])))
+                    read_int(lives, rel=True), read_int(life_pieces, rel=True),
+                    read_int(bombs, rel=True), read_int(bomb_pieces, rel=True),
+                    read_int(bonus_count, rel=True), 
+                    read_int(power, rel=True), 
+                    read_int(piv, rel=True), 
+                    read_int(graze, rel=True),
+                    read_int(game_state, rel=True),
+                    '{:08b}'.format(action),
+                    cur_frame+1])))
         apply_action_int(action)
 
-def _expJSON_to_guyJSON(filename, filename_new):
-    with open(filename, 'r') as file:
-        data = json.load(file)
-
-    transformed_data = {}
-
-    for key, value_list in data.items():
-        transformed_value = {}
-        for value in value_list:
-            if value[1] != "__end":
-                #transformed_value[value[1]] = (value[0], value[2])
-                transformed_value[value[1]] = value[0]
-        transformed_data[key] = transformed_value
-
-    with open(filename_new, 'w') as file_new:
-        json.dump(transformed_data, file_new, indent=2)            
-
-# Step 5 - Optionally put the game in focus for training activities
-_get_focus()
+# Step 5 - Read the address of the ascii manager here so timing methods work
+global_timer += read_int(ascii_manager_pointer, rel=True)

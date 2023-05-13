@@ -1,10 +1,8 @@
+from options import pyplot_factor, bullet_factor
 from game_entities import GameState
 from interface import save_screenshot, get_color, color16, np
 import matplotlib.pyplot as plt
 import math
-
-_pyplot_factor = 1/5 #to convert sizes in game units to pyplot point/line size; can be tweaked
-_bullet_factor = 35 #makes bullets bigger than their hitbox in bullet plot (1 = real size)
 
 def _pyplot_color(color_str):
     if color_str == 'Dark Yellow':
@@ -16,7 +14,7 @@ def _pyplot_color(color_str):
     else:
         return color_str.replace(" ", "")
 
-class Analysis:
+class AnalysisTemplate:
     #Called right before extraction starts
     def __init__(self):
         #Your initialization code here
@@ -29,7 +27,7 @@ class Analysis:
 
     #Called after extraction finishes
     def done(self, hasScreenshots):
-        print(f"Analysis results:")
+        print(f"Analysis results go here.")
         #Your printing code here
         
 
@@ -82,11 +80,13 @@ class AnalysisPlotBullets:
         self.lastframe = state
 
     def done(self, hasScreenshots):
-        # Separate the x and y coordinates
+        if not self.lastframe.bullets:
+            return
+        
         x_coords = [bullet.position[0] for bullet in self.lastframe.bullets]
         y_coords = [bullet.position[1] for bullet in self.lastframe.bullets]
         colors = [_pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in self.lastframe.bullets]
-        sizes = [bullet.scale * bullet.hitbox_radius * _bullet_factor * _pyplot_factor for bullet in self.lastframe.bullets]
+        sizes = [bullet.scale * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in self.lastframe.bullets]
         alphas = [0.05 if bullet.show_delay else 1 for bullet in self.lastframe.bullets]
 
         plt.figure(figsize=(4.6, 5.4))
@@ -118,7 +118,7 @@ class AnalysisPlotLineLasers:
                 tail_y = laser.position[1]
                 head_x = tail_x + laser.length * np.cos(laser.angle)
                 head_y = tail_y + laser.length * np.sin(laser.angle)
-                plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * _pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0)
+                plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0)
                 plt.scatter(head_x, head_y, color='white', edgecolors=_pyplot_color(get_color(laser.sprite, laser.color)), s=75, zorder=1) #comment this out if you want, doesn't have a hitbox
         
         plt.xlim(-184, 184)
@@ -147,7 +147,7 @@ class AnalysisPlotInfiniteLasers:
                 origin_y = laser.position[1]
                 end_x = origin_x + laser.length * np.cos(laser.angle)
                 end_y = origin_y + laser.length * np.sin(laser.angle)
-                plt.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * _pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0, alpha=(1 if laser.state==2 else 0.25))
+                plt.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0, alpha=(1 if laser.state==2 else 0.25))
                 plt.scatter(origin_x, origin_y, color='white', edgecolors='blue', s=100, zorder=1, alpha=0.9)
         
         plt.xlim(-184, 184)
@@ -182,7 +182,7 @@ class AnalysisPlotCurveLasers:
             if laser.laser_type == 2:
             
                 if self.smooth:       
-                    sizes = [laser.width * _pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
+                    sizes = [laser.width * pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
 
                     if self.has_points:
                         x_coords = [nodes.position[0] for nodes in laser.nodes]
@@ -197,10 +197,10 @@ class AnalysisPlotCurveLasers:
                     y_coords = [nodes.position[1] for nodes in laser.nodes]
 
                     if self.has_points:
-                        plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=laser.width * _pyplot_factor)
+                        plt.scatter(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), s=laser.width * pyplot_factor)
                         
                     if self.has_line:
-                        plt.plot(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), linewidth=laser.width * _pyplot_factor)
+                        plt.plot(x_coords, y_coords, color=_pyplot_color(color16[laser.color]), linewidth=laser.width * pyplot_factor)
         
         plt.xlim(-184, 184)
         plt.ylim(0, 440)
