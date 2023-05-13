@@ -1,4 +1,4 @@
-from options import pyplot_factor, bullet_factor
+from options import pyplot_factor, bullet_factor, plot_laser_circles
 from game_entities import GameState
 from interface import save_screenshot, get_color, color16, np
 import matplotlib.pyplot as plt
@@ -119,7 +119,8 @@ class AnalysisPlotLineLasers:
                 head_x = tail_x + laser.length * np.cos(laser.angle)
                 head_y = tail_y + laser.length * np.sin(laser.angle)
                 plt.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0)
-                plt.scatter(head_x, head_y, color='white', edgecolors=_pyplot_color(get_color(laser.sprite, laser.color)), s=75, zorder=1) #comment this out if you want, doesn't have a hitbox
+                if plot_laser_circles:
+                    plt.scatter(head_x, head_y, color='white', edgecolors=_pyplot_color(get_color(laser.sprite, laser.color)), s=75, zorder=1)
         
         plt.xlim(-184, 184)
         plt.ylim(0, 440)
@@ -148,7 +149,8 @@ class AnalysisPlotInfiniteLasers:
                 end_x = origin_x + laser.length * np.cos(laser.angle)
                 end_y = origin_y + laser.length * np.sin(laser.angle)
                 plt.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=_pyplot_color(get_color(laser.sprite, laser.color)), zorder=0, alpha=(1 if laser.state==2 else 0.25))
-                plt.scatter(origin_x, origin_y, color='white', edgecolors='blue', s=100, zorder=1, alpha=0.9)
+                if plot_laser_circles:
+                    plt.scatter(origin_x, origin_y, color='white', edgecolors='blue', s=100, zorder=1, alpha=0.9)
         
         plt.xlim(-184, 184)
         plt.ylim(0, 440)

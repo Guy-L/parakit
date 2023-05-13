@@ -15,6 +15,12 @@ Supported games:
 * DDC
 
 Goals:
+* Game window selector options
+* Make use of dictionary unpacking to seperate option imports (interface options, state reader options etc)
+* Document options and update this document
+* Real-time timer + spell/nonspell timer
+* Fix "Error: Operation completed successfully" Windows cringe
+* hasScreenshot argument in done can be removed easily
 * Minor stuff to add: seija flip data, current RNG value, Grow Bigger & You Grow Bigger
 * Save-stating
 * Multi-game support (refactoring)
