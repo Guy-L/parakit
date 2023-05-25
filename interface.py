@@ -1,4 +1,4 @@
-from options import game, thcrap_enabled, termination_key
+from settings import interface_settings as _settings
 import pygetwindow as gw
 import pyautogui
 import psutil
@@ -8,32 +8,67 @@ import win32api
 import win32con
 import numpy as np
 import cv2
-import random   #debug
 import keyboard 
 import struct
+import random  
 
-# Set these to select the game before training
-_game_title = '“Œ•û‹Pjé@` Double Dealing Character. ver 1.00b'
-_module_name = 'th14.exe'
+# Step 0 - Get the target module name and other settings
+_game_main_modules = {
+    ('14', 'th14', 'th14.exe', 'ddc', 'double dealing character'): 'th14.exe',
+    #('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
+    #('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
+}
 
-# Offsets
+_game = _settings['game']
+_termination_key = _settings['termination_key']
+
+_module_name = ''
+for keys, module_name in _game_main_modules.items():
+    if str(_game).lower().strip() in keys:
+        _module_name = module_name
+        print(f"Interface: Target module '{_module_name}'.")
+        break
+            
+if not _module_name:
+    print(f"Interface error: Unknown game specifier '{_game}'.")
+    exit()
+    
+
+# ==================================================
+# GAME SPECIFIC STUFF -- TO BE REFACTORED ==========
+# Statics
 score         = 0xf5830
+graze         = 0xf5840
+piv           = 0xf584c
+power         = 0xf5858
 lives         = 0xf5864
 life_pieces   = 0xf5868
 bombs         = 0xf5870
 bomb_pieces   = 0xf5874
 bonus_count   = 0xf5894
-power         = 0xf5858
-piv           = 0xf584c
-graze         = 0xf5840
 time_in_stage = 0xf58b0
+input         = 0xd6a90
+rng           = 0xdb510
+game_state    = 0xf7ac8
 
+# Untracked Statics
+game_speed      = 0xd8f58
+visual_rng      = 0xdb508
+replay_filename = 0xdb560
+character       = 0xf5828
+subshot         = 0xf582c
+difficulty      = 0xf5834
+rank            = 0xf583c 
+stage           = 0xf58a4 
+
+# Player
 player_pointer  = 0xdb67c 
 zPlayer_pos     = 0x5e0
-zPlayer_hurtbox = 0x630
+zPlayer_hurtbox = 0x630  #TODO use
 zPlayer_iframes = 0x182c4
 zPlayer_focused = 0x184b0
 
+# Bullets
 bullet_manager_pointer = 0xdb530
 zBulletManager_list    = 0x7c
 zBullet_iframes        = 0x24
@@ -47,6 +82,7 @@ zBullet_scale          = 0x13bc
 zBullet_type           = 0x13ec
 zBullet_color          = 0x13ee
 
+# Enemies
 enemy_manager_pointer = 0xdb544
 zEnemyManager_list    = 0xd0
 zEnemy_data           = 0x11f0
@@ -58,8 +94,9 @@ zEnemy_score_reward   = zEnemy_data + 0x3f70
 zEnemy_hp             = zEnemy_data + 0x3f74
 zEnemy_hp_max         = zEnemy_data + 0x3f78
 zEnemy_iframes        = zEnemy_data + 0x3ff0
-zEnemy_flags          = 0x5244
+zEnemy_flags          = zEnemy_data + 0x4054 #"flags_low" contains the useful stuff
 
+# Items
 item_manager_pointer   = 0xdb660
 zItemManager_array     = 0x14
 zItemManager_array_len = 0xddd854
@@ -69,6 +106,7 @@ zItem_type             = 0xbf4
 zItem_pos              = 0xbac
 zItem_vel              = 0xbb8
 
+# Laser (Base)
 laser_manager_pointer   = 0xdb664
 zLaserManager_list      = 0x5d0
 zLaserBaseClass_next    = 0x4
@@ -85,6 +123,7 @@ zLaserBaseClass_iframes = 0x5b4
 zLaserBaseClass_sprite  = 0x5b8  
 zLaserBaseClass_color   = 0x5bc
 
+# Laser (Line)
 zLaserLine_start_pos    = 0x5c0 
 zLaserLine_mgr_angle    = 0x5cc    
 zLaserLine_max_length   = 0x5d0 
@@ -94,6 +133,7 @@ zLaserLine_mgr_speed    = 0x5e0
 #zLaserLine_mgr_color    = 0x5e8  storing manager value is redundant
 zLaserLine_distance     = 0x5ec
 
+# Laser (Infinite)
 zLaserInfinite_start_pos    = 0x5c0
 zLaserInfinite_velocity     = 0x5cc
 zLaserInfinite_mgr_angle    = 0x5d8
@@ -110,6 +150,7 @@ zLaserInfinite_mgr_distance = 0x60c
 #zLaserInfinite_mgr_sprite   = 0x610  storing manager value is redundant
 #zLaserInfinite_mgr_color    = 0x614  storing manager value is redundant
 
+# Laser (Curve)
 #zLaserCurve_start_pos  = 0x5c0  storing value is redundant          
 #zLaserCurve_angle      = 0x5cc  storing manager value is redundant
 #zLaserCurve_width      = 0x5d0  storing manager value is redundant
@@ -120,12 +161,14 @@ zLaserCurve_max_length = 0x5e0
 zLaserCurve_distance   = 0x5e4
 zLaserCurve_array      = 0x14ac
 
+# Curve Node
 zLaserCurveNode_pos   = 0x0 
 zLaserCurveNode_vel   = 0xc 
 zLaserCurveNode_angle = 0x18
 zLaserCurveNode_speed = 0x1c
 zLaserCurveNode_size  = 0x20
 
+# Ascii
 ascii_manager_pointer = 0xdb520
 global_timer          = 0x191e0 #frames the ascii manager has been alive = global frame counter (it never dies)
 
@@ -133,7 +176,10 @@ supervisor_addr      = 0xd8f60
 zSupervisor_gamemode = 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
 zSupervisor_rng_seed = 0x728
 
-game_state = 0xF7AC8
+# Supervisor
+supervisor_addr = 0xd8f60
+game_mode       = supervisor_addr + 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
+rng_seed        = supervisor_addr + 0x728 #based on time when game was launched; never changes
 
 color_coin = ['Gold', 'Silver', 'Bronze']       #color type '3'
 color4 = ['Red', 'Blue', 'Green', 'Yellow']     
@@ -143,63 +189,70 @@ color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'D
 sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)]
 curve_sprites = ['Standard', 'Thunder']
 
-item_types = ["Unknown 0", "Power", "Point", "Full Power", "Life Piece", "Unknown 5", "Bomb Piece", "Unknown 7", "Unknown 8", "Green", "Cancel"]
+item_types = {1: "Power", 2: "Point", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 10:"Cancel"}
 game_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
 game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
 
-# Ordered set of available keys (public)
-keys = ['shift', 'z', 'left', 'right', 'up', 'down', 'x']
+characters = ['Reimu', 'Marisa', 'Sakuya']
+subshots = ['A', 'B']
+difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
 
-# Step 1 - Get the game window
-_game_windows = gw.getWindowsWithTitle(_game_title)
+# GAME SPECIFIC STUFF -- TO BE REFACTORED ==========
+# ==================================================
 
-if len(_game_windows) == 1:
-    print(f'Found the game window: {_game_windows[0]}')
+# Step 1 - Get the game process
+game_process = None
+
+for process in psutil.process_iter(['pid', 'name']):
+    if process.info['name'] and process.info['name'].lower() == _module_name:
+        game_process = process
+        break
+
+if game_process:
+    print(f'Found the {_module_name} game process with PID: {game_process.pid}')
 else:
-    print('Game window not found (' + _game_title + ')')
+    print('Interface error: Game process not found')
     exit()
-    
-_game_window = _game_windows[0]
 
-# Step 2 - Get the process ID
-_hWnd = _game_window._hWnd  # Get the window handle
-_pid = ctypes.c_ulong()
-ctypes.windll.user32.GetWindowThreadProcessId(_hWnd, ctypes.byref(_pid))  # Get the process ID
-
-_game_pid = _pid.value
-
-if _game_pid is not None:
-    print(f'Found the game process with PID: {_game_pid}')
-else:
-    print('Game process not found')
-    exit()
-    
-#for suspending/resuming
-game_process = psutil.Process(_game_pid)
-
-# Step 3 - Get the process's base address
+# Step 2 - Get the process's base address
 _base_address = None
-_module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, _game_pid)
+_module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, game_process.pid)
 _module_list = win32process.EnumProcessModules(_module_handle)
 
 for module in _module_list:
     module_info = win32process.GetModuleFileNameEx(_module_handle, module)
-    
-    if _module_name.lower() in module_info.lower():
-        _base_address =  module
+
+    if _module_name in module_info.lower():
+        _base_address = module
         break
 
 if _base_address is not None:
     print(f'Base address of the process main module: {hex(_base_address)}')
 else:
-    print('Module base address not found')
+    print('Interface error: Module base address not found')
     exit()
-    
-# Step 4 - Open a process handle
+
+# Step 3 - Open a process handle
 _PROCESS_VM_READ = 0x0010
 _PROCESS_QUERY_INFORMATION = 0x0400
-_process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, _game_pid)
+_process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
 
+# Step 4 - Get the game window
+_game_window = None
+
+for window in gw.getAllWindows():
+    pid = ctypes.c_ulong()
+    ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
+    
+    if pid.value == game_process.pid:
+        _game_window = window
+        break
+
+if _game_window:
+    print(f'Found the game window: {_game_window}')
+else:
+    print('Interface error: Game window not found')
+    exit()
 
 
 # Interface Method Definitions
@@ -236,17 +289,18 @@ def read_int(offset, bytes = 4, rel = False):
 def read_float(offset, rel = False):
     return struct.unpack('f', _read_memory(offset, 4, rel))[0]
     
-def read_byte(offset, rel = False):
-    return int.from_bytes(_read_memory(offset, 1, rel), byteorder='big')
-    
+def read_string(offset, length, rel = False):
+    return _read_memory(offset, length, rel).decode('utf-8').rstrip('\x00')
+        
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
         
 def get_item_type(item_type):
-    if item_type < len(item_types) :
+    if item_type in item_types.keys() :
         return item_types[item_type]
     else:
-        return "Unknown " + str(item_type)
+        #return "Unknown " + str(item_type) #(no need to display this, all item types should be known)
+        return None
         
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:
@@ -263,10 +317,13 @@ def get_color(sprite, color):
         
     elif sprites[sprite][1] == 16:
         return color16[color]
-    
+
+# Ordered set of available keys
+_keys = ['shift', 'z', 'left', 'right', 'up', 'down', 'x']
+
 def apply_action_int(action_int):
     # Iterate through the list of keys and hold/release keys depending on the bit value
-    for index, key in enumerate(reversed(keys)):
+    for index, key in enumerate(reversed(_keys)):
         # Check if the bit at the current position is set (1) or not (0)
         bit_set = (action_int >> index) & 1
         
@@ -277,7 +334,7 @@ def apply_action_int(action_int):
             
 def apply_action_bin(action_binstr):
     # Iterate through the list of keys and hold/release keys depending on the bit value
-    for index, key in enumerate(keys):
+    for index, key in enumerate(_keys):
         # Check if the bit at the current position is set (1) or not (0)
         bit_set = (action_binstr[index] == '1')
         
@@ -288,7 +345,7 @@ def apply_action_bin(action_binstr):
             
 def apply_action_str(action_text):
     key_presses = action_text.split()
-    for key in keys:
+    for key in _keys:
         if key in key_presses:
             keyboard.press(key)
         else:
@@ -310,7 +367,7 @@ def wait_game_frame(cur_game_frame=None, need_active=False):
             return "Non-run game state detected"
         elif not game_process.is_running():
             return "Game was closed"  #bugged, but not worth fixing (edge case)
-        elif keyboard.is_pressed(termination_key):
+        elif keyboard.is_pressed(_termination_key):
             return "User pressed termination key"
         elif need_active and _game_window != gw.getActiveWindow():
             return "Game no longer active (need_active set to True)"
@@ -403,7 +460,7 @@ def _random_player():
             return
         
         #display game variables and take random actions
-        action = random.randint(0, 2**len(keys))
+        action = random.randint(0, 2**len(_keys))
         print(list(np.array([
                     read_int(lives, rel=True), read_int(life_pieces, rel=True),
                     read_int(bombs, rel=True), read_int(bomb_pieces, rel=True),

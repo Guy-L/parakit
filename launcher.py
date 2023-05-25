@@ -23,7 +23,7 @@ if not os.path.isfile(os.path.join(_venv_path, 'pyvenv.cfg')):
     if os.path.exists(_venv_path):
         print(f"Setup error: The venv folder at '{_venv_path}' appears to be corrupted (missing config file).")
         print("Fix the issue or delete the folder and run this script again.")
-        input_exit()()
+        input_exit()
         
     venv.create(_venv_path, with_pip=True)
     print(f"Setup: venv created at '{_venv_path}'")

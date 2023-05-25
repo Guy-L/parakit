@@ -1,4 +1,4 @@
-from options import *
+from settings import extraction_settings, singlext_settings, seqext_settings
 from interface import *
 from game_entities import *
 import analysis_examples as analysis #(includes analysis.py analyzers)
@@ -11,6 +11,11 @@ zBulletManager = read_int(bullet_manager_pointer, rel=True)
 zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
 zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
+
+#For quick access
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots = extraction_settings.values()
+exact = seqext_settings['exact']
+need_active = seqext_settings['need_active']
         
 def tabulate(x, min_size=10):
     x_str = str(x)
@@ -61,8 +66,9 @@ def extract_enemies():
         current_enemy_list = read_zList(current_enemy_list["next"]) 
         
         zEnemy = current_enemy_list["entry"]
+        zEnemyFlags = read_int(zEnemy + zEnemy_flags)
         
-        if read_byte(zEnemy + zEnemy_flags) & 0x31 != 0:
+        if zEnemyFlags & zEnemyFlags_is_real != 0: 
             continue
             
         enemy_x            = read_float(zEnemy + zEnemy_pos)
@@ -101,6 +107,9 @@ def extract_items():
             continue
             
         item_type = get_item_type(read_int(current_item + zItem_type))
+        
+        if not item_type:
+            continue
         
         item_x     = read_float(current_item + zItem_pos)
         item_y     = read_float(current_item + zItem_pos + 0x4)
@@ -397,7 +406,20 @@ def print_game_state(gs: GameState):
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
             print(description)
-        
+
+#easy static stuff to grab (difficulty, stage etc) that's not worth tracking in state
+def print_untracked_vars():
+    print("[Bonus] Untracked values:")
+    print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")
+    print(f"| Game Speed: {read_float(game_speed, rel=True)}")
+    print(f"| Visual RNG: {read_int(visual_rng, rel=True)}")
+    print(f"| Last Replay Filename: {read_string(replay_filename, 100, rel=True)}")
+    print(f"| Character: {characters[read_int(character, rel=True)]}")
+    print(f"| Sub-Shot: {subshots[read_int(subshot, rel=True)]}")
+    print(f"| Difficulty: {difficulties[read_int(difficulty, rel=True)]}")
+    print(f"| Rank: {read_int(rank, rel=True)}")
+    print(f"| Stage #: {read_int(stage, rel=True)}")
+    
 def on_exit():
     if game_process.is_running:
         game_process.resume()
@@ -410,7 +432,7 @@ def parse_frame_count(expr):
     frame_count = 0
     if unit == "s":
         try:
-            frame_count = math.floor(float(expr[:-1]) * frame_rate)
+            frame_count = math.floor(float(expr[:-1]) * 60)
         except ValueError:
             return None
     else:
@@ -425,19 +447,19 @@ atexit.register(on_exit)
 
 print("================================")
 
-if not analyzer:
-    analyzer = 'AnalysisTemplate'
-
-if only_game_world and read_int(supervisor_addr + zSupervisor_gamemode, rel=True) != 4:
-    print("Error: Game world not loaded.")
+if singlext_settings['only_game_world'] and read_int(game_mode, rel=True) != 7:
+    print("Error: Game world not loaded (only_game_world set to True).")
     exit()
-
+    
 frame_count = 0
-if ingame_duration:
-    parsed_frame_count = parse_frame_count(ingame_duration)
+if seqext_settings['ingame_duration']:
+    parsed_frame_count = parse_frame_count(seqext_settings['ingame_duration'])
         
     if parsed_frame_count:
         frame_count = parsed_frame_count
+    else:
+        print(f"Error: Couldn't parse duration '{seqext_settings['ingame_duration']}'; remember to include a unit (e.g. 150f / 12.4s).")
+        print("Defaulting to single-state extraction.\n")
     
 if len(sys.argv) > 1:
     for arg in sys.argv[1:]:
@@ -453,8 +475,15 @@ if len(sys.argv) > 1:
             print(f"Error: Unrecognized argument '{arg}'.")
             exit()
 
-if frame_count == 0:
+if not hasattr(analysis, analyzer):
+    print(f"Error: Unrecognized analyzer {analyzer}; defaulting to template.")
+    analyzer = 'AnalysisTemplate'
+    
+if frame_count < 2: #Single-State Extraction
     analysis = getattr(analysis, analyzer)()
+    
+    if requires_screenshots:
+        get_focus()
     
     state = extract_game_state()
     analysis.step(state)
@@ -463,28 +492,30 @@ if frame_count == 0:
     print("================================")
     analysis.done()
     
-    if exact:
-        print("Note: Exact mode was enabled but no well-formed duration was found.")
-
-else:   
+    if singlext_settings['show_untracked']:
+        print("\n================================")
+        print_untracked_vars()
+    
+else: #State Sequence Extraction
     print(f"Extracting {frame_count} frames{' (exact mode)' if exact else ''}.")
     
-    if auto_unpause:
+    if seqext_settings['auto_unpause']:
         unpause_game()
     else:
-        if auto_focus:
+        if seqext_settings['auto_focus']:
             get_focus()
         print("(Unpause the game to begin extraction)")
         
     analysis = getattr(analysis, analyzer)()
-    end_of_play = False
+    start_time = time.perf_counter()
+    terminated = False
     
     for i in range(frame_count):
-        if end_of_play:
+        if terminated:
             break
             
         frame_timestamp = read_int(time_in_stage, rel=True)
-        print(f"Extracting frame #{i+1} (in-stage: #{frame_timestamp})")
+        print(f"[{int(100*i/frame_count)}%] Extracting frame #{i+1} (in-stage: #{frame_timestamp})")
         
         if exact:
             game_process.suspend()
@@ -499,10 +530,13 @@ else:
         wait_return = wait_game_frame(frame_timestamp, need_active)
         if wait_return:
             print(f"{wait_return}; terminating now.")
-            end_of_play = True
+            terminated = True
             break
     
-    if auto_repause:   
+    if not terminated:
+        print(f"[100%] Finished extraction in {round(time.perf_counter()-start_time, 2)} seconds.")
+    
+    if seqext_settings['auto_repause']:   
         pause_game()
         
     print("================================")
