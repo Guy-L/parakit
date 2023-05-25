@@ -17,7 +17,7 @@ zGui           = read_int(gui_pointer, rel=True)
 ddcSeijaAnm    = read_int(seija_anm_pointer, rel=True)
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_max_curve_data = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
         
@@ -131,7 +131,7 @@ def extract_items():
         ))
     
     return items
-    
+
 def extract_lasers():
     lasers = []
     current_laser_ptr = read_int(zLaserManager + zLaserManager_list) #pointer to head laser 
@@ -167,88 +167,21 @@ def extract_lasers():
         }
         
         if laser_type == 0: #LINE
-            line_start_pos_x = read_float(current_laser_ptr + zLaserLine_start_pos)
-            line_start_pos_y = read_float(current_laser_ptr + zLaserLine_start_pos + 0x4)
-            line_init_angle  = read_float(current_laser_ptr + zLaserLine_mgr_angle)
-            line_max_length  = read_float(current_laser_ptr + zLaserLine_max_length)
-            line_init_speed  = read_float(current_laser_ptr + zLaserLine_mgr_speed)
-            line_distance    = read_float(current_laser_ptr + zLaserLine_distance)
-                                    
             lasers.append(LineLaser(
                 **laser_base,
-                start_pos = (line_start_pos_x, line_start_pos_y),
-                init_angle = line_init_angle,
-                max_length = line_max_length,
-                init_speed = line_init_speed, 
-                distance = line_distance,
+                **extract_line_laser(current_laser_ptr)
             ))
             
         elif laser_type == 1: #INFINITE
-            infinite_start_pos_x   = read_float(current_laser_ptr + zLaserInfinite_start_pos)
-            infinite_start_pos_y   = read_float(current_laser_ptr + zLaserInfinite_start_pos + 0x4)
-            infinite_origin_vel_x  = read_float(current_laser_ptr + zLaserInfinite_velocity)
-            infinite_origin_vel_y  = read_float(current_laser_ptr + zLaserInfinite_velocity + 0x4)
-            infinite_default_angle = read_float(current_laser_ptr + zLaserInfinite_mgr_angle)
-            infinite_angular_vel   = read_float(current_laser_ptr + zLaserInfinite_angle_vel)    
-            infinite_init_length   = read_float(current_laser_ptr + zLaserInfinite_mgr_len)
-            infinite_max_length    = read_float(current_laser_ptr + zLaserInfinite_final_len)
-            infinite_max_width     = read_float(current_laser_ptr + zLaserInfinite_final_width)
-            infinite_default_speed = read_float(current_laser_ptr + zLaserInfinite_mgr_speed)
-            infinite_start_time    = read_int(current_laser_ptr + zLaserInfinite_start_time)
-            infinite_expand_time   = read_int(current_laser_ptr + zLaserInfinite_expand_time)
-            infinite_active_time   = read_int(current_laser_ptr + zLaserInfinite_active_time)
-            infinite_shrink_time   = read_int(current_laser_ptr + zLaserInfinite_shrink_time)
-            infinite_distance      = read_float(current_laser_ptr + zLaserInfinite_mgr_distance)
-            
             lasers.append(InfiniteLaser(
                 **laser_base,
-                start_pos = (infinite_start_pos_x, infinite_start_pos_y),
-                origin_vel = (infinite_origin_vel_x, infinite_origin_vel_y),
-                default_angle = infinite_default_angle,
-                angular_vel = infinite_angular_vel,
-                init_length = infinite_init_length,
-                max_length = infinite_max_length,
-                max_width = infinite_max_width,
-                default_speed = infinite_default_speed,
-                start_time = infinite_start_time,
-                expand_time = infinite_expand_time,
-                active_time = infinite_active_time,
-                shrink_time = infinite_shrink_time,
-                distance = infinite_distance,
+                **extract_infinite_laser(current_laser_ptr)
             ))
-        
+            
         elif laser_type == 2: #CURVE
-            curve_max_length  = read_int(current_laser_ptr + zLaserCurve_max_length)
-            curve_distance    = read_float(current_laser_ptr + zLaserCurve_distance)
-                        
-            curve_nodes = []
-            current_node_ptr  = read_int(current_laser_ptr + zLaserCurve_array)
-            for i in range(0, curve_max_length):
-                node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
-                node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
-                node_vel_x = None #seems to always be 0 for all other non-head nodes, so no need to extract
-                node_vel_y = None #you can make angle/speed extraction optional too to speed things up
-                node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
-                node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
-                
-                if i == 0: 
-                    node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
-                    node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
-                
-                curve_nodes.append(CurveNode(
-                    position = (node_pos_x, node_pos_y),
-                    velocity = (node_vel_x, node_vel_y),
-                    angle = node_angle,
-                    speed = node_speed,
-                ))
-                
-                current_node_ptr += zLaserCurveNode_size
-                
             lasers.append(CurveLaser(
                 **laser_base,
-                max_length = curve_max_length,
-                distance = curve_distance,
-                nodes = curve_nodes,
+                **extract_curve_laser(current_laser_ptr)
             ))
             
         elif laser_type == 3: #BEAM 
@@ -258,6 +191,92 @@ def extract_lasers():
         
     return lasers
         
+def extract_line_laser(laser_ptr):
+    line_start_pos_x = read_float(laser_ptr + zLaserLine_start_pos)
+    line_start_pos_y = read_float(laser_ptr + zLaserLine_start_pos + 0x4)
+    line_init_angle  = read_float(laser_ptr + zLaserLine_mgr_angle)
+    line_max_length  = read_float(laser_ptr + zLaserLine_max_length)
+    line_init_speed  = read_float(laser_ptr + zLaserLine_mgr_speed)
+    line_distance    = read_float(laser_ptr + zLaserLine_distance)
+                            
+    return {
+        'start_pos': (line_start_pos_x, line_start_pos_y),
+        'init_angle': line_init_angle,
+        'max_length': line_max_length,
+        'init_speed': line_init_speed, 
+        'distance': line_distance,
+    }
+    
+def extract_infinite_laser(laser_ptr):
+    infinite_start_pos_x   = read_float(laser_ptr + zLaserInfinite_start_pos)
+    infinite_start_pos_y   = read_float(laser_ptr + zLaserInfinite_start_pos + 0x4)
+    infinite_origin_vel_x  = read_float(laser_ptr + zLaserInfinite_velocity)
+    infinite_origin_vel_y  = read_float(laser_ptr + zLaserInfinite_velocity + 0x4)
+    infinite_default_angle = read_float(laser_ptr + zLaserInfinite_mgr_angle)
+    infinite_angular_vel   = read_float(laser_ptr + zLaserInfinite_angle_vel)    
+    infinite_init_length   = read_float(laser_ptr + zLaserInfinite_mgr_len)
+    infinite_max_length    = read_float(laser_ptr + zLaserInfinite_final_len)
+    infinite_max_width     = read_float(laser_ptr + zLaserInfinite_final_width)
+    infinite_default_speed = read_float(laser_ptr + zLaserInfinite_mgr_speed)
+    infinite_start_time    = read_int(laser_ptr + zLaserInfinite_start_time)
+    infinite_expand_time   = read_int(laser_ptr + zLaserInfinite_expand_time)
+    infinite_active_time   = read_int(laser_ptr + zLaserInfinite_active_time)
+    infinite_shrink_time   = read_int(laser_ptr + zLaserInfinite_shrink_time)
+    infinite_distance      = read_float(laser_ptr + zLaserInfinite_mgr_distance)
+    
+    return {
+        'start_pos': (infinite_start_pos_x, infinite_start_pos_y),
+        'origin_vel': (infinite_origin_vel_x, infinite_origin_vel_y),
+        'default_angle': infinite_default_angle,
+        'angular_vel': infinite_angular_vel,
+        'init_length': infinite_init_length,
+        'max_length': infinite_max_length,
+        'max_width': infinite_max_width,
+        'default_speed': infinite_default_speed,
+        'start_time': infinite_start_time,
+        'expand_time': infinite_expand_time,
+        'active_time': infinite_active_time,
+        'shrink_time': infinite_shrink_time,
+        'distance': infinite_distance,
+    }
+    
+def extract_curve_laser(laser_ptr):
+    curve_max_length  = read_int(laser_ptr + zLaserCurve_max_length)
+    curve_distance    = read_float(laser_ptr + zLaserCurve_distance)
+                
+    curve_nodes = []
+    current_node_ptr  = read_int(laser_ptr + zLaserCurve_array)
+    for i in range(0, curve_max_length):
+        node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
+        node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
+        node_vel_x = None
+        node_vel_y = None
+        node_angle = None
+        node_speed = None
+        
+        if i == 0 or requires_max_curve_data:
+            node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
+            node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
+            
+            if i == 0:
+                node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
+                node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
+
+        
+        curve_nodes.append(CurveNode(
+            position = (node_pos_x, node_pos_y),
+            velocity = (node_vel_x, node_vel_y),
+            angle = node_angle,
+            speed = node_speed,
+        ))
+                
+        current_node_ptr += zLaserCurveNode_size
+        
+    return {
+        'max_length': curve_max_length,
+        'distance': curve_distance,
+        'nodes': curve_nodes,
+    }
 
 def extract_game_state(frame_id = None, real_time = None):    
     gs = GameState(

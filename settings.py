@@ -19,7 +19,10 @@ extraction_settings = {
     'requires_enemies':     True,
     'requires_items':       True,
     'requires_lasers':      True,
-    'requires_screenshots': False
+    'requires_screenshots': False,
+    
+    # See settings.md for more info
+    'requires_max_curve_data': False
 }
 
 # Single-State Extraction Settings

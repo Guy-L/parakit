@@ -16,12 +16,13 @@ Disable extraction of entities not required for your analysis to reduce lag (esp
 
 | Name / Type | Description | Default |
 |-|-|-|
-| **`analyzer`** | Name of an analysis class (e.g. `'AnalysisMostBulletsFrame'`) in `analysis.py`. Sample analyses to get started and plot various entities can be found in `analysis_examples.py`.| `'AnalysisTemplate'` |
-| **`requiresBullets`** | If enabled, extracted states will contain bullet data. | `True` |
-| **`requiresEnemies`** | If enabled, extracted states will contain enemy data. | `True` |
-| **`requiresItems`** | If enabled, extracted states will contain item data. | `True` |
-| **`requiresLasers`** | If enabled, extracted states will contain laser data. | `True` |
-| **`requiresScreenshots`** | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
+| **`analyzer`**<br>(string) | Name of an analysis class (e.g. `'AnalysisMostBulletsFrame'`) in `analysis.py`. Sample analyses to get started and plot various entities can be found in `analysis_examples.py`.| `'AnalysisTemplate'` |
+| **`requires_bullets`**<br>(bool) | If enabled, extracted states will contain bullet data. | `True` |
+| **`requires_enemies`**<br>(bool) | If enabled, extracted states will contain enemy data. | `True` |
+| **`requires_items`**<br>(bool) | If enabled, extracted states will contain item data. | `True` |
+| **`requires_lasers`**<br>(bool) | If enabled, extracted states will contain laser data. | `True` |
+| **`requires_screenshots`**<br>(bool) | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
+| **`requires_max_curve_data`**<br>(bool) | If enabled, non-head curvy laser nodes will also have their speed/angle extracted. Velocity is only extracted for the head node (the value is 0 for all others) and by default, the same applies to speed and angle for performance reasons. Unclear why you'd want this. | `False` |
 
 ## Single-State Extraction Settings
 Settings for single-state extraction, in which the current state of the game is extracted and printed.
