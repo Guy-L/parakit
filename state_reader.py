@@ -1,7 +1,7 @@
 from options import *
 from interface import *
 from game_entities import *
-import analysis
+import analysis_examples as analysis #(includes analysis.py analyzers)
 import sys
 import math
 import atexit
@@ -461,7 +461,7 @@ if frame_count == 0:
     print_game_state(state)
     
     print("================================")
-    analysis.done(requiresScreenshots)
+    analysis.done()
     
     if exact:
         print("Note: Exact mode was enabled but no well-formed duration was found.")
@@ -506,4 +506,4 @@ else:
         pause_game()
         
     print("================================")
-    analysis.done(requiresScreenshots)
+    analysis.done()
