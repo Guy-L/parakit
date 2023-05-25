@@ -4,6 +4,7 @@ from game_entities import *
 import analysis_examples as analysis #(includes analysis.py analyzers)
 import sys
 import math
+import time
 import atexit
 
 zPlayer        = read_int(player_pointer, rel=True)
@@ -11,6 +12,9 @@ zBulletManager = read_int(bullet_manager_pointer, rel=True)
 zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
 zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
+zSpellCard     = read_int(spellcard_pointer, rel=True)
+zGui           = read_int(gui_pointer, rel=True)
+ddcSeijaAnm    = read_int(seija_anm_pointer, rel=True)
 
 #For quick access
 analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots = extraction_settings.values()
@@ -77,16 +81,20 @@ def extract_enemies():
         enemy_hurtbox_y    = read_float(zEnemy + zEnemy_hurtbox + 0x4)
         enemy_hitbox_x     = read_float(zEnemy + zEnemy_hitbox)
         enemy_hitbox_y     = read_float(zEnemy + zEnemy_hitbox + 0x4)
+        enemy_is_boss      = zEnemyFlags & zEnemyFlags_is_boss != 0
+        enemy_subboss_id   = read_int(zEnemy + zEnemy_subboss_id)
         enemy_rotation     = read_float(zEnemy + zEnemy_rotation)
         enemy_score_reward = read_int(zEnemy + zEnemy_score_reward)
         enemy_hp           = read_int(zEnemy + zEnemy_hp)
         enemy_hp_max       = read_int(zEnemy + zEnemy_hp_max)
         enemy_iframes      = read_int(zEnemy + zEnemy_iframes)
-                
+        
         enemies.append(Enemy(
             position     = (enemy_x, enemy_y), 
             hurtbox      = (enemy_hurtbox_x, enemy_hurtbox_y), 
             hitbox       = (enemy_hitbox_x, enemy_hitbox_y), 
+            is_boss      = enemy_is_boss,
+            subboss_id   = enemy_subboss_id,
             rotation     = enemy_rotation,
             score_reward = enemy_score_reward,
             hp           = enemy_hp, 
@@ -251,37 +259,56 @@ def extract_lasers():
     return lasers
         
 
-def extract_game_state():
+def extract_game_state(frame_id = None, real_time = None):    
     gs = GameState(
-        frame_id        = read_int(time_in_stage, rel=True),
-        frame_global    = read_int(global_timer),
-        state           = read_int(game_state, rel=True),
-        mode            = read_int(supervisor_addr + zSupervisor_gamemode, rel=True),
-        score           = read_int(score, rel=True) * 10,
-        lives           = read_int(lives, rel=True),
-        life_pieces     = read_int(life_pieces, rel=True),
-        bombs           = read_int(bombs, rel=True),
-        bomb_pieces     = read_int(bomb_pieces, rel=True),
-        power           = read_int(power, rel=True),
-        piv             = int(read_int(piv, rel=True) / 100),
-        graze           = read_int(graze, rel=True),
-        player_position = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
-        player_iframes  = read_int(zPlayer + zPlayer_iframes),
-        player_focused  = read_int(zPlayer + zPlayer_focused) == 1,
-        bullets         = extract_bullets() if requiresBullets else None,
-        enemies         = extract_enemies() if requiresEnemies else None,
-        items           = extract_items() if requiresItems else None,
-        lasers          = extract_lasers() if requiresLasers else None,
-        screen          = get_rgb_screenshot() if requiresScreenshots else None
+        frame_stage      = read_int(time_in_stage, rel=True),
+        frame_global     = read_int(global_timer),
+        seq_frame_id     = frame_id,
+        seq_real_time    = real_time,
+        state            = read_int(game_state, rel=True),
+        mode             = read_int(game_mode, rel=True),
+        score            = read_int(score, rel=True) * 10,
+        lives            = read_int(lives, rel=True),
+        life_pieces      = read_int(life_pieces, rel=True),
+        bombs            = read_int(bombs, rel=True),
+        bomb_pieces      = read_int(bomb_pieces, rel=True),
+        power            = read_int(power, rel=True),
+        piv              = int(read_int(piv, rel=True) / 100),
+        graze            = read_int(graze, rel=True),
+        boss_timer       = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}"),
+        latest_SCB       = read_int(zSpellCard + zSpellcard_bonus),
+        input            = read_int(input, rel=True),
+        rng              = read_int(rng, rel=True),
+        player_position  = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
+        player_iframes   = read_int(zPlayer + zPlayer_iframes),
+        player_focused   = read_int(zPlayer + zPlayer_focused) == 1,
+        ddc_player_scale = read_float(zPlayer + zPlayer_scale),
+        bullets          = extract_bullets() if requires_bullets else None,
+        enemies          = extract_enemies() if requires_enemies else None,
+        items            = extract_items() if requires_items else None,
+        lasers           = extract_lasers() if requires_lasers else None,
+        screen           = get_rgb_screenshot() if requires_screenshots else None,
+        ddc_seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
     )
     
     return gs
 
 def print_game_state(gs: GameState):
-    print(f"[Stage Frame #{gs.frame_id} | Global Frame #{gs.frame_global}] SCORE: {gs.score}")
+    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] SCORE: {gs.score}")
     print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
-    print(f"| Player at {gs.player_position} with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
+    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}) with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
+    print(f"| RNG value: {gs.rng}")
+    
+    if gs.enemies and any(enemy.is_boss for enemy in gs.enemies):
+        print(f"| Boss timer: {gs.boss_timer}")
+        
+    if gs.ddc_seija_flip[0] != 1:
+        print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.ddc_seija_flip[0]+1)/2, 2)}%")
+    if gs.ddc_seija_flip[1] != 1:
+        print(f"| DDC Seija Vertical Flip: {round(100*(-gs.ddc_seija_flip[1]+1)/2, 2)}%")
+    if gs.ddc_player_scale > 1:
+        print(f"| DDC Player Scale: grew {gs.ddc_player_scale}x bigger")
 
     if gs.bullets:
         print("\nList of bullets:")
@@ -393,7 +420,13 @@ def print_game_state(gs: GameState):
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 17)
             description += tabulate(round(enemy.rotation, 2), 10)
             description += tabulate(enemy.iframes, 9)
-            description += f"{enemy.hp} / {enemy.hp_max}"
+            description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 15)
+            
+            if enemy.is_boss:
+                if enemy.subboss_id == 0:
+                    description += "(Boss)"
+                else:
+                    description += f"(Sub-Boss #{enemy.subboss_id})"
                 
             print(description)
     
@@ -520,7 +553,7 @@ else: #State Sequence Extraction
         if exact:
             game_process.suspend()
         
-        state = extract_game_state()
+        state = extract_game_state(i, time.perf_counter() - start_time)
         analysis.step(state)
         
         if exact:

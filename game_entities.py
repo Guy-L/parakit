@@ -20,6 +20,8 @@ class Enemy:
     position: Tuple[float, float]
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
+    is_boss: bool
+    subboss_id: int
     rotation: float
     score_reward: int
     hp: int
@@ -87,8 +89,10 @@ class CurveLaser(Laser):
     
 @dataclass
 class GameState:
-    frame_id: int
+    frame_stage: int
     frame_global: int
+    seq_frame_id: Optional[int]   
+    seq_real_time: Optional[float]
     state: int
     mode: int
     score: int
@@ -99,11 +103,17 @@ class GameState:
     power: int
     piv: int
     graze: int
+    boss_timer: float
+    latest_SCB: int
+    input: int
+    rng: int
     player_position: Tuple[float, float]
     player_iframes: int
     player_focused: bool
+    ddc_player_scale: float
     bullets: Optional[List[Bullet]]
     enemies: Optional[List[Enemy]]
     items: Optional[List[Item]]
     lasers: Optional[List[Laser]]
     screen: Optional[np.ndarray]
+    ddc_seija_flip: Tuple[float, float]

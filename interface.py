@@ -90,11 +90,15 @@ zEnemy_pos            = zEnemy_data + 0x44
 zEnemy_hurtbox        = zEnemy_data + 0x110
 zEnemy_hitbox         = zEnemy_data + 0x118
 zEnemy_rotation       = zEnemy_data + 0x120
+zEnemy_time           = zEnemy_data + 0x2bc + 0x4
 zEnemy_score_reward   = zEnemy_data + 0x3f70
 zEnemy_hp             = zEnemy_data + 0x3f74
 zEnemy_hp_max         = zEnemy_data + 0x3f78
 zEnemy_iframes        = zEnemy_data + 0x3ff0
 zEnemy_flags          = zEnemy_data + 0x4054 #"flags_low" contains the useful stuff
+zEnemy_subboss_id     = zEnemy_data + 0x4064
+zEnemyFlags_is_boss   = 0x800000
+zEnemyFlags_is_real   = 0x31 #TODO: need to figure out what these bits mean - might be filtering too much!
 
 # Items
 item_manager_pointer   = 0xdb660
@@ -172,15 +176,30 @@ zLaserCurveNode_size  = 0x20
 ascii_manager_pointer = 0xdb520
 global_timer          = 0x191e0 #frames the ascii manager has been alive = global frame counter (it never dies)
 
-supervisor_addr      = 0xd8f60
-zSupervisor_gamemode = 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
-zSupervisor_rng_seed = 0x728
+# Spell Card
+spellcard_pointer = 0xdb534
+zSpellcard_bonus  = 0x80
+#TODO to display in print: determine if active
+#also good to get: history, ID?
+
+# GUI
+gui_pointer       = 0xdb550
+zGui_bosstimer_s  = 0x19c
+zGui_bosstimer_ms = 0x1a0
+
 
 # Supervisor
 supervisor_addr = 0xd8f60
 game_mode       = supervisor_addr + 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
 rng_seed        = supervisor_addr + 0x728 #based on time when game was launched; never changes
 
+# DDC-specific
+seija_anm_pointer = supervisor_addr + 0x1c8
+seija_flip_x      = 0x60 #goes from 1 to -1 smoothly during Spell 1 & instantly during Spell 4
+seija_flip_y      = 0x64 #goes from 1 to -1 smoothly during Spell 2 & instantly during Spell 4
+zPlayer_scale     = 0x18308
+
+# Meaning Arrays
 color_coin = ['Gold', 'Silver', 'Bronze']       #color type '3'
 color4 = ['Red', 'Blue', 'Green', 'Yellow']     
 color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
