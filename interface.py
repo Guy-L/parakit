@@ -177,16 +177,15 @@ ascii_manager_pointer = 0xdb520
 global_timer          = 0x191e0 #frames the ascii manager has been alive = global frame counter (it never dies)
 
 # Spell Card
-spellcard_pointer = 0xdb534
-zSpellcard_bonus  = 0x80
-#TODO to display in print: determine if active
-#also good to get: history, ID?
+spellcard_pointer     = 0xdb534
+zSpellcard_indicator  = 0x20 #note: since I don't know what this var is, this is a hack (any better indicator?)
+zSpellcard_id         = 0x78
+zSpellcard_bonus      = 0x80
 
 # GUI
 gui_pointer       = 0xdb550
 zGui_bosstimer_s  = 0x19c
 zGui_bosstimer_ms = 0x1a0
-
 
 # Supervisor
 supervisor_addr = 0xd8f60

@@ -277,6 +277,18 @@ def extract_curve_laser(laser_ptr):
         'distance': curve_distance,
         'nodes': curve_nodes,
     }
+    
+def extract_spellcard():
+    if read_int(zSpellCard + zSpellcard_indicator) == 0:
+        return None
+    
+    spell_id = read_int(zSpellCard + zSpellcard_id)
+    spell_capture_bonus = read_int(zSpellCard + zSpellcard_bonus)
+    
+    return Spellcard(
+        spell_id = spell_id,
+        capture_bonus = spell_capture_bonus,
+    )
 
 def extract_game_state(frame_id = None, real_time = None):    
     gs = GameState(
@@ -295,7 +307,7 @@ def extract_game_state(frame_id = None, real_time = None):
         piv              = int(read_int(piv, rel=True) / 100),
         graze            = read_int(graze, rel=True),
         boss_timer       = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}"),
-        latest_SCB       = read_int(zSpellCard + zSpellcard_bonus),
+        spellcard        = extract_spellcard(),
         input            = read_int(input, rel=True),
         rng              = read_int(rng, rel=True),
         player_position  = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
@@ -321,6 +333,9 @@ def print_game_state(gs: GameState):
     
     if gs.enemies and any(enemy.is_boss for enemy in gs.enemies):
         print(f"| Boss timer: {gs.boss_timer}")
+        
+    if gs.spellcard:
+        print(f"| Spell ID#{gs.spellcard.spell_id}, SCB: {gs.spellcard.capture_bonus}")
         
     if gs.ddc_seija_flip[0] != 1:
         print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.ddc_seija_flip[0]+1)/2, 2)}%")

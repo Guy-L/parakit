@@ -86,6 +86,11 @@ class CurveLaser(Laser):
     max_length: int 
     distance: float
     nodes: List[CurveNode]   
+
+@dataclass
+class Spellcard:
+    spell_id: int
+    capture_bonus: int
     
 @dataclass
 class GameState:
@@ -104,7 +109,7 @@ class GameState:
     piv: int
     graze: int
     boss_timer: float
-    latest_SCB: int
+    spellcard: Optional[Spellcard]
     input: int
     rng: int
     player_position: Tuple[float, float]
