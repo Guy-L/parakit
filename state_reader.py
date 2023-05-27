@@ -292,34 +292,35 @@ def extract_spellcard():
 
 def extract_game_state(frame_id = None, real_time = None):    
     gs = GameState(
-        frame_stage      = read_int(time_in_stage, rel=True),
-        frame_global     = read_int(global_timer),
-        seq_frame_id     = frame_id,
-        seq_real_time    = real_time,
-        state            = read_int(game_state, rel=True),
-        mode             = read_int(game_mode, rel=True),
-        score            = read_int(score, rel=True) * 10,
-        lives            = read_int(lives, rel=True),
-        life_pieces      = read_int(life_pieces, rel=True),
-        bombs            = read_int(bombs, rel=True),
-        bomb_pieces      = read_int(bomb_pieces, rel=True),
-        power            = read_int(power, rel=True),
-        piv              = int(read_int(piv, rel=True) / 100),
-        graze            = read_int(graze, rel=True),
-        boss_timer       = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}"),
-        spellcard        = extract_spellcard(),
-        input            = read_int(input, rel=True),
-        rng              = read_int(rng, rel=True),
-        player_position  = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
-        player_iframes   = read_int(zPlayer + zPlayer_iframes),
-        player_focused   = read_int(zPlayer + zPlayer_focused) == 1,
-        ddc_player_scale = read_float(zPlayer + zPlayer_scale),
-        bullets          = extract_bullets() if requires_bullets else None,
-        enemies          = extract_enemies() if requires_enemies else None,
-        items            = extract_items() if requires_items else None,
-        lasers           = extract_lasers() if requires_lasers else None,
-        screen           = get_rgb_screenshot() if requires_screenshots else None,
-        ddc_seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
+        frame_stage         = read_int(time_in_stage, rel=True),
+        frame_global        = read_int(global_timer),
+        seq_frame_id        = frame_id,
+        seq_real_time       = real_time,
+        state               = read_int(game_state, rel=True),
+        mode                = read_int(game_mode, rel=True),
+        score               = read_int(score, rel=True) * 10,
+        lives               = read_int(lives, rel=True),
+        life_pieces         = read_int(life_pieces, rel=True),
+        bombs               = read_int(bombs, rel=True),
+        bomb_pieces         = read_int(bomb_pieces, rel=True),
+        power               = read_int(power, rel=True),
+        piv                 = int(read_int(piv, rel=True) / 100),
+        graze               = read_int(graze, rel=True),
+        boss_timer          = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}"),
+        spellcard           = extract_spellcard(),
+        input               = read_int(input, rel=True),
+        rng                 = read_int(rng, rel=True),
+        player_position     = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
+        player_hitbox_min_x = read_float(zPlayer + zPlayer_hurtbox),
+        player_iframes      = read_int(zPlayer + zPlayer_iframes),
+        player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
+        ddc_player_scale    = read_float(zPlayer + zPlayer_scale),
+        bullets             = extract_bullets() if requires_bullets else None,
+        enemies             = extract_enemies() if requires_enemies else None,
+        items               = extract_items() if requires_items else None,
+        lasers              = extract_lasers() if requires_lasers else None,
+        screen              = get_rgb_screenshot() if requires_screenshots else None,
+        ddc_seija_flip      = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
     )
     
     return gs
@@ -327,7 +328,7 @@ def extract_game_state(frame_id = None, real_time = None):
 def print_game_state(gs: GameState):
     print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] SCORE: {gs.score}")
     print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
-    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}) with {gs.player_iframes} invulnerability frames {'(focused movement)' if gs.player_focused else '(unfocused movement)'}")
+    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}) w/ hitbox radius {round(gs.player_position[0] - gs.player_hitbox_min_x, 2)}, {gs.player_iframes} iframes, {'focused movement' if gs.player_focused else 'unfocused movement'}")
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| RNG value: {gs.rng}")
     
@@ -342,7 +343,7 @@ def print_game_state(gs: GameState):
     if gs.ddc_seija_flip[1] != 1:
         print(f"| DDC Seija Vertical Flip: {round(100*(-gs.ddc_seija_flip[1]+1)/2, 2)}%")
     if gs.ddc_player_scale > 1:
-        print(f"| DDC Player Scale: grew {gs.ddc_player_scale}x bigger")
+        print(f"| DDC Player Scale: grew {round(gs.ddc_player_scale, 2)}x bigger!")
 
     if gs.bullets:
         print("\nList of bullets:")

@@ -64,7 +64,7 @@ stage           = 0xf58a4
 # Player
 player_pointer  = 0xdb67c 
 zPlayer_pos     = 0x5e0
-zPlayer_hurtbox = 0x630  #TODO use
+zPlayer_hurtbox = 0x630
 zPlayer_iframes = 0x182c4
 zPlayer_focused = 0x184b0
 

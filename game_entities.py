@@ -113,6 +113,7 @@ class GameState:
     input: int
     rng: int
     player_position: Tuple[float, float]
+    player_hitbox_min_x: float
     player_iframes: int
     player_focused: bool
     ddc_player_scale: float
