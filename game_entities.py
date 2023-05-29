@@ -21,6 +21,7 @@ class Enemy:
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
     is_boss: bool
+    has_hitbox: bool
     subboss_id: int
     rotation: float
     score_reward: int

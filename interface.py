@@ -97,8 +97,11 @@ zEnemy_hp_max         = zEnemy_data + 0x3f78
 zEnemy_iframes        = zEnemy_data + 0x3ff0
 zEnemy_flags          = zEnemy_data + 0x4054 #"flags_low" contains the useful stuff
 zEnemy_subboss_id     = zEnemy_data + 0x4064
-zEnemyFlags_is_boss   = 0x800000
-zEnemyFlags_is_real   = 0x31 #TODO: need to figure out what these bits mean - might be filtering too much!
+
+zEnemyFlags_is_boss    = 0x800000
+#zEnemyFlags_timeout    = 0x10000 not needed
+zEnemyFlags_intangible = 0x20
+zEnemyFlags_no_hitbox  = 0x2 
 
 # Items
 item_manager_pointer   = 0xdb660

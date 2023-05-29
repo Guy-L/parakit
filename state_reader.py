@@ -72,7 +72,7 @@ def extract_enemies():
         zEnemy = current_enemy_list["entry"]
         zEnemyFlags = read_int(zEnemy + zEnemy_flags)
         
-        if zEnemyFlags & zEnemyFlags_is_real != 0: 
+        if zEnemyFlags & zEnemyFlags_intangible != 0: 
             continue
             
         enemy_x            = read_float(zEnemy + zEnemy_pos)
@@ -82,6 +82,7 @@ def extract_enemies():
         enemy_hitbox_x     = read_float(zEnemy + zEnemy_hitbox)
         enemy_hitbox_y     = read_float(zEnemy + zEnemy_hitbox + 0x4)
         enemy_is_boss      = zEnemyFlags & zEnemyFlags_is_boss != 0
+        enemy_has_hitbox   = zEnemyFlags & zEnemyFlags_no_hitbox == 0
         enemy_subboss_id   = read_int(zEnemy + zEnemy_subboss_id)
         enemy_rotation     = read_float(zEnemy + zEnemy_rotation)
         enemy_score_reward = read_int(zEnemy + zEnemy_score_reward)
@@ -94,6 +95,7 @@ def extract_enemies():
             hurtbox      = (enemy_hurtbox_x, enemy_hurtbox_y), 
             hitbox       = (enemy_hitbox_x, enemy_hitbox_y), 
             is_boss      = enemy_is_boss,
+            has_hitbox   = enemy_has_hitbox,
             subboss_id   = enemy_subboss_id,
             rotation     = enemy_rotation,
             score_reward = enemy_score_reward,
@@ -332,7 +334,7 @@ def print_game_state(gs: GameState):
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| RNG value: {gs.rng}")
     
-    if gs.enemies and any(enemy.is_boss for enemy in gs.enemies):
+    if (gs.enemies and any(enemy.is_boss for enemy in gs.enemies)) or gs.spellcard:
         print(f"| Boss timer: {gs.boss_timer}")
         
     if gs.spellcard:
@@ -459,9 +461,12 @@ def print_game_state(gs: GameState):
             
             if enemy.is_boss:
                 if enemy.subboss_id == 0:
-                    description += "(Boss)"
+                    description += "(Boss) "
                 else:
-                    description += f"(Sub-Boss #{enemy.subboss_id})"
+                    description += f"(Sub-Boss #{enemy.subboss_id}) "
+                    
+            if not enemy.has_hitbox:
+                description += "(Hitbox Off) "
                 
             print(description)
     
