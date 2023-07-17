@@ -1,5 +1,7 @@
 # ParaKit - Touhou Data Analysis
 
+## Warning: This README is due for a rewrite, and the sections regarding setup and running are outdated (old methods still apply, but setup/running is now done when running the new main script - `parakit.py`). Documentation for new settings can be found [here](./settings.md).
+
 Simple python tool to extract relevant game state data for a given frame: 
 * player coords and movement state, 
 * resources, 
