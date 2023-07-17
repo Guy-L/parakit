@@ -1,34 +1,33 @@
-# state-reader: Touhou Data Analysis
+# ParaKit - Touhou Data Analysis
 
-Simple python tool to extract game state data for a given frame: 
+Simple python tool to extract relevant game state data for a given frame: 
 * player coords and movement state, 
 * resources, 
 * list of on-screen enemies, bullets, items and lasers, 
 * screenshot (optional, slow)
+* and much more!
 
 <br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster of a given radius be?
 
-Doesn't yet work with every game and will definitely need some changes to maximize usability
-<br>If you have feature requests or need help making your own custom analysis let me know
 
 Supported games:
 * DDC
 
-Goals:
-* Game window selector options
-* Make use of dictionary unpacking to seperate option imports (interface options, state reader options etc)
-* Document options and update this document
-* Real-time timer + spell/nonspell timer
-* Fix "Error: Operation completed successfully" Windows cringe
-* hasScreenshot argument in done can be removed easily
-* Minor stuff to add: seija flip data, current RNG value, Grow Bigger & You Grow Bigger
-* Save-stating
-* Multi-game support (refactoring)
-  * Re-examine need for storing values prior to declaring dataclasses
-* UM support
+Goals (Priority):
+* Multi-game support (w/ likely major refactoring)
+  * UM support
+* Porting interface to C++
+
+Goals (After TWC):
+* Rework this document (new settings, launcher etc)
 * LoLK support
 * MoF support 
+* State saving/reloading
+* Fix "Error: Operation completed successfully" Windows cringe
 * Player bullet/bomb data?
+
+If you have feature requests or need help making your own custom analysis, please let me know.
+
 
 To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
 <br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies, items and lasers to make extraction faster with the `requiresBullets`, `requiresEnemies`, `requiresItems` and `requiresLasers` booleans respectively (True for all by default).
