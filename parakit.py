@@ -30,6 +30,9 @@ if not os.path.isfile(os.path.join(_venv_path, 'pyvenv.cfg')):
         
     venv.create(_venv_path, with_pip=True)
     print(f"Setup: venv created at '{_venv_path}'")
+    print("\nIf this is your first time using ParaKit, welcome!")
+    print("Please give us a moment to finish setting up.\nIt should take about a minute.\n")
+    print("If it seems to do no progress at all for a while, try pressing Enter. Python's weird.")
 
 _pip_exe = os.path.join(_venv_path, 'bin', 'pip') if platform.system() != 'Windows' else os.path.join(_venv_path, 'Scripts', 'pip')
 _python_exe = os.path.join(_venv_path, 'bin', 'python') if platform.system() != 'Windows' else os.path.join(_venv_path, 'Scripts', 'python')
@@ -44,7 +47,7 @@ def get_required_packages(requirements_path):
         return {line.split('==')[0] for line in reqs if line and not line.startswith('#')}
         
 if get_required_packages(_reqs_path) - get_installed_packages(_venv_path):
-    print(f"Setup: Missing packages detected; running pip install.")
+    print("Setup: Missing packages detected; running pip install.")
     try:
         subprocess.check_call([_pip_exe, "install", "-r", _reqs_path])
         print(f"Setup: All required modules installed to '{_venv_path}'")
@@ -58,9 +61,9 @@ else:
 subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
-VERSION_DATE = datetime(2023, 5, 31, 0, 0) #note for the dev: always set to slightly in the future before commit or else...
+VERSION_DATE = datetime(2023, 7, 20, 2, 0) #note for the dev: always set to slightly in the future before commit or else...
 
-_commits_response = requests.get('https://api.github.com/repos/Guy-L/thgym/commits?sha=state-reader') #todo update to new repo
+_commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
 
 try:
     _commits_response.raise_for_status()
