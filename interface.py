@@ -1,4 +1,5 @@
 from settings import interface_settings as _settings
+from offsets import offsets
 import pygetwindow as gw
 import pyautogui
 import psutil
@@ -34,192 +35,179 @@ if not _module_name:
     exit()
     
 
-# ==================================================
-# GAME SPECIFIC STUFF -- TO BE REFACTORED ==========
+# ==========================================================
+# GAME SPECIFIC STUFF -- TO BE REFACTORED FURTHER ==========
+
 # Statics
-score         = 0xf5830
-graze         = 0xf5840
-piv           = 0xf584c
-power         = 0xf5858
-lives         = 0xf5864
-life_pieces   = 0xf5868
-bombs         = 0xf5870
-bomb_pieces   = 0xf5874
-bonus_count   = 0xf5894
-time_in_stage = 0xf58b0
-input         = 0xd6a90
-rng           = 0xdb510
-game_state    = 0xf7ac8
+score         = offsets[_module_name].statics.score
+graze         = offsets[_module_name].statics.graze
+piv           = offsets[_module_name].statics.piv
+power         = offsets[_module_name].statics.power
+lives         = offsets[_module_name].statics.lives
+life_pieces   = offsets[_module_name].statics.life_pieces
+bombs         = offsets[_module_name].statics.bombs
+bomb_pieces   = offsets[_module_name].statics.bomb_pieces
+time_in_stage = offsets[_module_name].statics.time_in_stage
+input         = offsets[_module_name].statics.input
+rng           = offsets[_module_name].statics.rng
+game_state    = offsets[_module_name].statics.game_state
 
 # Untracked Statics
-game_speed      = 0xd8f58
-visual_rng      = 0xdb508
-replay_filename = 0xdb560
-character       = 0xf5828
-subshot         = 0xf582c
-difficulty      = 0xf5834
-rank            = 0xf583c 
-stage           = 0xf58a4 
+game_speed      = offsets[_module_name].statics_untracked.game_speed
+visual_rng      = offsets[_module_name].statics_untracked.visual_rng
+replay_filename = offsets[_module_name].statics_untracked.replay_filename
+character       = offsets[_module_name].statics_untracked.character
+subshot         = offsets[_module_name].statics_untracked.subshot
+difficulty      = offsets[_module_name].statics_untracked.difficulty
+rank            = offsets[_module_name].statics_untracked.rank
+stage           = offsets[_module_name].statics_untracked.stage
 
 # Player
-player_pointer  = 0xdb67c 
-zPlayer_pos     = 0x5e0
-zPlayer_hurtbox = 0x630
-zPlayer_iframes = 0x182c4
-zPlayer_focused = 0x184b0
+player_pointer  = offsets[_module_name].player.player_pointer
+zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
+zPlayer_hurtbox = offsets[_module_name].player.zPlayer_hurtbox
+zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
+zPlayer_focused = offsets[_module_name].player.zPlayer_focused
 
 # Bullets
-bullet_manager_pointer = 0xdb530
-zBulletManager_list    = 0x7c
-zBullet_iframes        = 0x24
-zBullet_pos            = 0xbc0
-zBullet_velocity       = 0xbcc
-zBullet_speed          = 0xbd8
-zBullet_angle          = 0xbdc
-zBullet_hitbox_radius  = 0xbe0
-zBullet_ex_delay_timer = 0x12ec #only DDC/ISC/HBM
-zBullet_scale          = 0x13bc
-zBullet_type           = 0x13ec
-zBullet_color          = 0x13ee
+bullet_manager_pointer = offsets[_module_name].bullets.bullet_manager_pointer
+zBulletManager_list    = offsets[_module_name].bullets.zBulletManager_list
+zBullet_iframes        = offsets[_module_name].bullets.zBullet_iframes
+zBullet_pos            = offsets[_module_name].bullets.zBullet_pos
+zBullet_velocity       = offsets[_module_name].bullets.zBullet_velocity
+zBullet_speed          = offsets[_module_name].bullets.zBullet_speed
+zBullet_angle          = offsets[_module_name].bullets.zBullet_angle
+zBullet_hitbox_radius  = offsets[_module_name].bullets.zBullet_hitbox_radius
+zBullet_ex_delay_timer = offsets[_module_name].bullets.zBullet_ex_delay_timer
+zBullet_scale          = offsets[_module_name].bullets.zBullet_scale
+zBullet_type           = offsets[_module_name].bullets.zBullet_type
+zBullet_color          = offsets[_module_name].bullets.zBullet_color
 
 # Enemies
-enemy_manager_pointer = 0xdb544
-zEnemyManager_list    = 0xd0
-zEnemy_data           = 0x11f0
-zEnemy_pos            = zEnemy_data + 0x44
-zEnemy_hurtbox        = zEnemy_data + 0x110
-zEnemy_hitbox         = zEnemy_data + 0x118
-zEnemy_rotation       = zEnemy_data + 0x120
-zEnemy_time           = zEnemy_data + 0x2bc + 0x4
-zEnemy_score_reward   = zEnemy_data + 0x3f70
-zEnemy_hp             = zEnemy_data + 0x3f74
-zEnemy_hp_max         = zEnemy_data + 0x3f78
-zEnemy_iframes        = zEnemy_data + 0x3ff0
-zEnemy_flags          = zEnemy_data + 0x4054 #"flags_low" contains the useful stuff
-zEnemy_subboss_id     = zEnemy_data + 0x4064
+enemy_manager_pointer = offsets[_module_name].enemies.enemy_manager_pointer
+zEnemyManager_list    = offsets[_module_name].enemies.zEnemyManager_list
+zEnemy_data           = offsets[_module_name].enemies.zEnemy_data
+zEnemyManager_list    = offsets[_module_name].enemies.zEnemyManager_list
+zEnemy_pos            = offsets[_module_name].enemies.zEnemy_pos
+zEnemy_hurtbox        = offsets[_module_name].enemies.zEnemy_hurtbox
+zEnemy_hitbox         = offsets[_module_name].enemies.zEnemy_hitbox
+zEnemy_rotation       = offsets[_module_name].enemies.zEnemy_rotation
+zEnemy_time           = offsets[_module_name].enemies.zEnemy_time
+zEnemy_score_reward   = offsets[_module_name].enemies.zEnemy_score_reward
+zEnemy_hp             = offsets[_module_name].enemies.zEnemy_hp
+zEnemy_hp_max         = offsets[_module_name].enemies.zEnemy_hp_max
+zEnemy_iframes        = offsets[_module_name].enemies.zEnemy_iframes
+zEnemy_flags          = offsets[_module_name].enemies.zEnemy_flags
+zEnemy_subboss_id     = offsets[_module_name].enemies.zEnemy_subboss_id
 
-zEnemyFlags_is_boss    = 0x800000
-#zEnemyFlags_timeout    = 0x10000 not needed
-zEnemyFlags_intangible = 0x20
-zEnemyFlags_no_hitbox  = 0x2 
+zEnemyFlags_is_boss    = offsets[_module_name].associations.zEnemyFlags_is_boss
+zEnemyFlags_intangible = offsets[_module_name].associations.zEnemyFlags_intangible
+zEnemyFlags_no_hitbox  = offsets[_module_name].associations.zEnemyFlags_no_hitbox
 
 # Items
-item_manager_pointer   = 0xdb660
-zItemManager_array     = 0x14
-zItemManager_array_len = 0xddd854
-zItem_len              = 0xc18
-zItem_state            = 0xbf0 
-zItem_type             = 0xbf4
-zItem_pos              = 0xbac
-zItem_vel              = 0xbb8
+item_manager_pointer   = offsets[_module_name].items.item_manager_pointer
+zItemManager_array     = offsets[_module_name].items.zItemManager_array
+zItemManager_array_len = offsets[_module_name].items.zItemManager_array_len
+zItem_len              = offsets[_module_name].items.zItem_len
+zItem_state            = offsets[_module_name].items.zItem_state
+zItem_type             = offsets[_module_name].items.zItem_type
+zItem_pos              = offsets[_module_name].items.zItem_pos
+zItem_vel              = offsets[_module_name].items.zItem_vel
 
 # Laser (Base)
-laser_manager_pointer   = 0xdb664
-zLaserManager_list      = 0x5d0
-zLaserBaseClass_next    = 0x4
-zLaserBaseClass_state   = 0x10    
-zLaserBaseClass_type    = 0x14     
-zLaserBaseClass_timer   = 0x1c
-zLaserBaseClass_offset  = 0x54
-zLaserBaseClass_angle   = 0x6c
-zLaserBaseClass_length  = 0x70
-zLaserBaseClass_width   = 0x74
-zLaserBaseClass_speed   = 0x78
-zLaserBaseClass_id      = 0x80     
-zLaserBaseClass_iframes = 0x5b4     
-zLaserBaseClass_sprite  = 0x5b8  
-zLaserBaseClass_color   = 0x5bc
+laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
+zLaserManager_list      = offsets[_module_name].laser_base.zLaserManager_list
+zLaserBaseClass_next    = offsets[_module_name].laser_base.zLaserBaseClass_next
+zLaserBaseClass_state   = offsets[_module_name].laser_base.zLaserBaseClass_state
+zLaserBaseClass_type    = offsets[_module_name].laser_base.zLaserBaseClass_type
+zLaserBaseClass_timer   = offsets[_module_name].laser_base.zLaserBaseClass_timer
+zLaserBaseClass_offset  = offsets[_module_name].laser_base.zLaserBaseClass_offset
+zLaserBaseClass_angle   = offsets[_module_name].laser_base.zLaserBaseClass_angle
+zLaserBaseClass_length  = offsets[_module_name].laser_base.zLaserBaseClass_length
+zLaserBaseClass_width   = offsets[_module_name].laser_base.zLaserBaseClass_width
+zLaserBaseClass_speed   = offsets[_module_name].laser_base.zLaserBaseClass_speed
+zLaserBaseClass_id      = offsets[_module_name].laser_base.zLaserBaseClass_id
+zLaserBaseClass_iframes = offsets[_module_name].laser_base.zLaserBaseClass_iframes
+zLaserBaseClass_sprite  = offsets[_module_name].laser_base.zLaserBaseClass_sprite
+zLaserBaseClass_color   = offsets[_module_name].laser_base.zLaserBaseClass_color
 
 # Laser (Line)
-zLaserLine_start_pos    = 0x5c0 
-zLaserLine_mgr_angle    = 0x5cc    
-zLaserLine_max_length   = 0x5d0 
-#zLaserLine_mgr_width    = 0x5dc  storing manager value is redundant  
-zLaserLine_mgr_speed    = 0x5e0   
-#zLaserLine_mgr_sprite   = 0x5e4  storing manager value is redundant
-#zLaserLine_mgr_color    = 0x5e8  storing manager value is redundant
-zLaserLine_distance     = 0x5ec
+zLaserLine_start_pos  = offsets[_module_name].laser_line.zLaserLine_start_pos
+zLaserLine_mgr_angle  = offsets[_module_name].laser_line.zLaserLine_mgr_angle
+zLaserLine_max_length = offsets[_module_name].laser_line.zLaserLine_max_length
+zLaserLine_mgr_speed  = offsets[_module_name].laser_line.zLaserLine_mgr_speed
+zLaserLine_distance   = offsets[_module_name].laser_line.zLaserLine_distance
 
 # Laser (Infinite)
-zLaserInfinite_start_pos    = 0x5c0
-zLaserInfinite_velocity     = 0x5cc
-zLaserInfinite_mgr_angle    = 0x5d8
-zLaserInfinite_angle_vel    = 0x5dc
-zLaserInfinite_final_len    = 0x5e0
-zLaserInfinite_mgr_len      = 0x5e4
-zLaserInfinite_final_width  = 0x5e8
-zLaserInfinite_mgr_speed    = 0x5ec
-zLaserInfinite_start_time   = 0x5f0
-zLaserInfinite_expand_time  = 0x5f4
-zLaserInfinite_active_time  = 0x5f8
-zLaserInfinite_shrink_time  = 0x5fc
-zLaserInfinite_mgr_distance = 0x60c
-#zLaserInfinite_mgr_sprite   = 0x610  storing manager value is redundant
-#zLaserInfinite_mgr_color    = 0x614  storing manager value is redundant
+zLaserInfinite_start_pos    = offsets[_module_name].laser_infinite.zLaserInfinite_start_pos
+zLaserInfinite_velocity     = offsets[_module_name].laser_infinite.zLaserInfinite_velocity
+zLaserInfinite_mgr_angle    = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_angle
+zLaserInfinite_angle_vel    = offsets[_module_name].laser_infinite.zLaserInfinite_angle_vel
+zLaserInfinite_final_len    = offsets[_module_name].laser_infinite.zLaserInfinite_final_len
+zLaserInfinite_mgr_len      = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_len
+zLaserInfinite_final_width  = offsets[_module_name].laser_infinite.zLaserInfinite_final_width
+zLaserInfinite_mgr_speed    = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_speed
+zLaserInfinite_start_time   = offsets[_module_name].laser_infinite.zLaserInfinite_start_time
+zLaserInfinite_expand_time  = offsets[_module_name].laser_infinite.zLaserInfinite_expand_time
+zLaserInfinite_active_time  = offsets[_module_name].laser_infinite.zLaserInfinite_active_time
+zLaserInfinite_shrink_time  = offsets[_module_name].laser_infinite.zLaserInfinite_shrink_time
+zLaserInfinite_mgr_distance = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_distance
 
 # Laser (Curve)
-#zLaserCurve_start_pos  = 0x5c0  storing value is redundant          
-#zLaserCurve_angle      = 0x5cc  storing manager value is redundant
-#zLaserCurve_width      = 0x5d0  storing manager value is redundant
-#zLaserCurve_speed      = 0x5d4  storing manager value is redundant
-#zLaserCurve_sprite     = 0x5d8  storing manager value is redundant
-#zLaserCurve_color      = 0x5dc  storing manager value is redundant
-zLaserCurve_max_length = 0x5e0
-zLaserCurve_distance   = 0x5e4
-zLaserCurve_array      = 0x14ac
+zLaserCurve_max_length = offsets[_module_name].laser_curve.zLaserCurve_max_length
+zLaserCurve_distance   = offsets[_module_name].laser_curve.zLaserCurve_distance
+zLaserCurve_array      = offsets[_module_name].laser_curve.zLaserCurve_array
 
 # Curve Node
-zLaserCurveNode_pos   = 0x0 
-zLaserCurveNode_vel   = 0xc 
-zLaserCurveNode_angle = 0x18
-zLaserCurveNode_speed = 0x1c
-zLaserCurveNode_size  = 0x20
+zLaserCurveNode_pos   = offsets[_module_name].laser_curve_node.zLaserCurveNode_pos
+zLaserCurveNode_vel   = offsets[_module_name].laser_curve_node.zLaserCurveNode_vel
+zLaserCurveNode_angle = offsets[_module_name].laser_curve_node.zLaserCurveNode_angle
+zLaserCurveNode_speed = offsets[_module_name].laser_curve_node.zLaserCurveNode_speed
+zLaserCurveNode_size  = offsets[_module_name].laser_curve_node.zLaserCurveNode_size
 
-# Ascii
-ascii_manager_pointer = 0xdb520
-global_timer          = 0x191e0 #frames the ascii manager has been alive = global frame counter (it never dies)
+# Ascii 
+ascii_manager_pointer = offsets[_module_name].ascii.ascii_manager_pointer
+global_timer          = offsets[_module_name].ascii.global_timer
 
 # Spell Card
-spellcard_pointer     = 0xdb534
-zSpellcard_indicator  = 0x20 #note: since I don't know what this var is, this is a hack (any better indicator?)
-zSpellcard_id         = 0x78
-zSpellcard_bonus      = 0x80
+spellcard_pointer    = offsets[_module_name].spell_card.spellcard_pointer
+zSpellcard_indicator = offsets[_module_name].spell_card.zSpellcard_indicator
+zSpellcard_id        = offsets[_module_name].spell_card.zSpellcard_id
+zSpellcard_bonus     = offsets[_module_name].spell_card.zSpellcard_bonus
 
 # GUI
-gui_pointer       = 0xdb550
-zGui_bosstimer_s  = 0x19c
-zGui_bosstimer_ms = 0x1a0
+gui_pointer       = offsets[_module_name].gui.gui_pointer
+zGui_bosstimer_s  = offsets[_module_name].gui.zGui_bosstimer_s
+zGui_bosstimer_ms = offsets[_module_name].gui.zGui_bosstimer_ms
 
 # Supervisor
-supervisor_addr = 0xd8f60
-game_mode       = supervisor_addr + 0x6e8 #4 = anywhere in main menu, 7 = anywhere the game world is on screen, 15 = credits/endings
-rng_seed        = supervisor_addr + 0x728 #based on time when game was launched; never changes
+supervisor_addr = offsets[_module_name].supervisor.supervisor_addr
+game_mode = offsets[_module_name].supervisor.game_mode
+rng_seed = offsets[_module_name].supervisor.rng_seed
 
 # DDC-specific
-seija_anm_pointer = supervisor_addr + 0x1c8
-seija_flip_x      = 0x60 #goes from 1 to -1 smoothly during Spell 1 & instantly during Spell 4
-seija_flip_y      = 0x64 #goes from 1 to -1 smoothly during Spell 2 & instantly during Spell 4
-zPlayer_scale     = 0x18308
+bonus_count       = offsets[_module_name].game_specific['bonus_count']
+seija_anm_pointer = offsets[_module_name].game_specific['seija_anm_pointer']
+seija_flip_x      = offsets[_module_name].game_specific['seija_flip_x']
+seija_flip_y      = offsets[_module_name].game_specific['seija_flip_y']
+zPlayer_scale     = offsets[_module_name].game_specific['zPlayer_scale']
 
 # Meaning Arrays
-color_coin = ['Gold', 'Silver', 'Bronze']       #color type '3'
-color4 = ['Red', 'Blue', 'Green', 'Yellow']     
-color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
-color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
+color_coin    = offsets[_module_name].associations.color_coin
+color4        = offsets[_module_name].associations.color4
+color8        = offsets[_module_name].associations.color8
+color16       = offsets[_module_name].associations.color16
+sprites       = offsets[_module_name].associations.sprites
+curve_sprites = offsets[_module_name].associations.curve_sprites
+item_types    = offsets[_module_name].associations.item_types
+game_states   = offsets[_module_name].associations.game_states
+game_modes    = offsets[_module_name].associations.game_modes
+characters    = offsets[_module_name].associations.characters
+subshots      = offsets[_module_name].associations.subshots
+difficulties  = offsets[_module_name].associations.difficulties
 
-sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)]
-curve_sprites = ['Standard', 'Thunder']
-
-item_types = {1: "Power", 2: "Point", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 10:"Cancel"}
-game_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
-game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
-
-characters = ['Reimu', 'Marisa', 'Sakuya']
-subshots = ['A', 'B']
-difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
-
-# GAME SPECIFIC STUFF -- TO BE REFACTORED ==========
-# ==================================================
+# GAME SPECIFIC STUFF -- TO BE REFACTORED FURTHER ==========
+# ==========================================================
 
 # Step 1 - Get the game process
 game_process = None
