@@ -4,6 +4,7 @@ interface_settings = {
 
     # Select the game here; can be full name, acronym, th## or just the game number.
     # Fully supported games: DDC
+    # Partially supported games: UM
     'game': 'DDC'
 }
 

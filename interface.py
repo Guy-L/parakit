@@ -15,9 +15,24 @@ import random
 
 # Step 0 - Get the target module name and other settings
 _game_main_modules = {
+    #('6', 'th6', 'th06', 'th06.exe', 'eosd', 'teosd', 'embodiment of scarlet devil'): 'th06.exe',
+    #('7', 'th7', 'th07', 'th07.exe', 'pcb', 'perfect cherry blossom'): 'th07.exe',
+    #('8', 'th8', 'th08', 'th08.exe', 'in', 'imperishable night'): 'th08.exe',
+    #('9', 'th9', 'th09', 'th09.exe', 'pofv', 'phantasmagoria of flower view'): 'th09.exe',
+    #('9.5', 'th9.5', 'th095', 'th095.exe', 'stb', 'shoot the bullet'): 'th095.exe',
+    #('10', 'th10', 'th10.exe', 'mof', 'mountain of faith'): 'th10.exe',
+    #('11', 'th11', 'th11.exe', 'sa', 'subterranean animism'): 'th11.exe',
+    #('12', 'th12', 'th12.exe', 'ufo', 'undefined fantastic object'): 'th12.exe',
+    #('12.5', 'th12.5', 'th125', 'th125.exe', 'ds', 'double spoiler'): 'th125.exe',
+    #('12.8', 'th12.8', 'th128', 'th128.exe', 'gfw', 'great fairy wars'): 'th128.exe',
+    #('13', 'th13', 'th13.exe', 'td', 'ten desires'): 'th13.exe',
     ('14', 'th14', 'th14.exe', 'ddc', 'double dealing character'): 'th14.exe',
+    #('14.3', 'th14.3', 'th143', 'th143.exe', 'isc', 'impossible spell card'): 'th143.exe',
     #('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
-    #('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
+    ('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
+    #('16.3', 'th16.3', 'th163', 'th163.exe', 'vd', 'violet detector'): 'th163.exe',
+    #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
+    ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
 }
 
 _game = _settings['game']
