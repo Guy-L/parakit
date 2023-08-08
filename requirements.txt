@@ -20,4 +20,5 @@ PyScreeze==0.1.28
 python-dateutil==2.8.2
 pytweening==1.0.5
 pywin32==306
+scipy==1.11.1
 six==1.16.0

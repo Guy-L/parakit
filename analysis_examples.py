@@ -1,4 +1,5 @@
 from analysis import * 
+from scipy.ndimage import uniform_filter
 
 # ==========================================
 # Please use your text editor's block collapse 
@@ -308,3 +309,57 @@ class AnalysisPrintBulletsASCII(Analysis):
             print(line)
         print("```")
                     
+# UM: "Find and plot the biggest mallet spot" [only requires bullets]
+class AnalysisMostBulletsCircleFrame(AnalysisPlot):
+    plot_title = 'Scatter Plot of Bullets w/ Best Mallet'
+    
+    def __init__(self):
+        self.mallet_radius = 75 #TODO: double check!! very approximate
+        self.best_bullet_count = 0
+        self.best_x = -1
+        self.best_y = -1
+        self.step_size = 10
+
+    def calculate_exact_count(self, center, points):
+        # Count the number of points within the circle centered at center
+        x_center, y_center = center
+        count = 0
+        for x, y in points:
+            if (x - x_center) ** 2 + (y - y_center) ** 2 <= self.mallet_radius ** 2:
+                count += 1
+        return count
+
+    def step(self, state: GameState):
+        # Get bullet positions
+        bullet_positions = [bullet.position for bullet in state.bullets if -184 <= bullet.position[0] <= 184 and 0 <= bullet.position[1] <= 448]
+
+        # Initialize best values
+        best_count = 0
+        best_position = (0, 0)
+
+        # Iterate over the grid with a certain step size
+        for x in range(-184, 184, self.step_size):
+            for y in range(0, 448, self.step_size):
+                count = self.calculate_exact_count((x, y), bullet_positions)
+                if count > best_count:
+                    best_count = count
+                    best_position = (x, y)
+
+        # Update the best values
+        if best_count > self.best_bullet_count:
+            self.best_x, self.best_y = best_position
+            self.best_bullet_count = best_count
+            self.lastframe = state
+        elif not self.lastframe:
+            self.lastframe = state
+    
+    def plot(self):
+        AnalysisPlotBullets(self.lastframe).plot()
+        AnalysisPlotLineLasers(self.lastframe).plot()
+        
+        circle = plt.Circle((self.best_x, self.best_y), self.mallet_radius, color='red', fill=False)
+        plt.gca().add_patch(circle)
+        
+        print(f"Best mallet @ {self.lastframe.boss_timer}")
+        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y})")
+        print(f"Expected gold gain ~= {int(self.best_bullet_count*0.35)}")
