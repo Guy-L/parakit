@@ -30,7 +30,8 @@ extraction_settings = {
 # See settings.md for more info.
 singlext_settings = {
     'show_untracked':  False,
-    'only_game_world': True
+    'only_game_world': True,
+    'list_print_limit': 30
 }
 
 # Sequence Extraction Settings 

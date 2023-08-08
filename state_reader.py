@@ -348,6 +348,7 @@ def print_game_state(gs: GameState):
         print(f"| DDC Player Scale: grew {round(gs.ddc_player_scale, 2)}x bigger!")
 
     if gs.bullets:
+        counter = 0
         print("\nList of bullets:")
         print("  Position         Velocity         Speed   Angle   Radius  Color   Type")
         for bullet in gs.bullets:
@@ -368,6 +369,11 @@ def print_game_state(gs: GameState):
                 description += f" ({bullet.show_delay} invis frames)" 
                 
             print(description)
+            
+            counter += 1
+            if counter >= singlext_settings['list_print_limit']:
+                print(f'• ... [{len(gs.bullets)} bullets total]')
+                break
             
     if gs.lasers:
         line_lasers = [laser for laser in gs.lasers if laser.laser_type == 0]
@@ -418,11 +424,11 @@ def print_game_state(gs: GameState):
             
         if curve_lasers:
             print("\nList of curvy lasers:")
-            print("  Spawn Position  Head Position   Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
+            print("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
             for laser in curve_lasers:
                 description = "• "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
-                description += tabulate(f"({round(laser.nodes[0].position[0], 1)}, {round(laser.nodes[0].position[1], 1)})", 16)
+                description += tabulate(f"({round(laser.nodes[0].position[0], 1)}, {round(laser.nodes[0].position[1], 1)})", 18)
                 description += tabulate(f"({round(laser.nodes[0].velocity[0], 1)}, {round(laser.nodes[0].velocity[1], 1)})", 16)
                 description += tabulate(round(laser.nodes[0].speed, 1), 8)
                 description += tabulate(round(laser.nodes[0].angle, 2), 8)
@@ -471,14 +477,20 @@ def print_game_state(gs: GameState):
             print(description)
     
     if gs.mode == 7 and gs.items:
+        counter = 0
         print("\nList of items:")
-        print("  Type            Position         Velocity")
+        print("  Type             Position         Velocity")
         for item in gs.items:
             description = "• "
-            description += tabulate(item.item_type + ' Item', 16)
+            description += tabulate(item.item_type + ' Item', 17)
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
             print(description)
+            
+            counter += 1
+            if counter >= singlext_settings['list_print_limit']:
+                print(f'• ... [{len(gs.items)} items total]')
+                break
 
 #easy static stuff to grab (difficulty, stage etc) that's not worth tracking in state
 def print_untracked_vars():
