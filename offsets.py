@@ -20,7 +20,6 @@ class StaticsOffsets:
 class UntrackedStaticsOffsets:
     game_speed: int
     visual_rng: int
-    replay_filename: int
     character: int
     subshot: int
     difficulty: int
@@ -249,7 +248,6 @@ offsets = {
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xd8f58,
             visual_rng      = 0xdb508,
-            replay_filename = 0xdb560,
             character       = 0xf5828,
             subshot         = 0xf582c,
             difficulty      = 0xf5834,
@@ -427,7 +425,6 @@ offsets = {
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xCCBF0,
             visual_rng      = 0xDB508,
-            replay_filename = None,
             character       = 0xCCCF4,
             subshot         = 0xCCCF8,
             difficulty      = 0xCCD00,

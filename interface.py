@@ -70,7 +70,6 @@ game_state    = offsets[_module_name].statics.game_state
 # Untracked Statics
 game_speed      = offsets[_module_name].statics_untracked.game_speed
 visual_rng      = offsets[_module_name].statics_untracked.visual_rng
-replay_filename = offsets[_module_name].statics_untracked.replay_filename
 character       = offsets[_module_name].statics_untracked.character
 subshot         = offsets[_module_name].statics_untracked.subshot
 difficulty      = offsets[_module_name].statics_untracked.difficulty

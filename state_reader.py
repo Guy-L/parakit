@@ -498,7 +498,6 @@ def print_untracked_vars():
     print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")
     print(f"| Game Speed: {read_float(game_speed, rel=True)}")
     print(f"| Visual RNG: {read_int(visual_rng, rel=True)}")
-    print(f"| Last Replay Filename: {read_string(replay_filename, 100, rel=True)}")
     print(f"| Character: {characters[read_int(character, rel=True)]}")
     print(f"| Sub-Shot: {subshots[read_int(subshot, rel=True)]}")
     print(f"| Difficulty: {difficulties[read_int(difficulty, rel=True)]}")
