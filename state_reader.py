@@ -308,7 +308,7 @@ def extract_game_state(frame_id = None, real_time = None):
         power               = read_int(power, rel=True),
         piv                 = int(read_int(piv, rel=True) / 100),
         graze               = read_int(graze, rel=True),
-        boss_timer          = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}"),
+        boss_timer          = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}") if read_int(zGui+zGui_bosstimer_drawn) != 0 else -1,
         spellcard           = extract_spellcard(),
         input               = read_int(input, rel=True),
         rng                 = read_int(rng, rel=True),
@@ -334,7 +334,7 @@ def print_game_state(gs: GameState):
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| RNG value: {gs.rng}")
     
-    if (gs.enemies and any(enemy.is_boss for enemy in gs.enemies)) or gs.spellcard:
+    if gs.boss_timer != -1:
         print(f"| Boss timer: {gs.boss_timer}")
         
     if gs.spellcard:

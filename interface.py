@@ -191,9 +191,10 @@ zSpellcard_id        = offsets[_module_name].spell_card.zSpellcard_id
 zSpellcard_bonus     = offsets[_module_name].spell_card.zSpellcard_bonus
 
 # GUI
-gui_pointer       = offsets[_module_name].gui.gui_pointer
-zGui_bosstimer_s  = offsets[_module_name].gui.zGui_bosstimer_s
-zGui_bosstimer_ms = offsets[_module_name].gui.zGui_bosstimer_ms
+gui_pointer          = offsets[_module_name].gui.gui_pointer
+zGui_bosstimer_s     = offsets[_module_name].gui.zGui_bosstimer_s
+zGui_bosstimer_ms    = offsets[_module_name].gui.zGui_bosstimer_ms
+zGui_bosstimer_drawn = offsets[_module_name].gui.zGui_bosstimer_drawn
 
 # Supervisor
 supervisor_addr = offsets[_module_name].supervisor.supervisor_addr

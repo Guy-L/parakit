@@ -142,7 +142,7 @@ class AsciiOffsets:
 @dataclass
 class SpellCardOffsets:
     spellcard_pointer: int
-    zSpellcard_indicator: int #note for zero: I use this var to tell if a spellcard is active in DDC but I'm not sure what is really is. There might be a better indicator.
+    zSpellcard_indicator: int
     zSpellcard_id: int
     zSpellcard_bonus: int
     
@@ -151,11 +151,12 @@ class GUIOffsets:
     gui_pointer: int
     zGui_bosstimer_s: int
     zGui_bosstimer_ms: int
+    zGui_bosstimer_drawn: int
     
 @dataclass
 class SupervisorOffsets:
     supervisor_addr: int
-    game_mode: int #to relate to the ggame modes dict in Associations 
+    game_mode: int #to relate to the game modes dict in Associations 
     rng_seed: int #based on time when game was launched; never changes
     
 @dataclass
@@ -364,9 +365,10 @@ offsets = {
             zSpellcard_bonus     = 0x80,
         ),
         gui = GUIOffsets(
-            gui_pointer       = 0xdb550,
-            zGui_bosstimer_s  = 0x19c,
-            zGui_bosstimer_ms = 0x1a0,
+            gui_pointer          = 0xdb550,
+            zGui_bosstimer_s     = 0x19c,
+            zGui_bosstimer_ms    = 0x1a0,
+            zGui_bosstimer_drawn = 0x1a8,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xd8f60,
@@ -541,9 +543,10 @@ offsets = {
             zSpellcard_bonus     = None,
         ),
         gui = GUIOffsets(
-            gui_pointer       = 0xCF2E0,
-            zGui_bosstimer_s  = 0x1B8,
-            zGui_bosstimer_ms = 0x1BC,
+            gui_pointer          = 0xCF2E0,
+            zGui_bosstimer_s     = 0x1B8,
+            zGui_bosstimer_ms    = 0x1BC,
+            zGui_bosstimer_drawn = 0x1C4,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xCCDF0,
