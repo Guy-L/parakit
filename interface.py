@@ -328,7 +328,7 @@ def get_item_type(item_type):
         
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:
-        return "N/A"
+        return sprites[sprite][0].split(' ')[0]
         
     elif sprites[sprite][1] == 3:
         return color_coin[color]
