@@ -61,22 +61,25 @@ else:
 subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
-VERSION_DATE = datetime(2023, 7, 20, 2, 0) #note for the dev: always set to slightly in the future before commit or else...
+VERSION_DATE = datetime(2023, 8, 8, 20, 0) #note for the dev: always set to slightly in the future before commit or else...
 
-_commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
+try:
+    _commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
+except Exception as e:
+    print(f"\nVersion-checker: Failed to communicate with GitHub ({type(e).__name__})")
+    input_exit()
 
 try:
     _commits_response.raise_for_status()
-except requests.exceptions.HTTPError as err:
-    print(f"Version-checker: HTTP error occurred: {err}")
+except requests.exceptions.HTTPError as e:
+    print(f"\nVersion-checker: HTTP error occurred: {e}")
     input_exit()
     
 _commits = _commits_response.json()
 _latest_version_date = datetime.strptime(_commits[0]['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ')
 
 if _latest_version_date > VERSION_DATE:
-    print()
-    print('A new version is available!')
+    print('\nA new version is available!')
     print('New changes:')
     
     counter = 0
