@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 import numpy as np
 
 @dataclass
@@ -10,7 +10,7 @@ class Bullet:
     angle: float
     scale: float
     hitbox_radius: float
-    show_delay: int
+    show_delay: Optional[int] #game-specific: DDC/ISC/HBM
     iframes: int
     bullet_type: int
     color: int
@@ -114,13 +114,12 @@ class GameState:
     input: int
     rng: int
     player_position: Tuple[float, float]
-    player_hitbox_min_x: float
+    player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
-    ddc_player_scale: float
     bullets: Optional[List[Bullet]]
     enemies: Optional[List[Enemy]]
     items: Optional[List[Item]]
     lasers: Optional[List[Laser]]
     screen: Optional[np.ndarray]
-    ddc_seija_flip: Tuple[float, float]
+    game_specific: Optional[Dict[str, Any]]

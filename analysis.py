@@ -1,5 +1,6 @@
 from game_entities import GameState
 from abc import ABC, abstractmethod
+from interface import game_id
 
 #Base class (abstract)
 class Analysis(ABC):
@@ -15,7 +16,7 @@ class Analysis(ABC):
     def done(self):
         pass
 
-#Feel free to duplicate and implement to make your own! (make sure to rename them)
+#Feel free to duplicate and implement to make your own! (make sure to rename the class)
 class AnalysisTemplate(Analysis):
     #Called right before extraction starts
     def __init__(self):
@@ -36,7 +37,7 @@ class AnalysisTemplate(Analysis):
    
    
 #useful stuff, see analysis_examples.py for usages
-#(note: if your analysis is above these lines, you can't use 'em)
+#(note: put your analysis under these lines so you can use 'em)
 from settings import pyplot_settings
 from interface import save_screenshot, get_color, color16, np
 import matplotlib.pyplot as plt
@@ -50,24 +51,24 @@ def pyplot_color(color_str):
         return 'olive'
     elif color_str == 'Bronze':
         return 'sienna'
-    elif color_str == 'N/A':
-        return 'black'
     else:
         return color_str.replace(" ", "")
         
 def item_color(item_type):
-    if item_type == 'Power' or item_type == 'Full Power':
+    if item_type == 'Power' or item_type == 'Full Power' or item_type == 'Power Card':
         return 'red'
     elif item_type == 'Point':
         return 'blue'
-    elif item_type == 'Life Piece':
+    elif item_type == 'Life Piece' or item_type == 'LifeP. Card':
         return 'fuchsia'
-    elif item_type == 'Bomb Piece':
+    elif item_type == 'Bomb Piece' or item_type == 'BombP. Card':
         return 'lime'
     elif item_type == 'Green':
         return 'green'
     elif item_type == 'Cancel':
         return 'olive'
+    elif item_type == 'Gold' or item_type == 'Gold Card':
+        return 'gold'
     else:
         return 'black'
         

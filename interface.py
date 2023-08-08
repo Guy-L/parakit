@@ -33,25 +33,32 @@ _game_main_modules = {
     #('16.3', 'th16.3', 'th163', 'th163.exe', 'vd', 'violet detector'): 'th163.exe',
     #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
     ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
+    #('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'): 'th185.exe',
+    #('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'): 'th19.exe',
 }
 
 _game = _settings['game']
 _termination_key = _settings['termination_key']
 
 _module_name = ''
+game_id = 0
 for keys, module_name in _game_main_modules.items():
     if str(_game).lower().strip() in keys:
         _module_name = module_name
+        game_id = float(keys[0])
         print(f"Interface: Target module '{_module_name}'.")
         break
             
-if not _module_name:
+if not _module_name or game_id == 0:
     print(f"Interface error: Unknown game specifier '{_game}'.")
     exit()
     
+# ==========================================================
+# Game logic groups
+has_bullet_delay = [14, 14.3, 18.5]
 
 # ==========================================================
-# GAME SPECIFIC STUFF -- TO BE REFACTORED FURTHER ==========
+# GAME SPECIFIC STUFF ======================================
 
 # Statics
 score         = offsets[_module_name].statics.score
@@ -79,7 +86,7 @@ stage           = offsets[_module_name].statics_untracked.stage
 # Player
 player_pointer  = offsets[_module_name].player.player_pointer
 zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
-zPlayer_hurtbox = offsets[_module_name].player.zPlayer_hurtbox
+zPlayer_hit_rad = offsets[_module_name].player.zPlayer_hit_rad
 zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
 zPlayer_focused = offsets[_module_name].player.zPlayer_focused
 
@@ -92,7 +99,6 @@ zBullet_velocity       = offsets[_module_name].bullets.zBullet_velocity
 zBullet_speed          = offsets[_module_name].bullets.zBullet_speed
 zBullet_angle          = offsets[_module_name].bullets.zBullet_angle
 zBullet_hitbox_radius  = offsets[_module_name].bullets.zBullet_hitbox_radius
-zBullet_ex_delay_timer = offsets[_module_name].bullets.zBullet_ex_delay_timer
 zBullet_scale          = offsets[_module_name].bullets.zBullet_scale
 zBullet_type           = offsets[_module_name].bullets.zBullet_type
 zBullet_color          = offsets[_module_name].bullets.zBullet_color
@@ -200,12 +206,19 @@ supervisor_addr = offsets[_module_name].supervisor.supervisor_addr
 game_mode = offsets[_module_name].supervisor.game_mode
 rng_seed = offsets[_module_name].supervisor.rng_seed
 
-# DDC-specific
-bonus_count       = offsets[_module_name].game_specific['bonus_count']
-seija_anm_pointer = offsets[_module_name].game_specific['seija_anm_pointer']
-seija_flip_x      = offsets[_module_name].game_specific['seija_flip_x']
-seija_flip_y      = offsets[_module_name].game_specific['seija_flip_y']
-zPlayer_scale     = offsets[_module_name].game_specific['zPlayer_scale']
+# Game-specific
+if game_id in has_bullet_delay:
+    zBullet_ex_delay_timer = offsets[_module_name].game_specific['zBullet_ex_delay_timer']
+
+if game_id == 14:
+    bonus_count       = offsets[_module_name].game_specific['bonus_count']
+    seija_anm_pointer = offsets[_module_name].game_specific['seija_anm_pointer']
+    seija_flip_x      = offsets[_module_name].game_specific['seija_flip_x']
+    seija_flip_y      = offsets[_module_name].game_specific['seija_flip_y']
+    zPlayer_scale     = offsets[_module_name].game_specific['zPlayer_scale']
+
+elif game_id == 18:
+    funds = offsets[_module_name].game_specific['funds']
 
 # Meaning Arrays
 color_coin    = offsets[_module_name].associations.color_coin
@@ -221,7 +234,7 @@ characters    = offsets[_module_name].associations.characters
 subshots      = offsets[_module_name].associations.subshots
 difficulties  = offsets[_module_name].associations.difficulties
 
-# GAME SPECIFIC STUFF -- TO BE REFACTORED FURTHER ==========
+# GAME SPECIFIC STUFF ======================================
 # ==========================================================
 
 # Step 1 - Get the game process
@@ -236,6 +249,7 @@ if game_process:
     print(f'Found the {_module_name} game process with PID: {game_process.pid}')
 else:
     print('Interface error: Game process not found')
+    print(f'Make sure the selected game ({_game}) is open\nor change your selection in settings.py.')
     exit()
 
 # Step 2 - Get the process's base address
@@ -323,8 +337,8 @@ def get_item_type(item_type):
     if item_type in item_types.keys() :
         return item_types[item_type]
     else:
-        #return "Unknown " + str(item_type) #(no need to display this, all item types should be known)
         return None
+        #return "Unknown " + str(item_type) #(all item types should be known for supported games)
         
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:

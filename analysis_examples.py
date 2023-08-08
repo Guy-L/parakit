@@ -36,7 +36,7 @@ class AnalysisBulletsOverTime(Analysis):
         if state.bullets:
             self.bulletcounts.append(len(state.bullets))
 
-    def done(self, hasScreenshots):
+    def done(self):
         plt.plot(self.bulletcounts)
         plt.xlabel('Time (frames)')
         plt.ylabel('Bullets')
@@ -82,19 +82,26 @@ class AnalysisPlot(Analysis, ABC):
         
     def done(self):
         plt.figure(figsize=(4.6 * plot_scale, 5.6 * plot_scale)) #sets plot scale using game world's ratio
-        plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=50*self.lastframe.ddc_player_scale, marker='X') #plots player
+        
         plt.xlabel('X Coordinate')
         plt.xlim(-184, 184)
         plt.ylabel('Y Coordinate')
         plt.ylim(0, 448)
+        plt.gca().invert_yaxis()
         
-        #DDC seijaflip shenanies
-        if self.lastframe.ddc_seija_flip[0] == -1:
-            plt.gca().invert_xaxis()
+        player_scale = self.lastframe.player_hitbox_rad
+        
+        if game_id == 14 and self.lastframe.game_specific: 
+            player_scale *= self.lastframe.game_specific['player_scale']
             
-        if not self.lastframe.ddc_seija_flip[1] == -1:
-            plt.gca().invert_yaxis()
-        
+            if self.lastframe.game_specific['seija_flip'][0] == -1:
+                plt.gca().invert_xaxis()
+                
+            if self.lastframe.game_specific['seija_flip'][1] == -1:
+                plt.gca().invert_yaxis()
+                
+        plt.scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_scale, marker='X') #plots player
+            
         #custom plot title/behavior here then show
         plt.title(self.plot_title)
         self.plot()

@@ -30,7 +30,7 @@ class UntrackedStaticsOffsets:
 class PlayerOffsets:
     player_pointer: int
     zPlayer_pos: int
-    zPlayer_hurtbox: int
+    zPlayer_hit_rad: int
     zPlayer_iframes: int
     zPlayer_focused: int
     
@@ -44,7 +44,6 @@ class BulletOffsets:
     zBullet_speed: int
     zBullet_angle: int
     zBullet_hitbox_radius: int
-    zBullet_ex_delay_timer: Optional[int] #only DDC/ISC/HBM
     zBullet_scale: int
     zBullet_type: int
     zBullet_color: int
@@ -196,9 +195,15 @@ class Offset:
     associations: Associations
     game_specific: Optional[Dict[str, any]]
 
+
+
+
+
+
 ## Association arrays that are shared between games.
 # Assuming these are the same between UM and DDC until proven otherwise 
 # If proven otherwise then just define it seperately in both instances
+# If any of these don't change at all in any game, remove from offset class
 modern_color_coin = ['Gold', 'Silver', 'Bronze']
 modern_color4 = ['Red', 'Blue', 'Green', 'Yellow']     
 modern_color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
@@ -207,7 +212,7 @@ modern_color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Bl
 modern_sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)]
 modern_curve_sprites = ['Standard', 'Thunder']
 
-modern_item_types = {1: "Power", 2: "Point", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 10:"Cancel"}
+modern_item_types = {1: "Power", 2: "Point", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 10:"Cancel"} #if this is only DDC, move it to DDC
 modern_game_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
 modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
 
@@ -257,7 +262,7 @@ offsets = {
         player = PlayerOffsets(
             player_pointer  = 0xdb67C,
             zPlayer_pos     = 0x5e0,
-            zPlayer_hurtbox = 0x630,
+            zPlayer_hit_rad = 0x648,
             zPlayer_iframes = 0x182c4,
             zPlayer_focused = 0x184b0,
         ),
@@ -270,7 +275,6 @@ offsets = {
             zBullet_speed          = 0xbd8,
             zBullet_angle          = 0xbdc,
             zBullet_hitbox_radius  = 0xbe0,
-            zBullet_ex_delay_timer = 0x12ec,
             zBullet_scale          = 0x13bc,
             zBullet_type           = 0x13ec,
             zBullet_color          = 0x13ee,
@@ -391,6 +395,7 @@ offsets = {
             zEnemyFlags_no_hitbox  = 0x2,
         ),
         game_specific = {
+            'zBullet_ex_delay_timer': 0x12ec,
             'seija_anm_pointer':  0xd8f60 + 0x1c8,
             'seija_flip_x':       0x60,
             'seija_flip_y':       0x64,
@@ -413,14 +418,14 @@ offsets = {
             graze         = 0xCCD10,
             piv           = 0xCCD24,
             power         = 0xCCD38,
-            lives         = None,
-            life_pieces   = None,
-            bombs         = None,
-            bomb_pieces   = None,
-            time_in_stage = None,
-            input         = None,
+            lives         = 0xCCD48,
+            life_pieces   = 0xCCD4C,
+            bombs         = 0xCCD58,
+            bomb_pieces   = 0xCCD5C,
+            time_in_stage = 0xCCCE8, #to verify
+            input         = 0xCA428,
             rng           = 0xDB510,
-            game_state    = None,
+            game_state    = 0x16AD00,
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xCCBF0,
@@ -434,9 +439,9 @@ offsets = {
         player = PlayerOffsets(
             player_pointer  = 0xCF410,
             zPlayer_pos     = 0x620,
-            zPlayer_hurtbox = None,
-            zPlayer_iframes = None,
-            zPlayer_focused = None,
+            zPlayer_hit_rad = 0x4799C,
+            zPlayer_iframes = 0x47778,
+            zPlayer_focused = 0x476CC,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xCF2BC,
@@ -447,7 +452,6 @@ offsets = {
             zBullet_speed          = 0x650,
             zBullet_angle          = 0x654,
             zBullet_hitbox_radius  = 0x658,
-            zBullet_ex_delay_timer = None,
             zBullet_scale          = 0xF38,
             zBullet_type           = 0xF98,
             zBullet_color          = 0xF9A,
@@ -531,13 +535,13 @@ offsets = {
         ),
         ascii = AsciiOffsets(
             ascii_manager_pointer = 0xCF2AC,
-            global_timer          = None,
+            global_timer          = 0x1925C,
         ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xCF2C0,
-            zSpellcard_indicator = None,
+            zSpellcard_indicator = 0x1c,
             zSpellcard_id        = 0x74,
-            zSpellcard_bonus     = None,
+            zSpellcard_bonus     = 0x7C,
         ),
         gui = GUIOffsets(
             gui_pointer          = 0xCF2E0,
@@ -551,25 +555,24 @@ offsets = {
             rng_seed        = 0xCCDF0 + 0x838,
         ),
         associations = Associations(
-            color_coin    = None,
-            color4        = None,
-            color8        = None,
-            color16       = None,
-            sprites       = None,
-            curve_sprites = None,
-            item_types    = None,
-            game_states   = None,
-            game_modes    = None,
-            characters    = None,
-            subshots      = None,
+            color_coin    = modern_color_coin,
+            color4        = modern_color4,
+            color8        = modern_color8,
+            color16       = modern_color16,
+            sprites       = modern_sprites, #TODO update for new stuff!
+            curve_sprites = modern_curve_sprites,
+            item_types    = {1: "Power", 2: "Gold", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"}, 
+            game_states   = modern_game_states,
+            game_modes    = modern_game_modes,
+            characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
+            subshots      = ['N/A'],
             difficulties  = usual_difficulties,
             zEnemyFlags_is_boss    = 0x800000,
             zEnemyFlags_intangible = 0x20,
             zEnemyFlags_no_hitbox  = 0x2,
         ),
         game_specific = {
-            'money_collected_in_game': 0xCCD30,
-            'current_money': 0xCCD34
+            'funds': 0xCCD34
         }
     )
 }

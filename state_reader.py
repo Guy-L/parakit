@@ -14,7 +14,9 @@ zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
 zSpellCard     = read_int(spellcard_pointer, rel=True)
 zGui           = read_int(gui_pointer, rel=True)
-ddcSeijaAnm    = read_int(seija_anm_pointer, rel=True)
+
+if game_id == 14:
+    ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
 #For quick access
 analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_max_curve_data = extraction_settings.values()
@@ -42,11 +44,13 @@ def extract_bullets():
         bullet_angle   = read_float(zBullet + zBullet_angle)
         bullet_scale   = read_float(zBullet + zBullet_scale)
         bullet_radius  = read_float(zBullet + zBullet_hitbox_radius)
-        bullet_delay   = read_int(zBullet + zBullet_ex_delay_timer)
         bullet_iframes = read_int(zBullet + zBullet_iframes)
         bullet_type    = read_int(zBullet + zBullet_type, 2)
         bullet_color   = read_int(zBullet + zBullet_color, 2)
-                        
+        
+        #Game-specific attributes
+        bullet_delay   = read_int(zBullet + zBullet_ex_delay_timer) if game_id in has_bullet_delay else None
+        
         bullets.append(Bullet(
             position      = (bullet_x, bullet_y), 
             velocity      = (bullet_vel_x, bullet_vel_y), 
@@ -115,10 +119,13 @@ def extract_items():
         
         if read_int(current_item + zItem_state) == 0:
             continue
-            
-        item_type = get_item_type(read_int(current_item + zItem_type))
         
-        if not item_type:
+        item_type = read_int(current_item + zItem_type)
+        item_type_str = get_item_type(item_type)
+        
+        if not item_type_str:
+            if item_type < 50:
+                print(f"Found and skipped unknown item with type ID {item_type}. If this is a real in-game item, please report it to the developper!")
             continue
         
         item_x     = read_float(current_item + zItem_pos)
@@ -127,7 +134,7 @@ def extract_items():
         item_vel_y = read_float(current_item + zItem_vel + 0x4)
         
         items.append(Item(
-            item_type = item_type, 
+            item_type = item_type_str, 
             position  = (item_x, item_y), 
             velocity  = (item_vel_x, item_vel_y),
         ))
@@ -292,7 +299,21 @@ def extract_spellcard():
         capture_bonus = spell_capture_bonus,
     )
 
-def extract_game_state(frame_id = None, real_time = None):    
+def extract_game_state(frame_id = None, real_time = None):
+    game_specific = None
+    
+    if game_id == 14:
+        game_specific = {
+            'bonus_count': read_int(bonus_count, rel=True),
+            'player_scale': read_float(zPlayer + zPlayer_scale),
+            'seija_flip': (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y))
+        }
+        
+    elif game_id == 18:
+        game_specific = {
+            'funds': read_int(funds, rel=True),
+        }
+        
     gs = GameState(
         frame_stage         = read_int(time_in_stage, rel=True),
         frame_global        = read_int(global_timer),
@@ -313,25 +334,25 @@ def extract_game_state(frame_id = None, real_time = None):
         input               = read_int(input, rel=True),
         rng                 = read_int(rng, rel=True),
         player_position     = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
-        player_hitbox_min_x = read_float(zPlayer + zPlayer_hurtbox),
+        player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
-        ddc_player_scale    = read_float(zPlayer + zPlayer_scale),
         bullets             = extract_bullets() if requires_bullets else None,
         enemies             = extract_enemies() if requires_enemies else None,
         items               = extract_items() if requires_items else None,
         lasers              = extract_lasers() if requires_lasers else None,
         screen              = get_rgb_screenshot() if requires_screenshots else None,
-        ddc_seija_flip      = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
+        game_specific       = game_specific,
     )
     
     return gs
 
 def print_game_state(gs: GameState):
-    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] SCORE: {gs.score}")
-    print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces), {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces), {gs.power/100} power, {gs.piv} PIV, {gs.graze} graze")
-    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}) w/ hitbox radius {round(gs.player_position[0] - gs.player_hitbox_min_x, 2)}, {gs.player_iframes} iframes, {'focused movement' if gs.player_focused else 'unfocused movement'}")
+    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}")
+    print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces); {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze} graze")
+    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); base hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
+    print(f"| Input bitflag: {gs.input:08b}")
     print(f"| RNG value: {gs.rng}")
     
     if gs.boss_timer != -1:
@@ -340,12 +361,17 @@ def print_game_state(gs: GameState):
     if gs.spellcard:
         print(f"| Spell ID#{gs.spellcard.spell_id}, SCB: {gs.spellcard.capture_bonus}")
         
-    if gs.ddc_seija_flip[0] != 1:
-        print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.ddc_seija_flip[0]+1)/2, 2)}%")
-    if gs.ddc_seija_flip[1] != 1:
-        print(f"| DDC Seija Vertical Flip: {round(100*(-gs.ddc_seija_flip[1]+1)/2, 2)}%")
-    if gs.ddc_player_scale > 1:
-        print(f"| DDC Player Scale: grew {round(gs.ddc_player_scale, 2)}x bigger!")
+    if game_id == 14:
+        print(f"| DDC Bonus Count: {gs.game_specific['bonus_count']}")
+        
+        if gs.game_specific['seija_flip'][0] != 1:
+            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific['seija_flip'][0]+1)/2, 2)}%")
+            
+        if gs.game_specific['seija_flip'][1] != 1:
+            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.game_specific['seija_flip'][1]+1)/2, 2)}%")
+            
+        if gs.game_specific['player_scale'] > 1:
+            print(f"| DDC Player Scale: grew {round(gs.game_specific['player_scale'], 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific['player_scale'], 2)})")
 
     if gs.bullets:
         counter = 0
@@ -365,7 +391,7 @@ def print_game_state(gs: GameState):
             if bullet.iframes > 0: 
                 description += f" ({bullet.iframes} iframes)" 
                 
-            if bullet.show_delay > 0: 
+            if bullet.show_delay and bullet.show_delay > 0: 
                 description += f" ({bullet.show_delay} invis frames)" 
                 
             print(description)
