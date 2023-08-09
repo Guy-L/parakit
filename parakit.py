@@ -61,7 +61,7 @@ else:
 subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
-VERSION_DATE = datetime(2023, 8, 8, 22, 0) #note for the dev: always set to slightly in the future before commit or else...
+VERSION_DATE = datetime(2023, 8, 9, 5, 0) #note for the dev: always set to slightly in the future before commit or else...
 
 try:
     _commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
