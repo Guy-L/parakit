@@ -36,16 +36,16 @@ Performed if `ingame_duration` is unspecified or less than 2.
 | **`list_print_limit`**<br>(int) | Maximum number of lines in an entity list to be printed before being cut off *(note: only affects bullet & item lists for now)*. | `30` |
 
 ## Sequence Extraction Settings 
-Settings for sequence extraction, in which the state of the game is repeatedly extracted over a number of in-game frames. Analyses can track anything they'd like over time and display their results once extraction terminates. By default, extraction will terminate if the game is closed, if the termination key is pressed (see interface settings), or if the game state indicates a non-run scenario (main menu/game over/practice mode end).
+Settings for sequence extraction, in which the state of the game is repeatedly extracted over a number of in-game frames. Analyzers can track anything they'd like over time and display their results once extraction terminates. By default, extraction will terminate if the game is closed, if the termination key is pressed (see interface settings), or if the game state indicates a non-run scenario (main menu/game over/practice mode end).
 
 | Name / Type | Description | Default |
 |-|-|-|
-| **`ingame_duration`**<br>(string) | Value + Unit (f for frame, s for seconds). Value can be integer number of frames or decimal number of seconds, e.g.: `'200f'`, `'10.5s'`. If left unset, malformed or less than two, single-state extraction is performed. Either way, if given as argument when running state-reader.py in the command line, the value set here will be ignored. | `''` |
-| **`exact`**<br>(bool) | If enabled, slows the game down to ensure extracted frames are contiguous (see README). Can also be specified as a command-line argument to state-reader.py by typing `exact`. Also called *"exact mode"*. Recommended. | `True` |
+| **`ingame_duration`**<br>(string) | Value + Unit (f for frame, s for seconds). Value can be integer number of frames or decimal number of seconds, e.g.: `'200f'`, `'10.5s'`. If it is left unset, malformed or less than two, single-state extraction is performed. Either way, if it's specified as an argument when running `state-reader.py` in the command line, then value set here will be ignored. | `''` |
+| **`exact`**<br>(bool) | If enabled, slows the game down to ensure extracted frames are contiguous (see `README.md`). Can also be specified as a command-line argument to `state-reader.py` by typing `exact`. Also called *"exact mode"*. Recommended. | `True` |
 | **`auto_focus`**<br>(bool) | If enabled, automatically puts the game in focus when extraction is started. | `True` |
 | **`auto_unpause`**<br>(bool) | If enabled, automatically unpauses the game when extraction is started. | `False` |
 | **`auto_repause`**<br>(bool) | If enabled, automatically pauses the game when extraction is finished. | `True` |
-| **`need_active`**<br>(bool) | If enabled, terminates extraction when the game goes out of focus. | `False` |
+| **`need_active`**<br>(bool) | If enabled, terminates extraction when the game window goes out of focus. | `False` |
 
 ## Game-World Plotting Settings (Analysis)
 Settings used by sample game world entity plotting analyses.
@@ -57,4 +57,4 @@ If you want to make your own, check how these are used.
 | **`pyplot_factor`**<br>(number) | Converts sizes in game units to pyplot point/line sizes; seems accurate but may be tweaked. | `0.2` |
 | **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `35` |
 | **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `15` |
-| **`plot_laser_circles`**<br>(bool) | If enabled, plots the head of line lasers and the tails of telegraphed lasers in their respective analyses. | `True`
+| **`plot_laser_circles`**<br>(bool) | If enabled, draws the head of line lasers and the tails of telegraphed lasers in their respective plots. | `True`
