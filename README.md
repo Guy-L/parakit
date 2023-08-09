@@ -53,7 +53,7 @@ The `parakit.py` script includes an automatic new-version checker and a confirma
 #### `state_reader.py` Examples
 When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. For single-state extraction:
 ```bash
-py state_reader.py
+py state_reader.py 1f
 ```
 
 For sequence extraction over 500 in-game frames (value must be an integer):
