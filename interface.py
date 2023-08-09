@@ -58,7 +58,7 @@ if not _module_name or game_id == 0:
 has_bullet_delay = [14, 14.3, 18.5]
 
 # ==========================================================
-# GAME SPECIFIC STUFF ======================================
+# Offset object unpacking
 
 # Statics
 score         = offsets[_module_name].statics.score
@@ -234,9 +234,7 @@ characters    = offsets[_module_name].associations.characters
 subshots      = offsets[_module_name].associations.subshots
 difficulties  = offsets[_module_name].associations.difficulties
 
-# GAME SPECIFIC STUFF ======================================
 # ==========================================================
-
 # Step 1 - Get the game process
 game_process = None
 

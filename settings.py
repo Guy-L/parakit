@@ -5,7 +5,7 @@ interface_settings = {
     # Select the game here; can be full name, acronym, th## or just the game number.
     # Supported games: DDC
     # Mostly supported games: UM
-    'game': 'UM'
+    'game': 'DDC'
 }
 
 # General Extraction Settings

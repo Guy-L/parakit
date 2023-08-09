@@ -315,7 +315,7 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
     plot_title = 'Scatter Plot of Bullets w/ Best Mallet'
     
     def __init__(self):
-        self.mallet_radius = 75 #TODO: double check!! very approximate
+        self.mallet_radius = 64 #TODO: triple check
         self.best_bullet_count = 0
         self.best_x = -1
         self.best_y = -1
