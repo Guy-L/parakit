@@ -5,6 +5,7 @@ from scipy.ndimage import uniform_filter
 # Please use your text editor's block collapse 
 # functionality ([+] icon in Notepad++) to hide
 # classes and browse this file quicker.
+# Fold All in Notepad++: Alt+1
 # ==========================================
 
 # Ex1: "Get the frame with the most bullets (and save the screen if screenshots are on)" [only requires bullets & optionally screenshots]
@@ -180,7 +181,7 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
                 plt.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)), zorder=0, alpha=(1 if laser.state==2 else 0.25))
                 
                 if plot_laser_circles:
-                    plt.scatter(origin_x, origin_y, color='white', edgecolors='blue', s=100, zorder=1, alpha=0.9)
+                    plt.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
         
 # Plot6: "Plot the curve lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotCurveLasers(AnalysisPlot):

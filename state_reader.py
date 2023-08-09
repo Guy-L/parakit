@@ -437,7 +437,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(f"({round(laser.origin_vel[0], 1)}, {round(laser.origin_vel[1], 1)})", 17)
                 description += tabulate(round(laser.angle, 2), 6)
                 description += tabulate(f"({format(laser.angular_vel, '.3f').rstrip('0').rstrip('.')})", 9)
-                description += tabulate(f"{round(laser.length, 1)} ({int(100*(laser.length-laser.init_length)/(laser.max_length-laser.init_length))}%)", 14)
+                description += tabulate(f"{round(laser.length, 1)} ({int(100*laser.length/laser.max_length)}%)", 14)
                 description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.max_width)}%)", 14)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 

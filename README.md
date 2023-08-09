@@ -14,13 +14,11 @@ Simple python tool to extract relevant game state data for a given frame:
 
 Supported games:
 * DDC
+* UM
 
-Goals (Priority):
-* Multi-game support (w/ likely major refactoring)
-  * UM support
+Goals:
+* Finish UM: active cooldowns, lasers in mallet calculation, better mallet calculations
 * Porting interface to C++
-
-Goals (After TWC):
 * Rework this document (new settings, launcher etc)
 * LoLK support
 * MoF support 
