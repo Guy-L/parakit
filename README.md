@@ -13,7 +13,7 @@ If you have feature requests or need help making your own custom analysis, feel 
 * UM
 
 ### Goals:
-* Unix compatibility
+* Unix compatibility (for wearr)
 * Finish UM support: active cooldowns, lasers in mallet calculation, better mallet calculations
 * Porting interface to C++
 * LoLK support
