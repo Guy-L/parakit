@@ -48,6 +48,8 @@ def extract_bullets():
         bullet_type    = read_int(zBullet + zBullet_type, 2)
         bullet_color   = read_int(zBullet + zBullet_color, 2)
         
+        print(bullet_scale) #not printed ??? # used in plotting or not?
+        
         #Game-specific attributes
         bullet_delay   = read_int(zBullet + zBullet_ex_delay_timer) if game_id in has_bullet_delay else None
         
@@ -376,7 +378,7 @@ def print_game_state(gs: GameState):
     if gs.bullets:
         counter = 0
         print("\nList of bullets:")
-        print("  Position         Velocity         Speed   Angle   Radius  Color   Type")
+        print("  Position         Velocity         Speed   Angle   Radius  Color      Type")
         for bullet in gs.bullets:
             description = "• "
             description += tabulate(f"({round(bullet.position[0], 1)}, {round(bullet.position[1], 1)})", 17)
@@ -384,14 +386,14 @@ def print_game_state(gs: GameState):
             description += tabulate(round(bullet.speed, 1), 8)
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
-            description += tabulate(get_color(bullet.bullet_type, bullet.color), 8)
+            description += tabulate(get_color(bullet.bullet_type, bullet.color), 11)
             
             #account for mono-color sprites
             bullet_type = sprites[bullet.bullet_type][0]
             if sprites[bullet.bullet_type][1] == 0:
                 bullet_type = bullet_type.split(' ')[1]
                 
-            description += tabulate(bullet_type, 8)
+            description += tabulate(bullet_type, 15)
             
             #not in table since rare
             if bullet.iframes > 0: 
@@ -399,6 +401,9 @@ def print_game_state(gs: GameState):
                 
             if bullet.show_delay and bullet.show_delay > 0: 
                 description += f" ({bullet.show_delay} invis frames)" 
+                
+            if bullet.scale != 1:
+                description += f" (scale: {round(bullet.scale, 2)}x)" 
                 
             print(description)
             

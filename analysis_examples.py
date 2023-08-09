@@ -83,10 +83,10 @@ class AnalysisPlot(Analysis, ABC):
         pass #custom plot behavior to be implemented
         
     def done(self):
-        plt.figure(figsize=(4.6 * plot_scale, 5.6 * plot_scale)) #sets plot scale using game world's ratio
+        plt.figure(figsize=(4.8 * plot_scale, 5.6 * plot_scale)) #sets plot scale using game world's ratio
         
         plt.xlabel('X Coordinate')
-        plt.xlim(-184, 184)
+        plt.xlim(-192, 192)
         plt.ylabel('Y Coordinate')
         plt.ylim(0, 448)
         plt.gca().invert_yaxis()
@@ -106,6 +106,7 @@ class AnalysisPlot(Analysis, ABC):
             
         #custom plot title/behavior here then show
         plt.title(self.plot_title)
+        plt.gcf().canvas._tkcanvas.master.title(self.plot_title)
         self.plot()
         plt.show()   
        
@@ -118,7 +119,7 @@ class AnalysisPlotBullets(AnalysisPlot):
             x_coords = [bullet.position[0] for bullet in self.lastframe.bullets]
             y_coords = [bullet.position[1] for bullet in self.lastframe.bullets]
             colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in self.lastframe.bullets]
-            sizes = [bullet.scale * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in self.lastframe.bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in self.lastframe.bullets]
             alphas = [0.05 if bullet.show_delay else 1 for bullet in self.lastframe.bullets]
 
             plt.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
@@ -252,19 +253,19 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
         super().step(state)
         for bullet in state.bullets:
             
-            min_x = int(bullet.position[0] - bullet.hitbox_radius * bullet.scale) + 184
-            max_x = int(bullet.position[0] + bullet.hitbox_radius * bullet.scale) + 184
+            min_x = int(bullet.position[0] - bullet.hitbox_radius * bullet.scale) + 192
+            max_x = int(bullet.position[0] + bullet.hitbox_radius * bullet.scale) + 192
             min_y = int(bullet.position[1] - bullet.hitbox_radius * bullet.scale)
             max_y = int(bullet.position[1] + bullet.hitbox_radius * bullet.scale)
             
             if min_x >= 0 and min_x <= 368 and max_x >= 0 and max_x <= 368 and min_y >= 0 and min_y <= 448 and max_y >= 0 and max_y <= 448:
                 for x in range(min_x, max_x):
                     for y in range(min_y, max_y):
-                        if not self.circles or (self.circles and (x - bullet.position[0] - 184) ** 2 + (y - bullet.position[1]) ** 2 <= (bullet.hitbox_radius * bullet.scale) ** 2) and self.heatmap[y, x] < self.max_count:
+                        if not self.circles or (self.circles and (x - bullet.position[0] - 192) ** 2 + (y - bullet.position[1]) ** 2 <= (bullet.hitbox_radius * bullet.scale) ** 2) and self.heatmap[y, x] < self.max_count:
                             self.heatmap[y, x] += 1
 
     def plot(self):
-        plt.imshow(self.heatmap, origin='lower', cmap='viridis', extent=(-184, 184, 0, 448))
+        plt.imshow(self.heatmap, origin='lower', cmap='viridis', extent=(-192, 192, 0, 448))
         plt.colorbar(label='Bullet hits')
         
 # Bonus: "Render the bullet positions as ASCII art in the terminal" [only requires bullets] [useless]
@@ -288,7 +289,7 @@ class AnalysisPrintBulletsASCII(Analysis):
             line = ""
             
             for x in range(0, self.size_x):
-                ingame_x = (x / self.size_x) * 368 - 184
+                ingame_x = (x / self.size_x) * 368 - 192
                 ingame_y = (y / self.size_y) * 440
                 
                 found = False
@@ -332,14 +333,14 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
 
     def step(self, state: GameState):
         # Get bullet positions
-        bullet_positions = [bullet.position for bullet in state.bullets if -184 <= bullet.position[0] <= 184 and 0 <= bullet.position[1] <= 448]
+        bullet_positions = [bullet.position for bullet in state.bullets if -192 <= bullet.position[0] <= 192 and 0 <= bullet.position[1] <= 448]
 
         # Initialize best values
         best_count = 0
         best_position = (0, 0)
 
         # Iterate over the grid with a certain step size
-        for x in range(-184, 184, self.step_size):
+        for x in range(-192, 192, self.step_size):
             for y in range(0, 448, self.step_size):
                 count = self.calculate_exact_count((x, y), bullet_positions)
                 if count > best_count:
