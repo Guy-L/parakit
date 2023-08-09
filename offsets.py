@@ -135,7 +135,7 @@ class LaserCurveNodeOffsets:
 @dataclass
 class AsciiOffsets:
     ascii_manager_pointer: int
-    global_timer: int #frames the ascii manager has been alive: int
+    global_timer: int #frames the ascii manager has been alive (never destroyed)
     
 @dataclass
 class SpellCardOffsets:
@@ -209,7 +209,10 @@ modern_color4 = ['Red', 'Blue', 'Green', 'Yellow']
 modern_color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
 modern_color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
 
-modern_sprites = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Star', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Blue Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Spinning Star', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Green Note', 0), ('Purple Note', 0), ('Rest', 8)]
+
+#re-evaluate when adding new modern games.
+modern_sprites_pre_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #assuming the second spinning star came with lolk
+modern_sprites_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star CW', 8), ('Big Star CCW', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #if yin-yangs stay, define another for post-UM
 modern_curve_sprites = ['Standard', 'Thunder']
 
 modern_item_types = {1: "Power", 2: "Point", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 10:"Cancel"} #if this is only DDC, move it to DDC
@@ -382,7 +385,7 @@ offsets = {
             color4        = modern_color4, 
             color8        = modern_color8, 
             color16       = modern_color16, 
-            sprites       = modern_sprites, 
+            sprites       = modern_sprites_pre_lolk, 
             curve_sprites = modern_curve_sprites, 
             item_types    = modern_item_types, 
             game_states   = modern_game_states,
@@ -559,7 +562,7 @@ offsets = {
             color4        = modern_color4,
             color8        = modern_color8,
             color16       = modern_color16,
-            sprites       = modern_sprites, #TODO update for new stuff!
+            sprites       = modern_sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)],
             curve_sprites = modern_curve_sprites,
             item_types    = {1: "Power", 2: "Gold", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"}, 
             game_states   = modern_game_states,

@@ -385,7 +385,13 @@ def print_game_state(gs: GameState):
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
             description += tabulate(get_color(bullet.bullet_type, bullet.color), 8)
-            description += tabulate(sprites[bullet.bullet_type][0], 8)
+            
+            #account for mono-color sprites
+            bullet_type = sprites[bullet.bullet_type][0]
+            if sprites[bullet.bullet_type][1] == 0:
+                bullet_type = bullet_type.split(' ')[1]
+                
+            description += tabulate(bullet_type, 8)
             
             #not in table since rare
             if bullet.iframes > 0: 

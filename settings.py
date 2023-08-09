@@ -5,7 +5,7 @@ interface_settings = {
     # Select the game here; can be full name, acronym, th## or just the game number.
     # Supported games: DDC
     # Mostly supported games: UM
-    'game': 'DDC'
+    'game': 'UM'
 }
 
 # General Extraction Settings
@@ -13,7 +13,7 @@ extraction_settings = {
 
     # Name of an analysis class (e.g. 'AnalysisMostBulletsFrame') in analysis.py.
     # Sample analyses to get started and plot various entities can be found in analysis_examples.py.
-    'analyzer': 'AnalysisTemplate',  
+    'analyzer': 'AnalysisPlotAll',  
     
     # Disable extraction of entities not required for your analysis to reduce lag
     'requires_bullets':     True,
