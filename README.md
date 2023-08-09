@@ -51,7 +51,7 @@ py parakit.py
 The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information).
 
 #### `state_reader.py` Examples
-When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. For single-state extraction:
+When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction:
 ```bash
 py state_reader.py 1f
 ```
