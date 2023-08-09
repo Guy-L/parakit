@@ -70,6 +70,7 @@ class AnalysisCloseBulletsOverTime(Analysis):
 # Plot0: Abstract base class to factorize common plotting code
 class AnalysisPlot(Analysis, ABC):
     plot_title = 'DEFAULT PLOT TITLE' #to be customized
+    lastframe = None
     
     def __init__(self, state: GameState = None):
         self.lastframe = state
@@ -106,8 +107,8 @@ class AnalysisPlot(Analysis, ABC):
         #custom plot title/behavior here then show
         plt.title(self.plot_title)
         plt.gcf().canvas._tkcanvas.master.title(self.plot_title)
-        self.plot()
-        plt.show()   
+        if self.plot() != -1:
+            plt.show()   
        
 # Plot1: "Plot the bullet positions of the last frame at game scale (+player)" [only requires bullets]
 class AnalysisPlotBullets(AnalysisPlot):
@@ -356,6 +357,10 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
             self.lastframe = state
     
     def plot(self):
+        if self.best_bullet_count == 0:
+            print("No frame had bullets on screen.")
+            return -1
+        
         AnalysisPlotBullets(self.lastframe).plot()
         AnalysisPlotLineLasers(self.lastframe).plot()
         
@@ -365,3 +370,5 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
         print(f"Best mallet @ stage frame {self.lastframe.frame_stage} {'('+str(self.lastframe.boss_timer)+' on boss timer)' if self.lastframe.boss_timer != -1 else ''}")
         print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y}); required player position ({self.best_x}, {self.best_y - self.mallet_player_distance})")
         print(f"Expected gold gain ~= {int(self.best_bullet_count*0.35)}")
+        
+        print("\nNote: The first optimal solution found was displayed - it may be\nunnecessarily biased towards the left/top but remains optimal.")

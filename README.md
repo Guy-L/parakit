@@ -24,7 +24,7 @@ If you have feature requests or need help making your own custom analysis, feel 
 
 
 ## Setup 
-**Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, I heavily recommend that you get a bit of experience with Git to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out.
+**Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, **I heavily recommend that you get a bit of experience with Git** to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out. All you'll need to know is how to `clone` (download) and `pull` (update) a project.
 
 Once you have the project (and Python) on your machine, **simply open `parakit.py` and the entire setup will be handled for you** before launching the program. Be patient, installing libraries can take a while. Please report to the developer if any issue comes up during this process.
 
@@ -46,26 +46,31 @@ pip install -r requirements.txt
 Edit `settings.py` to select the target game and analyzer. <br>**Documentation explaining every available setting can be found [here](./settings.md).**
 
 **You can simply run the program by opening `parakit.py`.**<br>If you're going to use the program a lot, open a terminal window in the project's folder and run:
+
 ```bash
 py parakit.py
 ```
-The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information).
 
-#### `state_reader.py` Examples
-When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction:
-```bash
-py state_reader.py 1f
-```
+The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information). This comes with the benefit of being able to specify the extraction duration setting as a command line argument - open the below section for examples.
 
-For sequence extraction over 500 in-game frames (value must be an integer):
-```bash
-py state_reader.py 500f
-```
+<details>
+  <summary>`state_reader.py` CLI Examples</summary>
 
-For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
-```bash
-py state_reader.py 10.5s exact
-```
+	When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction:
+	```bash
+	py state_reader.py 1f
+	```
+
+	For sequence extraction over 500 in-game frames (value must be an integer):
+	```bash
+	py state_reader.py 500f
+	```
+
+	For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
+	```bash
+	py state_reader.py 10.5s exact
+	```
+</details>
 
 ## Custom Analyzers
 

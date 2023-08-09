@@ -10,9 +10,8 @@ try:
     import os
     import platform
     import subprocess
-    import requests
     import base64
-    from datetime import datetime
+    from datetime import datetime, timezone, timedelta
 except ImportError as e:
     print(f"Setup error: Error while importing standard libraries: {e}\nIf you see this message, please contact the developer!")
     input_exit()
@@ -61,7 +60,10 @@ else:
 subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
-VERSION_DATE = datetime(2023, 8, 9, 5, 0) #note for the dev: always set to slightly in the future before commit or else...
+import requests
+VERSION_DATE = datetime(2023, 8, 9, 22, 59, 8, tzinfo=timezone.utc)
+#note for devs: this should always be set to a couple minutes in the future when pushing
+#there is a pre-commit hook that will do this for you, ask Guy if you don't have it!
 
 try:
     _commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
@@ -76,10 +78,11 @@ except requests.exceptions.HTTPError as e:
     input_exit()
     
 _commits = _commits_response.json()
-_latest_version_date = datetime.strptime(_commits[0]['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ')
+_latest_version_date = datetime.strptime(_commits[0]['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
 
 if _latest_version_date > VERSION_DATE:
-    print('\nA new version is available!')
+    print('\n================================')
+    print('A new version is available!')
     print('New changes:')
     
     counter = 0
@@ -87,7 +90,7 @@ if _latest_version_date > VERSION_DATE:
     max_commit_msg_len = 75
     
     for commit in _commits:
-        commit_date = datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ')
+        commit_date = datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
         if commit_date > VERSION_DATE:
             counter += 1
             if counter < max_commits:
@@ -95,14 +98,14 @@ if _latest_version_date > VERSION_DATE:
                 if len(commit_msg) > max_commit_msg_len:
                     commit_msg = commit_msg[:max_commit_msg_len] + '...'
                     
-                print(f"• [{commit_date.strftime('%Y-%m-%d %H:%M')}] {commit_msg}")
+                print(f"• [{commit_date.strftime('%Y-%m-%d %H:%M')} UTC] {commit_msg}")
     
     if counter >= max_commits:
         print(f"• ... and more! ({counter} commits)")
     
     print()
     print('If you installed via Code > Download ZIP, please do so again')
-    print(f'or download a Release if one from {_latest_version_date.strftime("%Y-%m-%d %H:%M")} is available.')
+    print(f'or download a Release if one from {_latest_version_date.strftime("%Y-%m-%d %H:%M")} UTC is available.')
     print('If you installed via Git, please do \'git pull\'. You may need to resolve a merge')
     print('conflict if changes were made to settings.py or analysis.py which conflict with yours.')
     print('If this happens and you\'re not sure how to proceed, feel free to contact the developer.')
