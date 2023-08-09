@@ -313,9 +313,10 @@ class AnalysisPrintBulletsASCII(Analysis):
 # UM: "Find and plot the biggest mallet spot" [only requires bullets]
 class AnalysisMostBulletsCircleFrame(AnalysisPlot):
     plot_title = 'Scatter Plot of Bullets w/ Best Mallet'
+    mallet_player_distance = 100 
     
     def __init__(self):
-        self.mallet_radius = 64 #TODO: triple check
+        self.mallet_radius = 66
         self.best_bullet_count = 0
         self.best_x = -1
         self.best_y = -1
@@ -361,6 +362,6 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
         circle = plt.Circle((self.best_x, self.best_y), self.mallet_radius, color='red', fill=False)
         plt.gca().add_patch(circle)
         
-        print(f"Best mallet @ {self.lastframe.boss_timer}")
-        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y})")
+        print(f"Best mallet @ stage frame {self.lastframe.frame_stage} {'('+str(self.lastframe.boss_timer)+' on boss timer)' if self.lastframe.boss_timer != -1 else ''}")
+        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y}); required player position ({self.best_x}, {self.best_y - self.mallet_player_distance})")
         print(f"Expected gold gain ~= {int(self.best_bullet_count*0.35)}")

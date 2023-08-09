@@ -47,9 +47,7 @@ def extract_bullets():
         bullet_iframes = read_int(zBullet + zBullet_iframes)
         bullet_type    = read_int(zBullet + zBullet_type, 2)
         bullet_color   = read_int(zBullet + zBullet_color, 2)
-        
-        print(bullet_scale) #not printed ??? # used in plotting or not?
-        
+                
         #Game-specific attributes
         bullet_delay   = read_int(zBullet + zBullet_ex_delay_timer) if game_id in has_bullet_delay else None
         
