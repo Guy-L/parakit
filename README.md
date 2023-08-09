@@ -54,22 +54,27 @@ py parakit.py
 The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information). This comes with the benefit of being able to specify the extraction duration setting as a command line argument - open the below section for examples.
 
 <details>
-  <summary>`state_reader.py` CLI Examples</summary>
+  <summary><b>state_reader.py CLI Examples</b></summary>
 
-	When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction:
-	```bash
-	py state_reader.py 1f
-	```
+<br>When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction if duration isn't set in `settings.py`:
+```bash
+py state_reader.py
+```
 
-	For sequence extraction over 500 in-game frames (value must be an integer):
-	```bash
-	py state_reader.py 500f
-	```
+For single-state extraction if a different duration is set in `settings.py`:
+```bash
+py state_reader.py 1f
+```
 
-	For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
-	```bash
-	py state_reader.py 10.5s exact
-	```
+For sequence extraction over 500 in-game frames (value must be an integer):
+```bash
+py state_reader.py 500f
+```
+
+For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
+```bash
+py state_reader.py 10.5s exact
+```
 </details>
 
 ## Custom Analyzers
