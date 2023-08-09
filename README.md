@@ -44,8 +44,7 @@ pip install -r requirements.txt
  
 Edit `settings.py` to select the target game and analyzer. <br>**Documentation explaining every available setting can be found [here](./settings.md).**
 
-**You can simply run the program by opening `parakit.py`.**
-If you're going to use the program a lot, open a terminal window in the project's folder and run:
+**You can simply run the program by opening `parakit.py`.**<br>If you're going to use the program a lot, open a terminal window in the project's folder and run:
 ```bash
 py parakit.py
 ```
@@ -69,7 +68,7 @@ py state_reader.py 10.5s exact
 
 ## Custom Analyzers
 
-A template analyzer called `AnalysisTemplate` can be found in `analysis.py`. To make your own analyzer, copy this template, give it a unique class name, and implement the `__init__()`, `step()` and `done()` methods. It'll instantly be added to the analyzers you can select in `settings.py`.
+A template analyzer called `AnalysisTemplate` can be found in `analysis.py`. To make your own analyzer, copy this template, give it a unique class name, and implement the `__init__()`, `step()` and `done()` methods. It'll then instantly be added to the analyzers you can select in `settings.py`.
 
 Initialize in `__init__()` any variables you need to track during the extraction (a common property, for instance, is the "best frame" seen so far). Every time a game state is extracted (i.e. only once for single-state extraction), the `step()` method is called and passed a `GameState` object. `done()` then runs once extraction is complete. 
 
@@ -79,7 +78,9 @@ Getting the information you need should be intuitive even for novice programmers
 
 If the result of your analysis includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). 
 
-State extraction over time can be a computationally heavy process, and the `exact` setting (which is on by default) will slow the game down as needed to ensure that no frame could be skipped as a result. Depending on your needs, you can speed up this process by disabling the extraction of various entities (bullets, enemies, items or lasers). States can also include screenshots if you need a visual of a particularly interesting frame (see `AnalysisMostBulletsFrame` as an example), but this behavior is off by default as it slows extraction significantly.
+State extraction over time can be a computationally heavy process, and the `exact` setting (which is on by default) will slow the game down as needed to ensure that no frame may be skipped as a result. Depending on your needs, you can speed up this process by disabling the extraction of various entities (bullets, enemies, items or lasers) in `settings.py`. States can also include screenshots if you need a visual of a particularly interesting frame (see `AnalysisMostBulletsFrame` as an example), but this behavior is off by default as it slows down extraction significantly.
+
+You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<br>If you do, feel free to send a feature request to the developers.
 
 ## Examples
 
