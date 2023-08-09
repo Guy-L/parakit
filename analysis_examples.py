@@ -1,5 +1,4 @@
 from analysis import * 
-from scipy.ndimage import uniform_filter
 
 # ==========================================
 # Please use your text editor's block collapse 

@@ -2,7 +2,7 @@ from game_entities import GameState
 from abc import ABC, abstractmethod
 from interface import game_id
 
-#Base class (abstract)
+#Base class (abstract), shouldn't be touched
 class Analysis(ABC):
     @abstractmethod
     def __init__(self):
@@ -37,9 +37,10 @@ class AnalysisTemplate(Analysis):
    
    
 #useful stuff, see analysis_examples.py for usages
-#(note: put your analysis under these lines so you can use 'em)
+#(note: put your custom analysis under these lines so you can use 'em)
 from settings import pyplot_settings
 from interface import save_screenshot, get_color, color16, np
+from scipy.ndimage import uniform_filter
 import matplotlib.pyplot as plt
 import math
 

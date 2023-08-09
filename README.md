@@ -1,85 +1,89 @@
+
 # ParaKit - Touhou Data Analysis
 
-## Warning: This README is due for a rewrite, and the sections regarding setup and running are outdated (old methods still apply, but setup/running is now done when running the new main script - `parakit.py`). Documentation for new settings can be found [here](./settings.md).
+ParaKit is a customizable Python toolset capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed. 
 
-Simple python tool to extract relevant game state data for a given frame: 
-* player coords and movement state, 
-* resources, 
-* list of on-screen enemies, bullets, items and lasers, 
-* screenshot (optional, slow)
-* and much more!
+Many analyses come pre-built to help you get started, such as "graph bullet count over time", "plot all game entities" or "find the biggest bullet cluster of a given size" (see below screenshots). All the Touhou data you could need is given to you, and it's your turn to find the best ways to use it!
 
-<br>Meant to help parakeets analyze their games; should be easy to build various analysis tools on top of this (feel free to fork). For instance: over the next 5 seconds, when/where will the biggest bullet cluster of a given radius be?
+If you have feature requests or need help making your own custom analysis, feel free to ask Guy for support. ParaKit is meant to be useful even for those with little to no Python experience.
 
-
-Supported games:
+### [Settings Documentation](./settings.md)
+### Supported games:
 * DDC
 * UM
 
-Goals:
-* Finish UM: active cooldowns, lasers in mallet calculation, better mallet calculations
+### Goals:
+* Finish UM support: active cooldowns, lasers in mallet calculation, better mallet calculations
 * Porting interface to C++
-* Rework this document (new settings, launcher etc)
 * LoLK support
 * MoF support 
 * State saving/reloading
-* Fix "Error: Operation completed successfully" Windows cringe
+* Fix "Error: Operation completed successfully" Windows error
 * Player bullet/bomb data?
 
-If you have feature requests or need help making your own custom analysis, please let me know.
-
-
-To add your analysis code, go to `analysis.py` and implement `__init__`, `step` and `done`; you'll see a few basic examples there to help you. I decided to make this a class to give you better control over the init step, which happens right before the extraction starts (rather than during setup), and to make it easy to swap between different analyses.
-<br>If you need screenshots, set the `requiresScreenshots` boolean at the top of the `state-reader.py` to True (RGB and Greyscale available). You can also disable extracting bullets, enemies, items and lasers to make extraction faster with the `requiresBullets`, `requiresEnemies`, `requiresItems` and `requiresLasers` booleans respectively (True for all by default).
-
-Huge credits to ExpHP for helping out with the extraction.
 
 ## Setup 
-TODO: UPDATE
-Let's use a venv to minimize python headaches; you'll need to activate it every time.
-<br>(you might be prompted to install virtualenv if you haven't, it'll tell you how)
+**Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, I heavily recommend that you get a bit of experience with Git to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out.
 
-Windows:
+Once you have the project (and Python) on your machine, **simply open `parakit.py` and the entire setup will be handled for you** before launching the program. Be patient, installing libraries can take a while. Please report to the developer if any issue comes up during this process.
+
+**For experienced users:** If you'd like to run `state_reader.py` directly, you'll either need to source the virtual environment when you start a terminal or to install the required libraries on your machine directly.
+
+To source the virtual environment:
 ```bash
-python -m venv venv #only do this the first time
-venv\Scripts\activate
-pip install -r requirements.txt #only do this the first time
+venv\Scripts\activate #Windows only
+source venv_name/bin/activate #Unix only
 ```
-
-Linux/Mac:
+To install the libraries on your machine:
 ```bash
-python -m venv venv #only do this the first time
-source venv_name/bin/activate
-pip install -r requirements.txt #only do this the first time
+pip install -r requirements.txt
 ```
-
-If you need to exit the venv for whatever reason (script will no longer work), type `deactivate`.
+ 
 
 ## Running
-TODO: UPDATE
+ 
+Edit `settings.py` to select the target game and analyzer. <br>**Documentation explaining every available setting can be found [here](./settings.md).**
 
-To get the state once:
+**You can simply run the program by opening `parakit.py`.**
+If you're going to use the program a lot, open a terminal window in the project's folder and run:
 ```bash
-python state-reader.py
+py parakit.py
+```
+The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information).
+
+#### `state_reader.py` Examples
+When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. For single-state extraction:
+```bash
+py state_reader.py
 ```
 
-To get the states over 500 in-game frames (# must be integer):
+For sequence extraction over 500 in-game frames (value must be an integer):
 ```bash
-python state-reader.py 500f
+py state_reader.py 500f
 ```
 
-To get the states over 10.5 in-game seconds (# can be decimal):
+For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
 ```bash
-python state-reader.py 10.5s
+py state_reader.py 10.5s exact
 ```
 
-Depending on how fast your machine is and how much stuff is on screen, extracting the game state can take longer than a frame (1/60ths of a second) and as a result, the extracted frames **will not be contiguous and some frames will have been skipped**. For instance, if I run `python state-reader.py 100f`, we'll go from frame #2901 to #3049 after extracting 100 frames (a difference of 148): 48 frames that happened during the extraction were skipped. 
+## Custom Analyzers
 
-To **prevent this**, add the argument `exact` to your command, i.e.: `python state-reader.py 100f exact`. This will slow the game down to ensure extraction always finishes in time for the next frame (and as a side-effect, it'll help you be more precise if you plan to play while this is going on).
+A template analyzer called `AnalysisTemplate` can be found in `analysis.py`. To make your own analyzer, copy this template, give it a unique class name, and implement the `__init__()`, `step()` and `done()` methods. It'll instantly be added to the analyzers you can select in `settings.py`.
 
-Either way, extraction will most likely take longer than the actual time specified (especially for longer periods).
+Initialize in `__init__()` any variables you need to track during the extraction (a common property, for instance, is the "best frame" seen so far). Every time a game state is extracted (i.e. only once for single-state extraction), the `step()` method is called and passed a `GameState` object. `done()` then runs once extraction is complete. 
 
-## Screenshots
+The full specification of the `GameState` object is found in `game_entities.py`. 
+
+Getting the information you need should be intuitive even for novice programmers. If you're not sure how to get something done programatically, you can try to give `game_entities.py` and `AnalysisTemplate` to a language model like ChatGPT.
+
+If the result of your analysis includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). 
+
+State extraction over time can be a computationally heavy process, and the `exact` setting (which is on by default) will slow the game down as needed to ensure that no frame could be skipped as a result. Depending on your needs, you can speed up this process by disabling the extraction of various entities (bullets, enemies, items or lasers). States can also include screenshots if you need a visual of a particularly interesting frame (see `AnalysisMostBulletsFrame` as an example), but this behavior is off by default as it slows extraction significantly.
+
+## Examples
+
+**Note**: This section needs updating to show off new features.
 
 Single state extraction:
 
