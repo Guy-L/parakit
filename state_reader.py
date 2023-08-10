@@ -421,10 +421,14 @@ def print_game_state(gs: GameState):
         if gs.game_specific['total_cards'] > 0:
             cards_breakdown += " ("
             if gs.game_specific['total_actives'] > 0:
-                cards_breakdown += f"{gs.game_specific['total_actives']} active, "
+                cards_breakdown += f"{gs.game_specific['total_actives']} active"
             if gs.game_specific['total_equipmt'] > 0:
-                cards_breakdown += f"{gs.game_specific['total_equipmt']} equipment, "
+                if cards_breakdown != " (":
+                    cards_breakdown += ", "
+                cards_breakdown += f"{gs.game_specific['total_equipmt']} equipment"
             if gs.game_specific['total_passive'] > 0:
+                if cards_breakdown != " (":
+                    cards_breakdown += ", "
                 cards_breakdown += f"{gs.game_specific['total_passive']} passive"
             cards_breakdown += ")"
             
