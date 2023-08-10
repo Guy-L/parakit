@@ -588,7 +588,7 @@ offsets = {
             'zCard_charge': 0x38,
             'zCard_charge_max': 0x48,
             'zCard_name_pointer_pointer': 0x4C,
-            'zCard_centipede_counter': 0x54,
+            'zCard_counter': 0x54, #used by Centipede & Lily
         }
     )
 }

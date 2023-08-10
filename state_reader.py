@@ -314,6 +314,7 @@ def extract_game_state(frame_id = None, real_time = None):
         
     elif game_id == 18:
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
+        lily_counter = None
         centipede_multiplier = None
         active_cards = []
         
@@ -329,9 +330,12 @@ def extract_game_state(frame_id = None, real_time = None):
             
             card_name = read_string(read_int(read_int(zCard + zCard_name)), 15)
             
+            if card_id == 48: #Lily
+                lily_counter = read_int(zCard + zCard_counter)
+            
             if card_id not in card_nicknames.keys():
                 if card_id == 54: #Centipede
-                    centipede_multiplier = 1 + 0.00005 * min(16000, read_int(zCard + zCard_centipede_counter))
+                    centipede_multiplier = 1 + 0.00005 * min(16000, read_int(zCard + zCard_counter))
                     
                 continue #skip non-actives
 
@@ -349,6 +353,7 @@ def extract_game_state(frame_id = None, real_time = None):
             'total_actives': read_int(zAbilityManager + zAbilityManager_total_actives),
             'total_equipmt': read_int(zAbilityManager + zAbilityManager_total_equipmt),
             'total_passive': read_int(zAbilityManager + zAbilityManager_total_passive),
+            'lily_counter': lily_counter,
             'centipede_multiplier': centipede_multiplier,
             'active_cards': active_cards
         }
@@ -436,6 +441,9 @@ def print_game_state(gs: GameState):
         
         if gs.game_specific['centipede_multiplier']:
             print(f"| UM Centipede Multiplier: {gs.game_specific['centipede_multiplier']:.3f}x")
+            
+        if gs.game_specific['lily_counter'] != None:
+            print(f"| UM Lily Use Count: {gs.game_specific['lily_counter']} (" + ('next Lily drops Life Piece' if gs.game_specific['lily_counter'] % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
         
         if gs.game_specific['active_cards']:
             print("\nList of active cards:")

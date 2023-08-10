@@ -233,7 +233,7 @@ elif game_id == 18:
     zCard_charge      = offsets[_module_name].game_specific['zCard_charge']
     zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
     zCard_name        = offsets[_module_name].game_specific['zCard_name_pointer_pointer']
-    zCard_centipede_counter = offsets[_module_name].game_specific['zCard_centipede_counter']
+    zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
 
 # Meaning Arrays
 color_coin    = offsets[_module_name].associations.color_coin
