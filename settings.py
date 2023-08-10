@@ -3,8 +3,7 @@ interface_settings = {
     'termination_key': 'F6',
 
     # Select the game here; can be full name, acronym, th## or just the game number.
-    # Supported games: DDC
-    # Mostly supported games: UM
+    # Supported games: DDC, UM
     'game': 'UM'
 }
 

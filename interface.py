@@ -75,13 +75,13 @@ rng           = offsets[_module_name].statics.rng
 game_state    = offsets[_module_name].statics.game_state
 
 # Untracked Statics
-game_speed      = offsets[_module_name].statics_untracked.game_speed
-visual_rng      = offsets[_module_name].statics_untracked.visual_rng
-character       = offsets[_module_name].statics_untracked.character
-subshot         = offsets[_module_name].statics_untracked.subshot
-difficulty      = offsets[_module_name].statics_untracked.difficulty
-rank            = offsets[_module_name].statics_untracked.rank
-stage           = offsets[_module_name].statics_untracked.stage
+game_speed = offsets[_module_name].statics_untracked.game_speed
+visual_rng = offsets[_module_name].statics_untracked.visual_rng
+character  = offsets[_module_name].statics_untracked.character
+subshot    = offsets[_module_name].statics_untracked.subshot
+difficulty = offsets[_module_name].statics_untracked.difficulty
+rank       = offsets[_module_name].statics_untracked.rank
+stage      = offsets[_module_name].statics_untracked.stage
 
 # Player
 player_pointer  = offsets[_module_name].player.player_pointer
@@ -128,11 +128,11 @@ zEnemyFlags_no_hitbox  = offsets[_module_name].associations.zEnemyFlags_no_hitbo
 item_manager_pointer   = offsets[_module_name].items.item_manager_pointer
 zItemManager_array     = offsets[_module_name].items.zItemManager_array
 zItemManager_array_len = offsets[_module_name].items.zItemManager_array_len
-zItem_len              = offsets[_module_name].items.zItem_len
-zItem_state            = offsets[_module_name].items.zItem_state
-zItem_type             = offsets[_module_name].items.zItem_type
-zItem_pos              = offsets[_module_name].items.zItem_pos
-zItem_vel              = offsets[_module_name].items.zItem_vel
+zItem_len    = offsets[_module_name].items.zItem_len
+zItem_state  = offsets[_module_name].items.zItem_state
+zItem_type   = offsets[_module_name].items.zItem_type
+zItem_pos    = offsets[_module_name].items.zItem_pos
+zItem_vel    = offsets[_module_name].items.zItem_vel
 
 # Laser (Base)
 laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
@@ -219,6 +219,21 @@ if game_id == 14:
 
 elif game_id == 18:
     funds = offsets[_module_name].game_specific['funds']
+    card_nicknames = offsets[_module_name].game_specific['card_nicknames']
+    
+    ability_manager_pointer         = offsets[_module_name].game_specific['ability_manager_pointer']
+    zAbilityManager_list            = offsets[_module_name].game_specific['zAbilityManager_list']
+    zAbilityManager_total_cards     = offsets[_module_name].game_specific['zAbilityManager_total_cards']
+    zAbilityManager_total_actives   = offsets[_module_name].game_specific['zAbilityManager_total_actives']
+    zAbilityManager_total_equipmt   = offsets[_module_name].game_specific['zAbilityManager_total_equipmt']
+    zAbilityManager_total_passive   = offsets[_module_name].game_specific['zAbilityManager_total_passive']
+    zAbilityManager_selected_active = offsets[_module_name].game_specific['zAbilityManager_selected_active']
+    
+    zCard_id          = offsets[_module_name].game_specific['zCard_id']
+    zCard_charge      = offsets[_module_name].game_specific['zCard_charge']
+    zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
+    zCard_name        = offsets[_module_name].game_specific['zCard_name_pointer_pointer']
+    zCard_centipede_counter = offsets[_module_name].game_specific['zCard_centipede_counter']
 
 # Meaning Arrays
 color_coin    = offsets[_module_name].associations.color_coin
@@ -319,15 +334,14 @@ def save_screenshot(filename, screenshot):
     cv2.imwrite(filename, bgr_screenshot)
 
 def read_int(offset, bytes = 4, rel = False):
-    #return np.uint32(int.from_bytes(_read_memory(offset, 4, rel), byteorder='little'))
     return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little')
 
 def read_float(offset, rel = False):
     return struct.unpack('f', _read_memory(offset, 4, rel))[0]
     
 def read_string(offset, length, rel = False):
-    return _read_memory(offset, length, rel).decode('utf-8').rstrip('\x00')
-        
+    return _read_memory(offset, length, rel).decode('utf-8').split('\x00', 1)[0]
+    
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
         

@@ -18,6 +18,9 @@ zGui           = read_int(gui_pointer, rel=True)
 if game_id == 14:
     ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
+elif game_id == 18:
+    zAbilityManager = read_int(ability_manager_pointer, rel=True)
+    
 #For quick access
 analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_max_curve_data = extraction_settings.values()
 exact = seqext_settings['exact']
@@ -310,8 +313,44 @@ def extract_game_state(frame_id = None, real_time = None):
         }
         
     elif game_id == 18:
+        selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
+        centipede_multiplier = None
+        active_cards = []
+        
+        current_active_list = read_zList(zAbilityManager + zAbilityManager_list)
+        
+        while current_active_list["next"]:
+            current_active_list = read_zList(current_active_list["next"]) 
+            
+            zCard                  = current_active_list["entry"]
+            card_id                = read_int(zCard + zCard_id)
+            card_charge_max        = int(read_int(zCard + zCard_charge_max)) #the first 20% of the cooldown time is always skipped
+            card_charge            = card_charge_max - read_int(zCard + zCard_charge) #game counts down rather than up, but up is more intuitive
+            
+            card_name = read_string(read_int(read_int(zCard + zCard_name)), 15)
+            
+            if card_id not in card_nicknames.keys():
+                if card_id == 54: #Centipede
+                    centipede_multiplier = 1 + 0.00005 * min(16000, read_int(zCard + zCard_centipede_counter))
+                    
+                continue #skip non-actives
+
+            active_cards.append(ActiveCard(
+                id            = card_id,
+                charge        = card_charge, 
+                charge_max    = card_charge_max,
+                internal_name = card_name,
+                selected      = zCard == selected_active
+            ))
+            
         game_specific = {
             'funds': read_int(funds, rel=True),
+            'total_cards': read_int(zAbilityManager + zAbilityManager_total_cards),
+            'total_actives': read_int(zAbilityManager + zAbilityManager_total_actives),
+            'total_equipmt': read_int(zAbilityManager + zAbilityManager_total_equipmt),
+            'total_passive': read_int(zAbilityManager + zAbilityManager_total_passive),
+            'centipede_multiplier': centipede_multiplier,
+            'active_cards': active_cards
         }
         
     gs = GameState(
@@ -349,19 +388,21 @@ def extract_game_state(frame_id = None, real_time = None):
 
 def print_game_state(gs: GameState):
     print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}")
-    print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces); {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze} graze")
+    print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces); {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
     print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); base hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| Input bitflag: {gs.input:08b}")
     print(f"| RNG value: {gs.rng}")
     
+    # Situational prints
     if gs.boss_timer != -1:
         print(f"| Boss timer: {gs.boss_timer}")
         
     if gs.spellcard:
         print(f"| Spell ID#{gs.spellcard.spell_id}, SCB: {gs.spellcard.capture_bonus}")
         
-    if game_id == 14:
+    # Game-specific prints
+    if game_id == 14: #DDC
         print(f"| DDC Bonus Count: {gs.game_specific['bonus_count']}")
         
         if gs.game_specific['seija_flip'][0] != 1:
@@ -372,7 +413,44 @@ def print_game_state(gs: GameState):
             
         if gs.game_specific['player_scale'] > 1:
             print(f"| DDC Player Scale: grew {round(gs.game_specific['player_scale'], 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific['player_scale'], 2)})")
+    
+    elif game_id == 18: #UM
+        print(f"| UM Funds: {gs.game_specific['funds']:,}")
+        
+        cards_breakdown = ""
+        if gs.game_specific['total_cards'] > 0:
+            cards_breakdown += " ("
+            if gs.game_specific['total_actives'] > 0:
+                cards_breakdown += f"{gs.game_specific['total_actives']} active, "
+            if gs.game_specific['total_equipmt'] > 0:
+                cards_breakdown += f"{gs.game_specific['total_equipmt']} equipment, "
+            if gs.game_specific['total_passive'] > 0:
+                cards_breakdown += f"{gs.game_specific['total_passive']} passive"
+            cards_breakdown += ")"
+            
+        print(f"| UM Cards: {gs.game_specific['total_cards']}" + cards_breakdown)
+        
+        if gs.game_specific['centipede_multiplier']:
+            print(f"| UM Centipede Multiplier: {gs.game_specific['centipede_multiplier']:.3f}x")
+        
+        if gs.game_specific['active_cards']:
+            print("\nList of active cards:")
+            print("  ID   Internal Name   Nickname    Charge / Max     %")
+            for card in gs.game_specific['active_cards']:
+                description = "• "
+                description += tabulate(card.id, 5)
+                description += tabulate(card.internal_name, 16)
+                description += tabulate(card_nicknames[card.id], 12)
+                description += tabulate(card.charge, 6) + " / "
+                description += tabulate(card.charge_max, 8)
+                description += tabulate(f"{round(100*card.charge / card.charge_max, 2)}%", 6)
+                
+                if card.selected:
+                    description += " (selected)"
+                    
+                print(description)
 
+    # Game entity prints (all optional)
     if gs.bullets:
         counter = 0
         print("\nList of bullets:")

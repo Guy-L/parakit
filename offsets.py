@@ -564,7 +564,7 @@ offsets = {
             color16       = modern_color16,
             sprites       = modern_sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)],
             curve_sprites = modern_curve_sprites,
-            item_types    = {1: "Power", 2: "Gold", 3:"Full Power", 4:"Life Piece", 6:"Bomb Piece", 9:"Green", 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"}, 
+            item_types    = {1: "Power", 2: "Gold", 3: "Full Power", 4: "Life Piece", 6: "Bomb Piece", 9: "Green", 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"}, 
             game_states   = modern_game_states,
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
@@ -575,7 +575,20 @@ offsets = {
             zEnemyFlags_no_hitbox  = 0x2,
         ),
         game_specific = {
-            'funds': 0xCCD34
+            'funds': 0xCCD34,
+            'card_nicknames': {41: "Gap", 42: "Mallet", 43: "Keystone", 44: "Moon", 45: "Miko", 46: "Fang", 47: "Sun", 48: "Lily", 49: "Drum", 50: "Sumireko", 52: "Bottle", 53: "Rice"},
+            'ability_manager_pointer': 0xCF298,
+            'zAbilityManager_list': 0x18,
+            'zAbilityManager_total_cards': 0x28,
+            'zAbilityManager_total_actives': 0x2C,
+            'zAbilityManager_total_equipmt': 0x30,
+            'zAbilityManager_total_passive': 0x34,
+            'zAbilityManager_selected_active': 0x38,
+            'zCard_id': 0x4,
+            'zCard_charge': 0x38,
+            'zCard_charge_max': 0x48,
+            'zCard_name_pointer_pointer': 0x4C,
+            'zCard_centipede_counter': 0x54,
         }
     )
 }

@@ -123,3 +123,16 @@ class GameState:
     lasers: Optional[List[Laser]]
     screen: Optional[np.ndarray]
     game_specific: Optional[Dict[str, Any]]
+    
+    
+# ======================
+# Game specific entities
+
+# Unconnected Marketeers
+@dataclass
+class ActiveCard:
+    id: int
+    charge: int
+    charge_max: int
+    internal_name: str
+    selected: bool

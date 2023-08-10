@@ -14,7 +14,7 @@ If you have feature requests or need help making your own custom analysis, feel 
 
 ### Goals:
 * Unix compatibility (for wearr)
-* Finish UM support: active cooldowns, lasers in mallet calculation, better mallet calculations
+* Polish mallet analyzer: add lasers, account for spread, more useful timing info
 * Porting interface to C++
 * LoLK support
 * MoF support 

@@ -60,8 +60,8 @@ else:
 subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
-import requests
-VERSION_DATE = datetime(2023, 8, 9, 22, 59, 8, tzinfo=timezone.utc)
+import requests 
+VERSION_DATE = datetime(2023, 8, 10, 7, 22, 28, tzinfo=timezone.utc)
 #note for devs: this should always be set to a couple minutes in the future when pushing
 #there is a pre-commit hook that will do this for you, ask Guy if you don't have it!
 
