@@ -53,3 +53,9 @@ pyplot_settings = {
     'enemy_factor': 15,
     'plot_laser_circles': True
 }
+
+# ParaKit Script Settings
+# See settings.md for more info.
+parakit_settings = {
+    'minimize_version_checker': False
+}

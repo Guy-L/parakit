@@ -61,7 +61,8 @@ subprocess.run([_python_exe, _script_path])
 
 #Inform users if running non-latest version
 import requests 
-VERSION_DATE = datetime(2023, 8, 10, 8, 10, 50, tzinfo=timezone.utc)
+from settings import parakit_settings
+VERSION_DATE = datetime(2023, 8, 11, 2, 36, 55, tzinfo=timezone.utc)
 #note for devs: this should always be set to a couple minutes in the future when pushing
 #there is a pre-commit hook that will do this for you, ask Guy if you don't have it!
 
@@ -81,34 +82,46 @@ _commits = _commits_response.json()
 _latest_version_date = datetime.strptime(_commits[0]['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
 
 if _latest_version_date > VERSION_DATE:
-    print('\n================================')
-    print('A new version is available!')
-    print('New changes:')
+    if parakit_settings['minimize_version_checker']:
     
-    counter = 0
-    max_commits = 6
-    max_commit_msg_len = 75
+        new_commits = 0
+        for commit in _commits:
+            commit_date = datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+            if commit_date > VERSION_DATE:
+                new_commits += 1
     
-    for commit in _commits:
-        commit_date = datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-        if commit_date > VERSION_DATE:
-            counter += 1
-            if counter < max_commits:
-                commit_msg = commit['commit']['message']
-                if len(commit_msg) > max_commit_msg_len:
-                    commit_msg = commit_msg[:max_commit_msg_len] + '...'
-                    
-                print(f"• [{commit_date.strftime('%Y-%m-%d %H:%M')} UTC] {commit_msg}")
-    
-    if counter >= max_commits:
-        print(f"• ... and more! ({counter} commits)")
-    
-    print()
-    print('If you installed via Code > Download ZIP, please do so again')
-    print(f'or download a Release if one from {_latest_version_date.strftime("%Y-%m-%d %H:%M")} UTC is available.')
-    print('If you installed via Git, please do \'git pull\'. You may need to resolve a merge')
-    print('conflict if changes were made to settings.py or analysis.py which conflict with yours.')
-    print('If this happens and you\'re not sure how to proceed, feel free to contact the developer.')
+        print('\n================================')
+        print(f'A new version is available! ({new_commits} new commits)')
+        
+    else: 
+        print('\n================================')
+        print('A new version is available!')
+        print('New changes:')
+        
+        new_commits = 0
+        max_commits = 6
+        max_commit_msg_len = 75
+        
+        for commit in _commits:
+            commit_date = datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+            if commit_date > VERSION_DATE:
+                new_commits += 1
+                if new_commits < max_commits:
+                    commit_msg = commit['commit']['message']
+                    if len(commit_msg) > max_commit_msg_len:
+                        commit_msg = commit_msg[:max_commit_msg_len] + '...'
+                        
+                    print(f"• [{commit_date.strftime('%Y-%m-%d %H:%M')} UTC] {commit_msg}")
+        
+        if new_commits >= max_commits:
+            print(f"• ... and more! ({new_commits} commits)")
+        
+        print()
+        print('If you installed via Code > Download ZIP, please do so again')
+        print(f'or download a Release if one from {_latest_version_date.strftime("%Y-%m-%d %H:%M")} UTC is available.')
+        print('If you installed via Git, please do \'git pull\'. You may need to resolve a merge')
+        print('conflict if changes were made to settings.py or analysis.py which conflict with yours.')
+        print('If this happens and you\'re not sure how to proceed, feel free to contact the developer.')
     
 #Prevent instant exit
 input_exit()

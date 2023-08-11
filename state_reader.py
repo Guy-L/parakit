@@ -330,6 +330,10 @@ def extract_game_state(frame_id = None, real_time = None):
             
             card_name = read_string(read_int(read_int(zCard + zCard_name)), 15)
             
+            #uncomment to see other internal card names and uses of counter 
+            #(some actives use it temporarily, out of bounds address for most passives)
+            #print(f"{card_name}: {read_int(zCard + zCard_counter)}")
+            
             if card_id == 48: #Lily
                 lily_counter = read_int(zCard + zCard_counter)
             

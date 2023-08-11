@@ -58,3 +58,10 @@ If you want to make your own, check how these are used.
 | **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `35` |
 | **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `15` |
 | **`plot_laser_circles`**<br>(bool) | If enabled, draws the head of line lasers and the tails of telegraphed lasers in their respective plots. | `True`
+
+## ParaKit Script Settings
+Settings used by the `parakit.py` main script.
+
+| Name / Type | Description | Default |
+|-|-|-|
+| **`minimize_version_checker`**<br>(bool) | Reduces the size of the automatic new-version checker's reminders to make it less annoying for users that aren't using Git. | `False` |
