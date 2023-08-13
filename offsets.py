@@ -542,7 +542,7 @@ offsets = {
         ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xCF2C0,
-            zSpellcard_indicator = 0x1c,
+            zSpellcard_indicator = 0x1c, #game code seem to use 0x78, to check (cf. instruction @ 0x423756 in PseudoC)
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7C,
         ),

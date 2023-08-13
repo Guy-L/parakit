@@ -33,7 +33,7 @@ Performed if `ingame_duration` is unspecified or less than 2.
 |-|-|-|
 | **`show_untracked`**<br>(bool) | If enabled, prints additional state data (difficulty, character, visual RNG...) deemed not worth tracking for sequence extraction due to either not changing often or being irrelevant. | `False` |
 | **`only_game_world`**<br>(bool) | If enabled, prevents accidentally starting extraction when there is no loaded game world. Also affects sequence extraction, but "not in game world" is one of its termination conditions anyways. | `True` |
-| **`list_print_limit`**<br>(int) | Maximum number of lines in an entity list to be printed before being cut off *(note: only affects bullet & item lists for now)*. | `30` |
+| **`list_print_limit`**<br>(int) | Maximum number of lines in an entity list to be printed before being cut off. | `30` |
 
 ## Sequence Extraction Settings 
 Settings for sequence extraction, in which the state of the game is repeatedly extracted over a number of in-game frames. Analyzers can track anything they'd like over time and display their results once extraction terminates. By default, extraction will terminate if the game is closed, if the termination key is pressed (see interface settings), or if the game state indicates a non-run scenario (main menu/game over/practice mode end).

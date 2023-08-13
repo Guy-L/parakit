@@ -332,7 +332,7 @@ def extract_game_state(frame_id = None, real_time = None):
             
             #uncomment to see other internal card names and uses of counter 
             #(some actives use it temporarily, out of bounds address for most passives)
-            #print(f"{card_name}: {read_int(zCard + zCard_counter)}")
+            #print(f"{card_name} ({card_id}): {read_int(zCard + zCard_counter)}")
             
             if card_id == 48: #Lily
                 lily_counter = read_int(zCard + zCard_counter)
@@ -459,7 +459,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(card_nicknames[card.id], 12)
                 description += tabulate(card.charge, 6) + " / "
                 description += tabulate(card.charge_max, 8)
-                description += tabulate(f"{round(100*card.charge / card.charge_max, 2)}%", 6)
+                description += tabulate(f"{round(100*card.charge / card.charge_max, 2):.3g}%", 6)
                 
                 if card.selected:
                     description += " (selected)"
@@ -511,6 +511,7 @@ def print_game_state(gs: GameState):
         beam_lasers = [laser for laser in gs.lasers if laser.laser_type == 3]
         
         if line_lasers:
+            counter = 0
             print("\nList of segment (\"line\") lasers:")
             print("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite")
             for laser in line_lasers:
@@ -523,9 +524,16 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
+                
                 print(description)
+                
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(line_lasers)} line lasers total]')
+                    break
             
         if infinite_lasers:
+            counter = 0
             print("\nList of telegraphed (\"infinite\") lasers:")
             print("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)")
             for laser in infinite_lasers:
@@ -550,8 +558,14 @@ def print_game_state(gs: GameState):
                     description += "Unknown"
                 
                 print(description)
+                
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(infinite_lasers)} telegraphed lasers total]')
+                    break
             
         if curve_lasers:
+            counter = 0
             print("\nList of curvy lasers:")
             print("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
             for laser in curve_lasers:
@@ -565,9 +579,16 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(color16[laser.color], 8)
                 description += tabulate(curve_sprites[laser.sprite], 8)
+                
                 print(description)
+                
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(curve_lasers)} curvy lasers total]')
+                    break
             
         if beam_lasers:
+            counter = 0
             print("\nList of beam lasers:")
             print("Note: Beam lasers are not fully supported; data may be inaccurate.")
             print("  Position         Speed   Angle   Length  Width   Color   Sprite")
@@ -580,9 +601,16 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
+                
                 print(description)
+                
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(beam_lasers)} beam lasers total]')
+                    break
          
     if gs.enemies:
+        counter = 0
         print("\nList of enemies:")
         print("  Position         Hurtbox          Hitbox           Rotation  IFrames  HP / Max HP")
         for enemy in gs.enemies:
@@ -604,6 +632,11 @@ def print_game_state(gs: GameState):
                 description += "(Hitbox Off) "
                 
             print(description)
+                
+            counter += 1
+            if counter >= singlext_settings['list_print_limit']:
+                print(f'• ... [{len(gs.enemies)} enemies total]')
+                break
     
     if gs.mode == 7 and gs.items:
         counter = 0

@@ -62,7 +62,7 @@ subprocess.run([_python_exe, _script_path])
 #Inform users if running non-latest version
 import requests 
 from settings import parakit_settings
-VERSION_DATE = datetime(2023, 8, 11, 2, 36, 55, tzinfo=timezone.utc)
+VERSION_DATE = datetime(2023, 8, 13, 7, 0, 9, tzinfo=timezone.utc)
 #note for devs: this should always be set to a couple minutes in the future when pushing
 #there is a pre-commit hook that will do this for you, ask Guy if you don't have it!
 
