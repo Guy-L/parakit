@@ -408,6 +408,7 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
         
         print(f"Best mallet @ stage frame {self.lastframe.frame_stage} {'('+str(self.lastframe.boss_timer)+' on boss timer)' if self.lastframe.boss_timer != -1 else ''}")
         print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y}); required player position ({self.best_x}, {self.best_y - self.mallet_player_distance})")
-        print(f"Expected gold gain ~= {int(self.best_bullet_count*0.35)}")
+        print(f"Vanilla expected gold gain ~= {int(self.best_bullet_count*0.365692)}") #thanks to Dai for ZUN-rng distribution analysis
+        print(f"Static mallet gold gain = {int(self.best_bullet_count*(11/30))}")
         
         print("\nNote: The first optimal solution found was displayed - it may be\nunnecessarily biased towards the left/top but remains optimal.")
