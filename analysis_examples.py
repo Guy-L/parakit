@@ -123,6 +123,10 @@ class AnalysisPlotBullets(AnalysisPlot):
             alphas = [0.05 if bullet.show_delay else 1 for bullet in self.lastframe.bullets]
 
             plt.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
+            
+        else:
+            print("No bullets to plot.")
+            return -1
 
 # Plot2: "Plot the enemy positions of the last frame at game scale (+player)" [only requires enemies]
 class AnalysisPlotEnemies(AnalysisPlot):
@@ -136,6 +140,10 @@ class AnalysisPlotEnemies(AnalysisPlot):
             #assumes square hitbox/point-like enemies, will only fix if someone yells at me
 
             plt.scatter(x_coords, y_coords, s=sizes, marker='s')
+            
+        else:
+            print("No enemies to plot.")
+            return -1
         
 # Plot3: "Plot the item positions of the last frame at game scale (+player)" [only requires items]
 class AnalysisPlotItems(AnalysisPlot):
@@ -149,15 +157,23 @@ class AnalysisPlotItems(AnalysisPlot):
             colors = [item_color(item.item_type) for item in self.lastframe.items]
             
             plt.scatter(x_coords, y_coords, color=colors, marker='*')
+            
+        else:
+            print("No items to plot.")
+            return -1
 
 # Plot4: "Plot the line lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotLineLasers(AnalysisPlot):
     plot_title = 'Plot of Extracted Line Lasers'
 
     def plot(self):
+        hasLineLasers = False
         for laser in self.lastframe.lasers:
             if laser.laser_type == 0:
-            
+                
+                if not hasLineLasers:
+                    hasLineLasers = True
+                
                 tail_x = laser.position[0]
                 tail_y = laser.position[1]
                 head_x = tail_x + laser.length * np.cos(laser.angle)
@@ -166,14 +182,22 @@ class AnalysisPlotLineLasers(AnalysisPlot):
                 
                 if plot_laser_circles:
                     plt.scatter(head_x, head_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)), s=75, zorder=1)
+                    
+        if not hasLineLasers:
+            print("No line lasers to plot.")
+            return -1
     
 # Plot5: "Plot the infinite lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotInfiniteLasers(AnalysisPlot): 
     plot_title = 'Plot of Extracted Telegraphed Lasers'
     
     def plot(self):
+        hasInfiniteLasers = False
         for laser in self.lastframe.lasers:
             if laser.laser_type == 1:
+                
+                if not hasInfiniteLasers:
+                    hasInfiniteLasers = True
             
                 origin_x = laser.position[0]
                 origin_y = laser.position[1]
@@ -183,6 +207,10 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
                 
                 if plot_laser_circles:
                     plt.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
+                    
+        if not hasInfiniteLasers:
+            print("No telegraphed lasers to plot.")
+            return -1
         
 # Plot6: "Plot the curve lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotCurveLasers(AnalysisPlot):
@@ -200,8 +228,12 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
         return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))        
         
     def plot(self):
+        hasCurveLasers = False
         for laser in self.lastframe.lasers:
             if laser.laser_type == 2:
+            
+                if not hasCurveLasers:
+                    hasCurveLasers = True
             
                 if self.smooth:       
                     sizes = [laser.width * pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
@@ -223,18 +255,25 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                         
                     if self.has_line:
                         plt.plot(x_coords, y_coords, color=pyplot_color(color16[laser.color]), linewidth=laser.width * pyplot_factor)
+                    
+        if not hasCurveLasers:
+            print("No curvy lasers to plot.")
+            return -1
         
 # Plot7: "Plot all the above at game scale (+player)" [only doesn't require screenshots]
 class AnalysisPlotAll(AnalysisPlot):
     plot_title = 'Scatter Plot of Extracted... Everything!'
     
     def plot(self):
-        AnalysisPlotBullets(self.lastframe).plot()
-        AnalysisPlotEnemies(self.lastframe).plot()
-        AnalysisPlotItems(self.lastframe).plot()
-        AnalysisPlotLineLasers(self.lastframe).plot()
-        AnalysisPlotInfiniteLasers(self.lastframe).plot()
-        AnalysisPlotCurveLasers(self.lastframe).plot()
+        plottedBullets = AnalysisPlotBullets(self.lastframe).plot()
+        plottedEnemies = AnalysisPlotEnemies(self.lastframe).plot()
+        plottedItems = AnalysisPlotItems(self.lastframe).plot()
+        plottedLines = AnalysisPlotLineLasers(self.lastframe).plot()
+        plottedInfinites = AnalysisPlotInfiniteLasers(self.lastframe).plot()
+        plottedCurves = AnalysisPlotCurveLasers(self.lastframe).plot()
+        
+        if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == -1:
+            return -1
 
 # Plot8: "Plot a heatmap of positions hit by bullets over time" [only requires bullets]
 class AnalysisPlotBulletHeatmap(AnalysisPlot):
@@ -247,7 +286,7 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
         
     def __init__(self, state: GameState = None):
         super().__init__(state)
-        self.heatmap = np.zeros((449, 369))
+        self.heatmap = np.zeros((449, 385))
 
     def step(self, state: GameState):
         super().step(state)
@@ -258,7 +297,7 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
             min_y = int(bullet.position[1] - bullet.hitbox_radius * bullet.scale)
             max_y = int(bullet.position[1] + bullet.hitbox_radius * bullet.scale)
             
-            if min_x >= 0 and min_x <= 368 and max_x >= 0 and max_x <= 368 and min_y >= 0 and min_y <= 448 and max_y >= 0 and max_y <= 448:
+            if min_x >= 0 and min_x <= 384 and max_x >= 0 and max_x <= 384 and min_y >= 0 and min_y <= 448 and max_y >= 0 and max_y <= 448:
                 for x in range(min_x, max_x):
                     for y in range(min_y, max_y):
                         if not self.circles or (self.circles and (x - bullet.position[0] - 192) ** 2 + (y - bullet.position[1]) ** 2 <= (bullet.hitbox_radius * bullet.scale) ** 2) and self.heatmap[y, x] < self.max_count:
@@ -273,7 +312,7 @@ class AnalysisPrintBulletsASCII(Analysis):
     def __init__(self):
         self.lastframe = None
         self.size_x = 90 #at this size, can be pasted into discord nicely (.txt feature makes it not take space without cutting it off much)
-        self.size_y = int((self.size_x*440)/368)
+        self.size_y = int((self.size_x*440)/384)
         self.radius = 3 #how far to look for bullets around each where each character maps (yes it should be the other way around whatever)
     
     def step(self, state: GameState):
@@ -289,7 +328,7 @@ class AnalysisPrintBulletsASCII(Analysis):
             line = ""
             
             for x in range(0, self.size_x):
-                ingame_x = (x / self.size_x) * 368 - 192
+                ingame_x = (x / self.size_x) * 384 - 192
                 ingame_y = (y / self.size_y) * 440
                 
                 found = False
