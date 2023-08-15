@@ -174,6 +174,8 @@ class Associations:
     zEnemyFlags_is_boss: int
     zEnemyFlags_intangible: int
     zEnemyFlags_no_hitbox: int
+    life_piece_req: int
+    bomb_piece_req: int
     
 @dataclass
 class Offset:
@@ -396,6 +398,8 @@ offsets = {
             zEnemyFlags_is_boss    = 0x800000,
             zEnemyFlags_intangible = 0x20,
             zEnemyFlags_no_hitbox  = 0x2,
+            life_piece_req = 3,
+            bomb_piece_req = 8,
         ),
         game_specific = {
             'zBullet_ex_delay_timer': 0x12ec,
@@ -573,6 +577,8 @@ offsets = {
             zEnemyFlags_is_boss    = 0x800000,
             zEnemyFlags_intangible = 0x20,
             zEnemyFlags_no_hitbox  = 0x2,
+            life_piece_req = 3,
+            bomb_piece_req = 3,
         ),
         game_specific = {
             'funds': 0xCCD34,

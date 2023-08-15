@@ -236,18 +236,20 @@ elif game_id == 18:
     zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
 
 # Meaning Arrays
-color_coin    = offsets[_module_name].associations.color_coin
-color4        = offsets[_module_name].associations.color4
-color8        = offsets[_module_name].associations.color8
-color16       = offsets[_module_name].associations.color16
-sprites       = offsets[_module_name].associations.sprites
-curve_sprites = offsets[_module_name].associations.curve_sprites
-item_types    = offsets[_module_name].associations.item_types
-game_states   = offsets[_module_name].associations.game_states
-game_modes    = offsets[_module_name].associations.game_modes
-characters    = offsets[_module_name].associations.characters
-subshots      = offsets[_module_name].associations.subshots
-difficulties  = offsets[_module_name].associations.difficulties
+color_coin     = offsets[_module_name].associations.color_coin
+color4         = offsets[_module_name].associations.color4
+color8         = offsets[_module_name].associations.color8
+color16        = offsets[_module_name].associations.color16
+sprites        = offsets[_module_name].associations.sprites
+curve_sprites  = offsets[_module_name].associations.curve_sprites
+item_types     = offsets[_module_name].associations.item_types
+game_states    = offsets[_module_name].associations.game_states
+game_modes     = offsets[_module_name].associations.game_modes
+characters     = offsets[_module_name].associations.characters
+subshots       = offsets[_module_name].associations.subshots
+difficulties   = offsets[_module_name].associations.difficulties
+life_piece_req = offsets[_module_name].associations.life_piece_req
+bomb_piece_req = offsets[_module_name].associations.bomb_piece_req
 
 # ==========================================================
 # Step 1 - Get the game process

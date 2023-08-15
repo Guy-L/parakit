@@ -397,7 +397,7 @@ def extract_game_state(frame_id = None, real_time = None):
 
 def print_game_state(gs: GameState):
     print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}")
-    print(f"| {gs.lives} lives ({gs.life_pieces}/3 pieces); {gs.bombs} bombs ({gs.bomb_pieces}/8 pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
+    print(f"| {gs.lives} lives ({gs.life_pieces}/{life_piece_req} pieces); {gs.bombs} bombs ({gs.bomb_pieces}/{bomb_piece_req} pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
     print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); base hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| Input bitflag: {gs.input:08b}")
