@@ -422,7 +422,7 @@ offsets = {
     'th18.exe': Offset( 
         statics = StaticsOffsets(
             score         = 0xCCCFC,
-            graze         = 0xCCD10,
+            graze         = 0xCCD0C,
             piv           = 0xCCD24,
             power         = 0xCCD38,
             lives         = 0xCCD48,
