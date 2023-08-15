@@ -1,4 +1,5 @@
 
+
 # ParaKit - Touhou Data Analysis
 
 ParaKit is a customizable Python toolset capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed. 
@@ -87,7 +88,7 @@ The full specification of the `GameState` object is found in `game_entities.py`.
 
 Getting the information you need should be intuitive even for novice programmers. If you're not sure how to get something done programatically, you can try to give `game_entities.py` and `AnalysisTemplate` to a language model like ChatGPT.
 
-If the result of your analysis includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). 
+If the result of your analysis includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). The latest recorded frame is stored in `lastframe` (though you can store any frame you want to have plotted there instead).
 
 State extraction over time can be a computationally heavy process, and the `exact` setting (which is on by default) will slow the game down as needed to ensure that no frame may be skipped as a result. Depending on your needs, you can speed up this process by disabling the extraction of various entities (bullets, enemies, items or lasers) in `settings.py`. States can also include screenshots if you need a visual of a particularly interesting frame (see `AnalysisMostBulletsFrame` as an example), but this behavior is off by default as it slows down extraction significantly.
 
@@ -95,21 +96,33 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 
 ## Examples
 
-**Note**: This section needs updating to show off new features.
+### Single State Extraction
 
-Single state extraction:
+<img alt="single state extraction" src="https://cdn.discordapp.com/attachments/522639011295002626/1140864996348280952/image.png" width="600px">
 
-<img alt="single state extraction" src="https://i.imgur.com/mKAfFJ0.png" width="600px">
+<img alt="single state extraction 2" src="https://cdn.discordapp.com/attachments/522639011295002626/1140866361665531974/image.png" width="600px">
 
-Analysis over 50 frames (`exact`):
+
+### Sequence Extraction over 50 frames:
 
 <img alt="analysis over 50 frames" src="https://i.imgur.com/voSiS0I.png" width="300px">
 
-Various analyses:
+### Prebuilt Analyzers
 
-![9head bullet count over time](https://i.imgur.com/nLY7TPQ.png)
-![FMH close bullets over time](https://i.imgur.com/o11hOLC.png)
-![SUR bullet scatter plot](https://i.imgur.com/zXazVcT.png)
-![Shimmy laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105889947241693396/image.png)
-![Benben laser plot](https://cdn.discordapp.com/attachments/913211531158749227/1105993194233139351/image.png)
-![Modded laser plot](https://cdn.discordapp.com/attachments/205514395566997514/1106354957281665034/image.png)
+| Name / Description | Screenshot(s) |
+|--|--|
+| `AnalysisTemplate`<br>See [Custom Analyzers](#custom-analyzers).<br>*Requires nothing.*  | <img alt="template" src="https://cdn.discordapp.com/attachments/522639011295002626/1140885985337552946/image.png" width="5000px"> |
+| `AnalysisMostBulletsFrame` <br>Finds the recorded frame which had the most bullets; saves the frame as `most_bullets.png` if screenshots are on. <br>*Only requires bullets, optionally screenshots.* | <img alt="most bullets" src="https://cdn.discordapp.com/attachments/522639011295002626/1140889040514711633/image.png" width="500px"> |
+| `AnalysisBulletsOverTime` <br>Tracks the amount of bullets across time and plots that as a graph. <br>*Only requires bullets.* | <img alt="9head bullet count over time" src="https://i.imgur.com/nLY7TPQ.png"> |
+| `AnalysisCloseBulletsOverTime` <br>Tracks the amount of bullets in a radius around the player across time and plots that as a graph. <br>*Only requires bullets.* | <img alt="FMH close bullets over time" src="https://i.imgur.com/o11hOLC.png">
+| `AnalysisPlot` <br> Abstract base class to factorize common plotting code.<br>See [Custom Analyzers](#custom-analyzers). |  |
+| `AnalysisPlotBullets` <br>Plots the bullet positions of the last frame. <br>*Only requires bullets.* | <img alt="Kudoku Gourmet" src="https://cdn.discordapp.com/attachments/522639011295002626/1140912067193352274/image.png"> |
+| `AnalysisPlotEnemies` <br>Plots the enemy positions of the last frame. <br>*Only requires enemies.* |  <img alt="DDC St5 PostMid" src="https://cdn.discordapp.com/attachments/522639011295002626/1140921709713702932/image.png"> |
+| `AnalysisPlotItems` <br>Plots the item positions of the last frame. <br>*Only requires items.* | <img alt="UM st2 woozy yy" src="https://cdn.discordapp.com/attachments/522639011295002626/1140893844947357736/image.png"> |
+| `AnalysisPlotLineLasers` <br>Plots the line laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Shimmy non 4" src="https://cdn.discordapp.com/attachments/522639011295002626/1140922776262295623/image.png"> |
+| `AnalysisPlotInfiniteLasers` <br>Plots the telegraphed laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Megu Final" src="https://cdn.discordapp.com/attachments/522639011295002626/1140896990440456212/image.png"> |
+| `AnalysisPlotCurveLasers` <br>Plots the curvy laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Sky Pendra" src="https://cdn.discordapp.com/attachments/522639011295002626/1140906836246138920/image.png"> |
+| `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="DDC St4 Final" src="https://cdn.discordapp.com/attachments/522639011295002626/1140923987631808563/image.png"> |
+| `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Only requires bullets.* | <img alt="UM st5 fireballs enemies" src="https://cdn.discordapp.com/attachments/522639011295002626/1140902507720224788/image.png"> |
+| `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Only requires bullets.* | <img alt="Seki Ascii" src="https://cdn.discordapp.com/attachments/522639011295002626/1140925231171633152/image.png"> |
+| `AnalysisMostBulletsCircleFrame` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, then plots the Mallet circle and prints relevant data.<br>*Only requires bullets.* | <img alt="S4 Casino" src="https://cdn.discordapp.com/attachments/522639011295002626/1140914669658325012/image.png"> |
