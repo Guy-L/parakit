@@ -62,14 +62,12 @@ subprocess.run([_python_exe, _script_path])
 #Inform users if running non-latest version
 import requests 
 from settings import parakit_settings
-VERSION_DATE = datetime(2023, 8, 15, 17, 18, 42, tzinfo=timezone.utc)
-#note for devs: this should always be set to a couple minutes in the future when pushing
-#there is a pre-commit hook that will do this for you, ask Guy if you don't have it!
+from version import VERSION_DATE
 
 try:
     _commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master')
 except Exception as e:
-    print(f"\nVersion-checker: Failed to communicate with GitHub ({type(e).__name__})")
+    print(f"\nVersion-checker: Failed to communicate with GitHub ({type(e).__name__}).")
     input_exit()
 
 try:
