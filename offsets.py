@@ -11,6 +11,7 @@ class StaticsOffsets:
     life_pieces: int
     bombs: int
     bomb_pieces: int
+    stage_chapter: int
     time_in_stage: int
     input: int
     rng: int
@@ -283,6 +284,7 @@ offsets = {
             life_pieces   = 0xf5868,
             bombs         = 0xf5870,
             bomb_pieces   = 0xf5874,
+            stage_chapter = 0xf58ac,
             time_in_stage = 0xf58b0,
             input         = 0xd6a90,
             rng           = 0xdb510,
@@ -460,6 +462,7 @@ offsets = {
             life_pieces   = None,
             bombs         = None,
             bomb_pieces   = None,
+            stage_chapter = None,
             time_in_stage = None,
             input         = None,
             rng           = None,
@@ -638,6 +641,7 @@ offsets = {
             life_pieces   = 0xCCD4C,
             bombs         = 0xCCD58,
             bomb_pieces   = 0xCCD5C,
+            stage_chapter = 0xCCCE4,
             time_in_stage = 0xCCCE8, #to verify
             input         = 0xCA428,
             rng           = 0xDB510,
@@ -819,6 +823,7 @@ offsets = {
             life_pieces   = None,
             bombs         = None,
             bomb_pieces   = None,
+            stage_chapter = None,
             time_in_stage = None,
             input         = None,
             rng           = None,
@@ -987,6 +992,7 @@ offsets = {
 #            life_pieces   = None,
 #            bombs         = None,
 #            bomb_pieces   = None,
+#            stage_chapter = None,
 #            time_in_stage = None,
 #            input         = None,
 #            rng           = None,

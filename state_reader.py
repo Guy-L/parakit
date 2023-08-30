@@ -365,6 +365,7 @@ def extract_game_state(frame_id = None, real_time = None):
     gs = GameState(
         frame_stage         = read_int(time_in_stage, rel=True),
         frame_global        = read_int(global_timer),
+        stage_chapter       = read_int(stage_chapter, rel=True),
         seq_frame_id        = frame_id,
         seq_real_time       = real_time,
         state               = read_int(game_state, rel=True),

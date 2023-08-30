@@ -69,6 +69,7 @@ lives         = offsets[_module_name].statics.lives
 life_pieces   = offsets[_module_name].statics.life_pieces
 bombs         = offsets[_module_name].statics.bombs
 bomb_pieces   = offsets[_module_name].statics.bomb_pieces
+stage_chapter = offsets[_module_name].statics.stage_chapter
 time_in_stage = offsets[_module_name].statics.time_in_stage
 input         = offsets[_module_name].statics.input
 rng           = offsets[_module_name].statics.rng

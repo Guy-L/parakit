@@ -97,6 +97,7 @@ class Spellcard:
 class GameState:
     frame_stage: int
     frame_global: int
+    stage_chapter: int
     seq_frame_id: Optional[int]   
     seq_real_time: Optional[float]
     state: int
