@@ -30,7 +30,7 @@ _game_main_modules = {
     #('14.3', 'th14.3', 'th143', 'th143.exe', 'isc', 'impossible spell card'): 'th143.exe',
     #('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
     ('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
-    #('16.3', 'th16.3', 'th163', 'th163.exe', 'vd', 'violet detector'): 'th163.exe',
+    #('16.5', 'th16.5', 'th165', 'th165.exe', 'vd', 'violet detector'): 'th165.exe',
     #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
     ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
     #('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'): 'th185.exe',

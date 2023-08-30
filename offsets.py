@@ -226,16 +226,49 @@ usual_difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
 ## The mother of all dictionaries...
 
 offsets = {
+    
+    # TOUHOU 6 -- Embodiment of Scarlet Devil ====================
+    #=============================================================
     'th06.exe': None,
+    
+    # TOUHOU 7 -- Perfect Cherry Blossom =========================
+    #=============================================================
     'th07.exe': None,
+    
+    # TOUHOU 8 -- Imperishable Night =============================
+    #=============================================================
     'th08.exe': None,
+    
+    # TOUHOU 9 -- Phantasmagoria of Flower View ==================
+    #=============================================================
     'th09.exe': None,
+    
+    # TOUHOU 9.5 -- Shoot the Bullet =============================
+    #=============================================================
     'th095.exe': None,
+    
+    # TOUHOU 10 -- Mountain of Faith =============================
+    #=============================================================
     'th10.exe': None,
+    
+    # TOUHOU 11 -- Subterranean Animism ==========================
+    #=============================================================
     'th11.exe': None,
+    
+    # TOUHOU 12 -- Undefined Fantastic Object ====================
+    #=============================================================
     'th12.exe': None,
+    
+    # TOUHOU 12.5 -- Double Spoiler ==============================
+    #=============================================================
     'th125.exe': None,
+    
+    # TOUHOU 12.8 -- Great Fairy Wars ============================
+    #=============================================================
     'th128.exe': None,
+    
+    # TOUHOU 13 -- Ten Desires ===================================
+    #=============================================================
     'th13.exe': None,
 
     # TOUHOU 14 -- Double Dealing Character ======================
@@ -411,10 +444,24 @@ offsets = {
         }
     ),
     
+    # TOUHOU 14.3 -- Impossible Spell Card =======================
+    #=============================================================
     'th143.exe': None,
+    
+    # TOUHOU 15 -- Legacy of Lunatic Kingdom =====================
+    #=============================================================
     'th15.exe': None,
+    
+    # TOUHOU 16 -- Hidden Star in Four Seasons ===================
+    #=============================================================
     'th16.exe': None,
+    
+    # TOUHOU 16.5 -- Violet Detector =============================
+    #=============================================================
     'th165.exe': None,
+    
+    # TOUHOU 17 -- Wily Beast & Weakest Creature =================
+    #=============================================================
     'th17.exe': None,
        
     # TOUHOU 18 -- Unconnected Marketeers ========================
@@ -596,5 +643,338 @@ offsets = {
             'zCard_name_pointer_pointer': 0x4C,
             'zCard_counter': 0x54, #used by Centipede & Lily
         }
-    )
+    ),
+    
+    # TOUHOU 19 -- Unfinished Dream of All Living Ghost ==========
+    #=============================================================
+    'th19.exe': Offset( 
+        statics = StaticsOffsets(
+            score         = None,
+            graze         = None,
+            piv           = None,
+            power         = None,
+            lives         = None,
+            life_pieces   = None,
+            bombs         = None,
+            bomb_pieces   = None,
+            time_in_stage = None,
+            input         = None,
+            rng           = None,
+            game_state    = None,
+        ),
+        statics_untracked = UntrackedStaticsOffsets(
+            game_speed      = None,
+            visual_rng      = None,
+            character       = None,
+            subshot         = None,
+            difficulty      = None,
+            rank            = None,
+            stage           = None,
+        ),
+        player = PlayerOffsets(
+            player_pointer  = None,
+            zPlayer_pos     = None,
+            zPlayer_hit_rad = None,
+            zPlayer_iframes = None,
+            zPlayer_focused = None,
+        ),
+        bullets = BulletOffsets(
+            bullet_manager_pointer = None,
+            zBulletManager_list    = None,
+            zBullet_iframes        = None,
+            zBullet_pos            = None,
+            zBullet_velocity       = None,
+            zBullet_speed          = None,
+            zBullet_angle          = None,
+            zBullet_hitbox_radius  = None,
+            zBullet_scale          = None,
+            zBullet_type           = None,
+            zBullet_color          = None,
+        ),
+        enemies = EnemyOffsets(
+            enemy_manager_pointer = None,
+            zEnemyManager_list    = None,
+            zEnemy_data           = None,
+            zEnemy_pos            = None,
+            zEnemy_hurtbox        = None,
+            zEnemy_hitbox         = None,
+            zEnemy_rotation       = None,
+            zEnemy_time           = None,
+            zEnemy_score_reward   = None,
+            zEnemy_hp             = None,
+            zEnemy_hp_max         = None,
+            zEnemy_iframes        = None,
+            zEnemy_flags          = None,
+            zEnemy_subboss_id     = None,
+        ),
+        items = ItemOffsets(
+            item_manager_pointer   = None,
+            zItemManager_array     = None,
+            zItemManager_array_len = None,
+            zItem_len              = None,
+            zItem_state            = None,
+            zItem_type             = None,
+            zItem_pos              = None,
+            zItem_vel              = None,
+        ),
+        laser_base = LaserBaseOffsets(
+            laser_manager_pointer   = None,
+            zLaserManager_list      = None,
+            zLaserBaseClass_next    = None,
+            zLaserBaseClass_state   = None,
+            zLaserBaseClass_type    = None,
+            zLaserBaseClass_timer   = None,
+            zLaserBaseClass_offset  = None,
+            zLaserBaseClass_angle   = None,
+            zLaserBaseClass_length  = None,
+            zLaserBaseClass_width   = None,
+            zLaserBaseClass_speed   = None,
+            zLaserBaseClass_id      = None,
+            zLaserBaseClass_iframes = None,
+            zLaserBaseClass_sprite  = None,
+            zLaserBaseClass_color   = None,
+        ),
+        laser_line = LaserLineOffsets(
+            zLaserLine_start_pos  = None,
+            zLaserLine_mgr_angle  = None,
+            zLaserLine_max_length = None,
+            zLaserLine_mgr_speed  = None,
+            zLaserLine_distance   = None,
+        ),
+        laser_infinite = LaserInfiniteOffsets(
+            zLaserInfinite_start_pos    = None,
+            zLaserInfinite_velocity     = None,
+            zLaserInfinite_mgr_angle    = None,
+            zLaserInfinite_angle_vel    = None,
+            zLaserInfinite_final_len    = None,
+            zLaserInfinite_mgr_len      = None,
+            zLaserInfinite_final_width  = None,
+            zLaserInfinite_mgr_speed    = None,
+            zLaserInfinite_start_time   = None,
+            zLaserInfinite_expand_time  = None,
+            zLaserInfinite_active_time  = None,
+            zLaserInfinite_shrink_time  = None,
+            zLaserInfinite_mgr_distance = None,
+        ),
+        laser_curve = LaserCurveOffsets(
+            zLaserCurve_max_length = None,
+            zLaserCurve_distance   = None,
+            zLaserCurve_array      = None,
+        ),
+        laser_curve_node = LaserCurveNodeOffsets(
+            zLaserCurveNode_pos   = None,
+            zLaserCurveNode_vel   = None,
+            zLaserCurveNode_angle = None,
+            zLaserCurveNode_speed = None,
+            zLaserCurveNode_size  = None,
+        ),
+        ascii = AsciiOffsets(
+            ascii_manager_pointer = None,
+            global_timer          = None,
+        ),
+        spell_card = SpellCardOffsets(
+            spellcard_pointer    = None,
+            zSpellcard_indicator = None,
+            zSpellcard_id        = None,
+            zSpellcard_bonus     = None,
+        ),
+        gui = GUIOffsets(
+            gui_pointer          = None,
+            zGui_bosstimer_s     = None,
+            zGui_bosstimer_ms    = None,
+            zGui_bosstimer_drawn = None,
+        ),
+        supervisor = SupervisorOffsets(
+            supervisor_addr = None,
+            game_mode       = None,
+            rng_seed        = None,
+        ),
+        associations = Associations(
+            color_coin    = None,
+            color4        = None,
+            color8        = None,
+            color16       = None,
+            sprites       = None,
+            curve_sprites = None,
+            item_types    = None,
+            game_states   = None,
+            game_modes    = None,
+            characters    = None,
+            subshots      = None,
+            difficulties  = None,
+            zEnemyFlags_is_boss    = None,
+            zEnemyFlags_intangible = None,
+            zEnemyFlags_no_hitbox  = None,
+            life_piece_req = None,
+            bomb_piece_req = None,
+        ),
+        game_specific = { }
+    ),
 }
+
+# Template as of post-UM support
+# ==============================
+# 
+#    'thXX.exe': Offset( 
+#        statics = StaticsOffsets(
+#            score         = None,
+#            graze         = None,
+#            piv           = None,
+#            power         = None,
+#            lives         = None,
+#            life_pieces   = None,
+#            bombs         = None,
+#            bomb_pieces   = None,
+#            time_in_stage = None,
+#            input         = None,
+#            rng           = None,
+#            game_state    = None,
+#        ),
+#        statics_untracked = UntrackedStaticsOffsets(
+#            game_speed      = None,
+#            visual_rng      = None,
+#            character       = None,
+#            subshot         = None,
+#            difficulty      = None,
+#            rank            = None,
+#            stage           = None,
+#        ),
+#        player = PlayerOffsets(
+#            player_pointer  = None,
+#            zPlayer_pos     = None,
+#            zPlayer_hit_rad = None,
+#            zPlayer_iframes = None,
+#            zPlayer_focused = None,
+#        ),
+#        bullets = BulletOffsets(
+#            bullet_manager_pointer = None,
+#            zBulletManager_list    = None,
+#            zBullet_iframes        = None,
+#            zBullet_pos            = None,
+#            zBullet_velocity       = None,
+#            zBullet_speed          = None,
+#            zBullet_angle          = None,
+#            zBullet_hitbox_radius  = None,
+#            zBullet_scale          = None,
+#            zBullet_type           = None,
+#            zBullet_color          = None,
+#        ),
+#        enemies = EnemyOffsets(
+#            enemy_manager_pointer = None,
+#            zEnemyManager_list    = None,
+#            zEnemy_data           = None,
+#            zEnemy_pos            = None,
+#            zEnemy_hurtbox        = None,
+#            zEnemy_hitbox         = None,
+#            zEnemy_rotation       = None,
+#            zEnemy_time           = None,
+#            zEnemy_score_reward   = None,
+#            zEnemy_hp             = None,
+#            zEnemy_hp_max         = None,
+#            zEnemy_iframes        = None,
+#            zEnemy_flags          = None,
+#            zEnemy_subboss_id     = None,
+#        ),
+#        items = ItemOffsets(
+#            item_manager_pointer   = None,
+#            zItemManager_array     = None,
+#            zItemManager_array_len = None,
+#            zItem_len              = None,
+#            zItem_state            = None,
+#            zItem_type             = None,
+#            zItem_pos              = None,
+#            zItem_vel              = None,
+#        ),
+#        laser_base = LaserBaseOffsets(
+#            laser_manager_pointer   = None,
+#            zLaserManager_list      = None,
+#            zLaserBaseClass_next    = None,
+#            zLaserBaseClass_state   = None,
+#            zLaserBaseClass_type    = None,
+#            zLaserBaseClass_timer   = None,
+#            zLaserBaseClass_offset  = None,
+#            zLaserBaseClass_angle   = None,
+#            zLaserBaseClass_length  = None,
+#            zLaserBaseClass_width   = None,
+#            zLaserBaseClass_speed   = None,
+#            zLaserBaseClass_id      = None,
+#            zLaserBaseClass_iframes = None,
+#            zLaserBaseClass_sprite  = None,
+#            zLaserBaseClass_color   = None,
+#        ),
+#        laser_line = LaserLineOffsets(
+#            zLaserLine_start_pos  = None,
+#            zLaserLine_mgr_angle  = None,
+#            zLaserLine_max_length = None,
+#            zLaserLine_mgr_speed  = None,
+#            zLaserLine_distance   = None,
+#        ),
+#        laser_infinite = LaserInfiniteOffsets(
+#            zLaserInfinite_start_pos    = None,
+#            zLaserInfinite_velocity     = None,
+#            zLaserInfinite_mgr_angle    = None,
+#            zLaserInfinite_angle_vel    = None,
+#            zLaserInfinite_final_len    = None,
+#            zLaserInfinite_mgr_len      = None,
+#            zLaserInfinite_final_width  = None,
+#            zLaserInfinite_mgr_speed    = None,
+#            zLaserInfinite_start_time   = None,
+#            zLaserInfinite_expand_time  = None,
+#            zLaserInfinite_active_time  = None,
+#            zLaserInfinite_shrink_time  = None,
+#            zLaserInfinite_mgr_distance = None,
+#        ),
+#        laser_curve = LaserCurveOffsets(
+#            zLaserCurve_max_length = None,
+#            zLaserCurve_distance   = None,
+#            zLaserCurve_array      = None,
+#        ),
+#        laser_curve_node = LaserCurveNodeOffsets(
+#            zLaserCurveNode_pos   = None,
+#            zLaserCurveNode_vel   = None,
+#            zLaserCurveNode_angle = None,
+#            zLaserCurveNode_speed = None,
+#            zLaserCurveNode_size  = None,
+#        ),
+#        ascii = AsciiOffsets(
+#            ascii_manager_pointer = None,
+#            global_timer          = None,
+#        ),
+#        spell_card = SpellCardOffsets(
+#            spellcard_pointer    = None,
+#            zSpellcard_indicator = None,
+#            zSpellcard_id        = None,
+#            zSpellcard_bonus     = None,
+#        ),
+#        gui = GUIOffsets(
+#            gui_pointer          = None,
+#            zGui_bosstimer_s     = None,
+#            zGui_bosstimer_ms    = None,
+#            zGui_bosstimer_drawn = None,
+#        ),
+#        supervisor = SupervisorOffsets(
+#            supervisor_addr = None,
+#            game_mode       = None,
+#            rng_seed        = None,
+#        ),
+#        associations = Associations(
+#            color_coin    = None,
+#            color4        = None,
+#            color8        = None,
+#            color16       = None,
+#            sprites       = None,
+#            curve_sprites = None,
+#            item_types    = None,
+#            game_states   = None,
+#            game_modes    = None,
+#            characters    = None,
+#            subshots      = None,
+#            difficulties  = None,
+#            zEnemyFlags_is_boss    = None,
+#            zEnemyFlags_intangible = None,
+#            zEnemyFlags_no_hitbox  = None,
+#            life_piece_req = None,
+#            bomb_piece_req = None,
+#        ),
+#        game_specific = { }
+#    ),
