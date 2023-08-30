@@ -410,6 +410,11 @@ def wait_global_frame(cur_global_frame=None, count=0):
     while read_int(global_timer) <= cur_global_frame + count:
         pass
     
+auto_termination = False
+def terminate():
+    global auto_termination
+    auto_termination = True
+
 def wait_game_frame(cur_game_frame=None, need_active=False):
     if not cur_game_frame:
         cur_game_frame = read_int(time_in_stage, rel=True)
@@ -421,6 +426,8 @@ def wait_game_frame(cur_game_frame=None, need_active=False):
             return "Game was closed"  #bugged, but not worth fixing (edge case)
         elif keyboard.is_pressed(_termination_key):
             return "User pressed termination key"
+        elif auto_termination:
+            return "Automatic termination triggered by analysis step"
         elif need_active and _game_window != gw.getActiveWindow():
             return "Game no longer active (need_active set to True)"
     return None

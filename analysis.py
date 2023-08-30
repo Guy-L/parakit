@@ -32,14 +32,14 @@ class AnalysisTemplate(Analysis):
     def done(self):
         print("(Template) Analysis results go here.")
         #Your printing code here
-   
-   
-   
-   
+
+
+
+
 #useful stuff, see analysis_examples.py for usages
 #(note: put your custom analysis under these lines so you can use 'em)
 from settings import pyplot_settings
-from interface import save_screenshot, get_color, color16, np
+from interface import save_screenshot, terminate, get_color, color16, np
 from scipy.ndimage import uniform_filter
 import matplotlib.pyplot as plt
 import math
@@ -72,5 +72,5 @@ def item_color(item_type):
         return 'gold'
     else:
         return 'black'
-        
+
 plot_scale, pyplot_factor, bullet_factor, enemy_factor, plot_laser_circles = pyplot_settings.values()

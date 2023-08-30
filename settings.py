@@ -12,7 +12,7 @@ extraction_settings = {
 
     # Name of an analysis class (e.g. 'AnalysisMostBulletsFrame') in analysis.py.
     # Sample analyses to get started and plot various entities can be found in analysis_examples.py.
-    'analyzer': 'AnalysisTemplate',  
+    'analyzer': 'AnalysisTemplate',
     
     # Disable extraction of entities not required for your analysis to reduce lag
     'requires_bullets':     True,
@@ -36,7 +36,7 @@ singlext_settings = {
 # Sequence Extraction Settings 
 # See settings.md for more info.
 seqext_settings = {
-    'ingame_duration': '',      #e.g. '520f', '12.4s', etc.
+    'ingame_duration': '',      #e.g. '520f', '12.4s', etc. or 'infinite'
     'exact':           True,
     'auto_focus':      True,
     'auto_unpause':    False,

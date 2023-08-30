@@ -696,27 +696,35 @@ print("================================")
 if singlext_settings['only_game_world'] and read_int(game_mode, rel=True) != 7:
     print("Error: Game world not loaded (only_game_world set to True).")
     exit()
-    
+
+infinite = False
 frame_count = 0
 if seqext_settings['ingame_duration']:
-    parsed_frame_count = parse_frame_count(seqext_settings['ingame_duration'])
-        
-    if parsed_frame_count:
-        frame_count = parsed_frame_count
+    if seqext_settings['ingame_duration'].lower() in ['inf', 'infinite', 'endless', 'forever']:
+        infinite = True
+
     else:
-        print(f"Error: Couldn't parse duration '{seqext_settings['ingame_duration']}'; remember to include a unit (e.g. 150f / 12.4s).")
-        print("Defaulting to single-state extraction.\n")
-    
+        parsed_frame_count = parse_frame_count(seqext_settings['ingame_duration'])
+
+        if parsed_frame_count:
+            frame_count = parsed_frame_count
+        else:
+            print(f"Error: Couldn't parse duration '{seqext_settings['ingame_duration']}'; remember to include a unit (e.g. 150f / 12.4s).")
+            print("Defaulting to single-state extraction.\n")
+
 if len(sys.argv) > 1:
     for arg in sys.argv[1:]:
         parsed_frame_count = parse_frame_count(arg)
-        
+
         if parsed_frame_count:
             frame_count = parsed_frame_count
-            
+
+        elif arg in ['inf', 'infinite', 'endless', 'forever']:
+            infinite = True
+
         elif arg == 'exact':
             exact = True #overwrites options
-            
+
         else:
             print(f"Error: Unrecognized argument '{arg}'.")
             exit()
@@ -724,66 +732,74 @@ if len(sys.argv) > 1:
 if not hasattr(analysis, analyzer):
     print(f"Error: Unrecognized analyzer {analyzer}; defaulting to template.")
     analyzer = 'AnalysisTemplate'
-    
-if frame_count < 2: #Single-State Extraction
+
+if frame_count < 2 and not infinite: #Single-State Extraction
     analysis = getattr(analysis, analyzer)()
-    
+
     if requires_screenshots:
         get_focus()
-    
+
     state = extract_game_state()
     analysis.step(state)
     print_game_state(state)
-    
+
     print("================================")
     analysis.done()
-    
+
     if singlext_settings['show_untracked']:
         print("\n================================")
         print_untracked_vars()
-    
+
 else: #State Sequence Extraction
-    print(f"Extracting {frame_count} frames{' (exact mode)' if exact else ''}.")
-    
+    if infinite:
+        print(f"Extracting frames until termination (infinite mode){' (exact mode)' if exact else ''}.")
+    else:
+        print(f"Extracting {frame_count} frames{' (exact mode)' if exact else ''}.")
+
     if seqext_settings['auto_unpause']:
         unpause_game()
     else:
         if seqext_settings['auto_focus']:
             get_focus()
         print("(Unpause the game to begin extraction)")
-        
+
     analysis = getattr(analysis, analyzer)()
     start_time = time.perf_counter()
     terminated = False
-    
-    for i in range(frame_count):
+    frame_counter = 0
+
+    while infinite or frame_counter < frame_count:
         if terminated:
             break
-            
+
         frame_timestamp = read_int(time_in_stage, rel=True)
-        print(f"[{int(100*i/frame_count)}%] Extracting frame #{i+1} (in-stage: #{frame_timestamp})")
-        
+        if infinite:
+            print(f"Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+        else:
+            print(f"[{int(100*frame_counter/frame_count)}%] Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+
         if exact:
             game_process.suspend()
-        
-        state = extract_game_state(i, time.perf_counter() - start_time)
+
+        state = extract_game_state(frame_counter, time.perf_counter() - start_time)
         analysis.step(state)
-        
+        frame_counter += 1
+
         if exact:
             game_process.resume()
-            
+
         #busy wait for next frame
         wait_return = wait_game_frame(frame_timestamp, need_active)
         if wait_return:
             print(f"{wait_return}; terminating now.")
             terminated = True
             break
-    
+
     if not terminated:
-        print(f"[100%] Finished extraction in {round(time.perf_counter()-start_time, 2)} seconds.")
-    
+        print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.")
+
     if seqext_settings['auto_repause']:   
         pause_game()
-        
+
     print("================================")
     analysis.done()
