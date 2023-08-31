@@ -89,7 +89,7 @@ if _latest_version_date > VERSION_DATE:
                 new_commits += 1
     
         print('\n================================')
-        print(f'A new version is available! ({new_commits} new commits)')
+        print(f"A new version is available! ({new_commits} new commit{'s' if new_commits > 1 else ''})")
         
     else: 
         print('\n================================')
@@ -116,7 +116,7 @@ if _latest_version_date > VERSION_DATE:
         
         print()
         print('If you installed via Code > Download ZIP, please do so again')
-        print(f'or download a Release if one from {_latest_version_date.strftime("%Y-%m-%d %H:%M")} UTC is available.')
+        print(f'or download a Release if one from after {_latest_version_date.strftime("%Y-%m-%d %H:%M")} UTC is available.')
         print('If you installed via Git, please do \'git pull\'. You may need to resolve a merge')
         print('conflict if changes were made to settings.py or analysis.py which conflict with yours.')
         print('If this happens and you\'re not sure how to proceed, feel free to contact the developer.')
