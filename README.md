@@ -133,3 +133,19 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Only requires bullets.* | <img alt="UM st5 fireballs enemies" src="https://cdn.discordapp.com/attachments/522639011295002626/1140902507720224788/image.png"> |
 | `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Only requires bullets.* | <img alt="Seki Ascii" src="https://cdn.discordapp.com/attachments/522639011295002626/1140925231171633152/image.png"> |
 | `AnalysisMostBulletsCircleFrame` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, then plots the Mallet circle and prints relevant data.<br>*Only requires bullets.* | <img alt="S4 Casino" src="https://cdn.discordapp.com/attachments/522639011295002626/1140914669658325012/image.png"> |
+
+## For Contributors
+
+Add the following pre-commit hook (`pre-commit`, no extension) to `.git/hooks/` to avoid accidentally breaking the commit-based automatic version checker:
+
+<details>
+  <summary><b>pre-commit</b></summary>
+
+```
+#!/bin/sh
+
+adjustedDate=$(date -u -d '+2 minutes' +"%Y, %-m, %-d, %-H, %-M, %-S")
+sed -i "s/VERSION_DATE = datetime(.*)/VERSION_DATE = datetime($adjustedDate, tzinfo=timezone.utc)/" "version.py"
+git add version.py
+```
+</details>
