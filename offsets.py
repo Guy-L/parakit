@@ -1,6 +1,30 @@
 from dataclasses import dataclass
 from typing import List, Dict, Tuple, Optional
 
+# offsets & game_entities: Guidelines for Game-Specific Data
+# if shared by a majority of windows games (>= 10)
+    # offsets.py: defined Optional for all offset objects, set to None when absent
+    # game_entities: defined Optional for all game state objects, set to None if offset is None
+    
+# object properties: if not shared by a majority of windows games (<10)
+    # offsets.py: defined only in game_specifc dict
+    # game_entities: defined Optional for all game state objects, set to None if offset not in namespace
+    
+# globals & systems used by only a few games (ie cards)
+    # offsets.py: defined only in game_specifc dict
+    # game_entities: in game_specific game state member, set in extract_game_state based on game number or game-logic grouping
+    
+#rationale for offsets.py rules:
+#1. don't want massive amount of Nones for all game offset objects due to differences
+#2. dataclasses are used in favor of dicts for consistency AND convenience; defining new dataclasses for all possible shared game-specific data is not convenient so dicts it is
+
+#rationale for game_entities.py rules:
+#1. data that's shared by more than a few games should be writeable/accessible without the game-specific dict for speed and convenience
+#2. want to minimize the use of dicts in general here; game_specifc dicts may eventually be switched to a family of game specific dataclasses
+#3. extraction method assumes given offset is not None for efficiency reasons; call must be conditional
+
+# to decide in the future: how to account for major differences like laser data types in older windows games
+
 @dataclass
 class StaticsOffsets:
     score: int
