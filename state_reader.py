@@ -372,7 +372,7 @@ def extract_game_state(frame_id = None, real_time = None):
         mode                = read_int(game_mode, rel=True),
         score               = read_int(score, rel=True) * 10,
         lives               = read_int(lives, rel=True),
-        life_pieces         = read_int(life_pieces, rel=True),
+        life_pieces         = read_int(life_pieces, rel=True) if life_pieces else None,
         bombs               = read_int(bombs, rel=True),
         bomb_pieces         = read_int(bomb_pieces, rel=True),
         power               = read_int(power, rel=True),
@@ -397,21 +397,38 @@ def extract_game_state(frame_id = None, real_time = None):
     return gs
 
 def print_game_state(gs: GameState):
+
+    #======================================
+    # Consistent prints ===================
     print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}")
-    print(f"| {gs.lives} lives ({gs.life_pieces}/{life_piece_req} pieces); {gs.bombs} bombs ({gs.bomb_pieces}/{bomb_piece_req} pieces); {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
+
+    # Basic resources
+    basic_resources = f"| {gs.lives} lives"
+    if gs.life_pieces:
+        basic_resources += f" ({gs.life_pieces}/{life_piece_req} pieces)"
+    basic_resources += f"; {gs.bombs} bombs"
+    if gs.bomb_pieces:
+        basic_resources += f" ({gs.bomb_pieces}/{bomb_piece_req} pieces)"
+    print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
+
+    # Player status
     print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); base hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
+
+    # Useful internals
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
     print(f"| Input bitflag: {gs.input:08b}")
     print(f"| RNG value: {gs.rng}")
-    
-    # Situational prints
+
+    #======================================
+    # Situational prints ==================
     if gs.boss_timer != -1:
         print(f"| Boss timer: {gs.boss_timer}")
         
     if gs.spellcard:
         print(f"| Spell ID#{gs.spellcard.spell_id}, SCB: {gs.spellcard.capture_bonus}")
         
-    # Game-specific prints
+    #======================================
+    # Game-specific prints ================
     if game_id == 14: #DDC
         print(f"| DDC Bonus Count: {gs.game_specific['bonus_count']}")
         
@@ -467,8 +484,9 @@ def print_game_state(gs: GameState):
                     
                 print(description)
 
-    # Game entity prints (all optional)
-    if gs.bullets:
+    #======================================
+    # Game entity prints (all optional) ===
+    if gs.bullets: #Bullets
         counter = 0
         print("\nList of bullets:")
         print("  Position         Velocity         Speed   Angle   Radius  Color      Type")
@@ -505,7 +523,7 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.bullets)} bullets total]')
                 break
             
-    if gs.lasers:
+    if gs.lasers: #Lasers
         line_lasers = [laser for laser in gs.lasers if laser.laser_type == 0]
         infinite_lasers = [laser for laser in gs.lasers if laser.laser_type == 1]
         curve_lasers = [laser for laser in gs.lasers if laser.laser_type == 2]
@@ -610,7 +628,7 @@ def print_game_state(gs: GameState):
                     print(f'• ... [{len(beam_lasers)} beam lasers total]')
                     break
          
-    if gs.enemies:
+    if gs.enemies: #Enemies
         counter = 0
         print("\nList of enemies:")
         print("  Position         Hurtbox          Hitbox           Rotation  IFrames  HP / Max HP")
@@ -639,7 +657,7 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.enemies)} enemies total]')
                 break
     
-    if gs.mode == 7 and gs.items:
+    if gs.mode == 7 and gs.items: #Items
         counter = 0
         print("\nList of items:")
         print("  Type             Position         Velocity")

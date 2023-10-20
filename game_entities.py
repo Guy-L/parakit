@@ -104,7 +104,7 @@ class GameState:
     mode: int
     score: int
     lives: int
-    life_pieces: int
+    life_pieces: Optional[int] #game-specific: absent in pre-SA & UDoALG
     bombs: int
     bomb_pieces: int
     power: int

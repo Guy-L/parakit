@@ -4,7 +4,7 @@ from analysis import *
 # Please use your text editor's block collapse 
 # functionality ([+] icon in Notepad++) to hide
 # classes and browse this file quicker.
-# Fold All in Notepad++: Alt+1
+# Fold All in Notepad++: View -> Fold Level -> 1 [Alt+1]
 # ==========================================
 
 # Ex1: "Get the frame with the most bullets (and save the screen if screenshots are on)" [only requires bullets & optionally screenshots]

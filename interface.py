@@ -34,7 +34,7 @@ _game_main_modules = {
     #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
     ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
     #('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'): 'th185.exe',
-    #('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'): 'th19.exe',
+    ('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'): 'th19.exe',
 }
 
 _game = _settings['game']
@@ -497,7 +497,7 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
 _buffers = {} #caching helps!
 _kernel32 = ctypes.windll.kernel32 # minor optimization
 _byref = ctypes.byref(ctypes.c_ulonglong()) # minor optimization
-def _read_memory(address, size, rel):
+def _read_memory(address, size, rel): #TODO: may want to split abs/rel into two methods
     if size not in _buffers:
         _buffers[size] = ctypes.create_string_buffer(size)
     buffer = _buffers[size]

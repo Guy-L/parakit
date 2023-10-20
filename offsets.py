@@ -32,7 +32,7 @@ class StaticsOffsets:
     piv: int
     power: int
     lives: int
-    life_pieces: int
+    life_pieces: Optional[int] #game-specific: not in pre-SA & UDoALG
     bombs: int
     bomb_pieces: int
     stage_chapter: int
@@ -839,51 +839,51 @@ offsets = {
     #=============================================================
     'th19.exe': Offset( 
         statics = StaticsOffsets(
-            score         = None,
-            graze         = None,
-            piv           = None,
-            power         = None,
-            lives         = None,
-            life_pieces   = None,
-            bombs         = None,
-            bomb_pieces   = None,
-            stage_chapter = None,
-            time_in_stage = None,
-            input         = None,
-            rng           = None,
-            game_state    = None,
+            score         = 0x207910,
+            graze         = 0x20798c,
+            piv           = None,     #todo: find
+            power         = 0x6fc,    #(th19: not static, offset from Player)
+            lives         = 0x207960,
+            life_pieces   = None,     #not in this game
+            bombs         = 0x207974,
+            bomb_pieces   = 0x207978,
+            stage_chapter = 0x2082cc,
+            time_in_stage = 0x14,     #(th19: not static, offset from GameThread) (TODO: check if this is a more general way to do this in all games)
+            input         = 0x200aec, #todo: verify (input method?)
+            rng           = None,     #todo: find
+            game_state    = None,     #todo: find
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = None,
             visual_rng      = None,
-            character       = None,
-            subshot         = None,
-            difficulty      = None,
-            rank            = None,
-            stage           = None,
+            character       = 0x20791c,
+            subshot         = 0x207920,
+            difficulty      = 0x207a90,
+            rank            = None,   #todo: test
+            stage           = None,   #todo: find
         ),
         player = PlayerOffsets(
-            player_pointer  = None,
+            player_pointer  = 0x1ae474,
             zPlayer_pos     = None,
             zPlayer_hit_rad = None,
-            zPlayer_iframes = None,
-            zPlayer_focused = None,
+            zPlayer_iframes = 0x2078,
+            zPlayer_focused = 0x2070,
         ),
         bullets = BulletOffsets(
-            bullet_manager_pointer = None,
+            bullet_manager_pointer = 0x1ae470,
             zBulletManager_list    = None,
             zBullet_iframes        = None,
-            zBullet_pos            = None,
+            zBullet_pos            = 0x62c,
             zBullet_velocity       = None,
             zBullet_speed          = None,
             zBullet_angle          = None,
             zBullet_hitbox_radius  = None,
             zBullet_scale          = None,
-            zBullet_type           = None,
-            zBullet_color          = None,
+            zBullet_type           = 0x1078,
+            zBullet_color          = 0x107a,
         ),
         enemies = EnemyOffsets(
-            enemy_manager_pointer = None,
+            enemy_manager_pointer = 0x1aeAE478,
             zEnemyManager_list    = None,
             zEnemy_data           = None,
             zEnemy_pos            = None,
@@ -899,7 +899,7 @@ offsets = {
             zEnemy_subboss_id     = None,
         ),
         items = ItemOffsets(
-            item_manager_pointer   = None,
+            item_manager_pointer   = 0x1ae47c,
             zItemManager_array     = None,
             zItemManager_array_len = None,
             zItem_len              = None,
@@ -909,7 +909,7 @@ offsets = {
             zItem_vel              = None,
         ),
         laser_base = LaserBaseOffsets(
-            laser_manager_pointer   = None,
+            laser_manager_pointer   = 0x1ae484,
             zLaserManager_list      = None,
             zLaserBaseClass_next    = None,
             zLaserBaseClass_state   = None,
@@ -964,15 +964,15 @@ offsets = {
             global_timer          = None,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = None,
+            spellcard_pointer    = 0x1ae480,
             zSpellcard_indicator = None,
             zSpellcard_id        = None,
             zSpellcard_bonus     = None,
         ),
         gui = GUIOffsets(
-            gui_pointer          = None,
-            zGui_bosstimer_s     = None,
-            zGui_bosstimer_ms    = None,
+            gui_pointer          = 0x1ae460,
+            zGui_bosstimer_s     = 0x68,
+            zGui_bosstimer_ms    = 0x6c,
             zGui_bosstimer_drawn = None,
         ),
         supervisor = SupervisorOffsets(
@@ -981,23 +981,23 @@ offsets = {
             rng_seed        = None,
         ),
         associations = Associations(
-            color_coin    = None,
-            color4        = None,
-            color8        = None,
-            color16       = None,
-            sprites       = None,
+            color_coin    = modern_color_coin,
+            color4        = modern_color4,
+            color8        = modern_color8,
+            color16       = modern_color16,
+            sprites       = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             curve_sprites = None,
             item_types    = None,
             game_states   = None,
             game_modes    = None,
             characters    = None,
-            subshots      = None,
-            difficulties  = None,
+            subshots      = ['N/A'],
+            difficulties  = usual_difficulties,
             zEnemyFlags_is_boss    = None,
             zEnemyFlags_intangible = None,
             zEnemyFlags_no_hitbox  = None,
-            life_piece_req = None,
-            bomb_piece_req = None,
+            life_piece_req = None, #not in this game
+            bomb_piece_req = 3,
         ),
         game_specific = { }
     ),
