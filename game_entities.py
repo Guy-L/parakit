@@ -24,6 +24,8 @@ class Enemy:
     has_hitbox: bool
     subboss_id: int
     rotation: float
+    anm_page: int
+    anm_id: int
     score_reward: int
     hp: int
     hp_max: int
@@ -104,7 +106,7 @@ class GameState:
     mode: int
     score: int
     lives: int
-    life_pieces: int
+    life_pieces: Optional[int] #game-specific: absent in pre-SA & UDoALG
     bombs: int
     bomb_pieces: int
     power: int
@@ -112,6 +114,7 @@ class GameState:
     graze: int
     boss_timer: float
     spellcard: Optional[Spellcard]
+    rank: int
     input: int
     rng: int
     player_position: Tuple[float, float]
@@ -124,8 +127,7 @@ class GameState:
     lasers: Optional[List[Laser]]
     screen: Optional[np.ndarray]
     game_specific: Optional[Dict[str, Any]]
-    
-    
+
 # ======================
 # Game specific entities
 
@@ -137,3 +139,37 @@ class ActiveCard:
     charge_max: int
     internal_name: str
     selected: bool
+
+# Unfinished Dream of All Living Ghost
+@dataclass
+class P2Side:
+    lives: int
+    lives_max: int
+    bombs: int
+    bomb_pieces: int
+    power: int
+    graze: int
+    boss_timer: float
+    spellcard: Optional[Spellcard]
+    input: int
+    player_position: Tuple[float, float]
+    player_hitbox_rad: float
+    player_iframes: int
+    player_focused: bool
+    bullets: Optional[List[Bullet]]
+    enemies: Optional[List[Enemy]]
+    items: Optional[List[Item]]
+    lasers: Optional[List[Laser]]
+    hitstun_status: int
+    shield_status: int
+    last_combo_hits: int
+    current_combo_hits: int
+    current_combo_chain: int
+    enemy_pattern_count: int
+    item_spawn_total: int
+    gauge_charging: bool
+    gauge_charge: int
+    gauge_fill: int
+    ex_attack_level: int
+    boss_attack_level: int
+    pvp_wins: int
