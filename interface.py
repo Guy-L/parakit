@@ -25,11 +25,11 @@ _game_main_modules = {
     #('12', 'th12', 'th12.exe', 'ufo', 'undefined fantastic object'): 'th12.exe',
     #('12.5', 'th12.5', 'th125', 'th125.exe', 'ds', 'double spoiler'): 'th125.exe',
     #('12.8', 'th12.8', 'th128', 'th128.exe', 'gfw', 'great fairy wars'): 'th128.exe',
-    #('13', 'th13', 'th13.exe', 'td', 'ten desires'): 'th13.exe',
+    ('13', 'th13', 'th13.exe', 'td', 'ten desires'): 'th13.exe',
     ('14', 'th14', 'th14.exe', 'ddc', 'double dealing character'): 'th14.exe',
     #('14.3', 'th14.3', 'th143', 'th143.exe', 'isc', 'impossible spell card'): 'th143.exe',
-    #('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
-    ('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
+    ('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
+    #('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
     #('16.5', 'th16.5', 'th165', 'th165.exe', 'vd', 'violet detector'): 'th165.exe',
     #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
     ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
@@ -48,14 +48,17 @@ for keys, module_name in _game_main_modules.items():
         game_id = float(keys[0])
         print(f"Interface: Target module '{_module_name}'.")
         break
-            
+
 if not _module_name or game_id == 0:
     print(f"Interface error: Unknown game specifier '{_game}'.")
     exit()
-    
+
 # ==========================================================
 # Game logic groups
 has_bullet_delay = [14, 14.3, 18.5]
+has_boss_timer_drawn_if_indic_zero = [19]
+has_ability_cards = [18, 18.5, 19]
+uses_rank = [6, 7, 19]
 
 # ==========================================================
 # Offset object unpacking
@@ -70,7 +73,7 @@ life_pieces   = offsets[_module_name].statics.life_pieces
 bombs         = offsets[_module_name].statics.bombs
 bomb_pieces   = offsets[_module_name].statics.bomb_pieces
 stage_chapter = offsets[_module_name].statics.stage_chapter
-time_in_stage = offsets[_module_name].statics.time_in_stage
+rank          = offsets[_module_name].statics.rank
 input         = offsets[_module_name].statics.input
 rng           = offsets[_module_name].statics.rng
 game_state    = offsets[_module_name].statics.game_state
@@ -81,7 +84,6 @@ visual_rng = offsets[_module_name].statics_untracked.visual_rng
 character  = offsets[_module_name].statics_untracked.character
 subshot    = offsets[_module_name].statics_untracked.subshot
 difficulty = offsets[_module_name].statics_untracked.difficulty
-rank       = offsets[_module_name].statics_untracked.rank
 stage      = offsets[_module_name].statics_untracked.stage
 
 # Player
@@ -101,6 +103,7 @@ zBullet_speed          = offsets[_module_name].bullets.zBullet_speed
 zBullet_angle          = offsets[_module_name].bullets.zBullet_angle
 zBullet_hitbox_radius  = offsets[_module_name].bullets.zBullet_hitbox_radius
 zBullet_scale          = offsets[_module_name].bullets.zBullet_scale
+zBullet_state          = offsets[_module_name].bullets.zBullet_state
 zBullet_type           = offsets[_module_name].bullets.zBullet_type
 zBullet_color          = offsets[_module_name].bullets.zBullet_color
 
@@ -113,7 +116,8 @@ zEnemy_pos            = offsets[_module_name].enemies.zEnemy_pos
 zEnemy_hurtbox        = offsets[_module_name].enemies.zEnemy_hurtbox
 zEnemy_hitbox         = offsets[_module_name].enemies.zEnemy_hitbox
 zEnemy_rotation       = offsets[_module_name].enemies.zEnemy_rotation
-zEnemy_time           = offsets[_module_name].enemies.zEnemy_time
+zEnemy_anm_page       = offsets[_module_name].enemies.zEnemy_anm_page
+zEnemy_anm_id         = offsets[_module_name].enemies.zEnemy_anm_id
 zEnemy_score_reward   = offsets[_module_name].enemies.zEnemy_score_reward
 zEnemy_hp             = offsets[_module_name].enemies.zEnemy_hp
 zEnemy_hp_max         = offsets[_module_name].enemies.zEnemy_hp_max
@@ -138,7 +142,6 @@ zItem_vel    = offsets[_module_name].items.zItem_vel
 # Laser (Base)
 laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
 zLaserManager_list      = offsets[_module_name].laser_base.zLaserManager_list
-zLaserBaseClass_next    = offsets[_module_name].laser_base.zLaserBaseClass_next
 zLaserBaseClass_state   = offsets[_module_name].laser_base.zLaserBaseClass_state
 zLaserBaseClass_type    = offsets[_module_name].laser_base.zLaserBaseClass_type
 zLaserBaseClass_timer   = offsets[_module_name].laser_base.zLaserBaseClass_timer
@@ -202,6 +205,10 @@ zGui_bosstimer_s     = offsets[_module_name].gui.zGui_bosstimer_s
 zGui_bosstimer_ms    = offsets[_module_name].gui.zGui_bosstimer_ms
 zGui_bosstimer_drawn = offsets[_module_name].gui.zGui_bosstimer_drawn
 
+# Game Thread
+game_thread_pointer = offsets[_module_name].game_thread.game_thread_pointer
+stage_timer         = offsets[_module_name].game_thread.stage_timer
+
 # Supervisor
 supervisor_addr = offsets[_module_name].supervisor.supervisor_addr
 game_mode = offsets[_module_name].supervisor.game_mode
@@ -221,7 +228,7 @@ if game_id == 14:
 elif game_id == 18:
     funds = offsets[_module_name].game_specific['funds']
     card_nicknames = offsets[_module_name].game_specific['card_nicknames']
-    
+
     ability_manager_pointer         = offsets[_module_name].game_specific['ability_manager_pointer']
     zAbilityManager_list            = offsets[_module_name].game_specific['zAbilityManager_list']
     zAbilityManager_total_cards     = offsets[_module_name].game_specific['zAbilityManager_total_cards']
@@ -229,12 +236,68 @@ elif game_id == 18:
     zAbilityManager_total_equipmt   = offsets[_module_name].game_specific['zAbilityManager_total_equipmt']
     zAbilityManager_total_passive   = offsets[_module_name].game_specific['zAbilityManager_total_passive']
     zAbilityManager_selected_active = offsets[_module_name].game_specific['zAbilityManager_selected_active']
-    
     zCard_id          = offsets[_module_name].game_specific['zCard_id']
     zCard_charge      = offsets[_module_name].game_specific['zCard_charge']
     zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
     zCard_name        = offsets[_module_name].game_specific['zCard_name_pointer_pointer']
     zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
+
+elif game_id == 19:
+    zPlayer_hitstun_status      = offsets[_module_name].game_specific['zPlayer_hitstun_status']
+    zPlayer_shield_status       = offsets[_module_name].game_specific['zPlayer_shield_status']
+    zPlayer_last_combo_hits     = offsets[_module_name].game_specific['zPlayer_last_combo_hits']
+    zPlayer_current_combo_hits  = offsets[_module_name].game_specific['zPlayer_current_combo_hits']
+    zPlayer_current_combo_chain = offsets[_module_name].game_specific['zPlayer_current_combo_chain']
+    zEnemyManager_pattern_count = offsets[_module_name].game_specific['zEnemyManager_pattern_count']
+    zItemManager_spawn_total    = offsets[_module_name].game_specific['zItemManager_spawn_total']
+    zGaugeManager_charging_bool = offsets[_module_name].game_specific['zGaugeManager_charging_bool']
+    zGaugeManager_gauge_charge  = offsets[_module_name].game_specific['zGaugeManager_gauge_charge']
+    zGaugeManager_gauge_fill    = offsets[_module_name].game_specific['zGaugeManager_gauge_fill']
+    zAbilityManager_total_cards = offsets[_module_name].game_specific['zAbilityManager_total_cards']
+    zGui_p2_bosstimer_s         = offsets[_module_name].game_specific['zGui_p2_bosstimer_s']
+    zGui_p2_bosstimer_ms        = offsets[_module_name].game_specific['zGui_p2_bosstimer_ms']
+    zGui_p2_bosstimer_drawn     = offsets[_module_name].game_specific['zGui_p2_bosstimer_drawn']
+
+    gauge_manager_pointer   = offsets[_module_name].game_specific['gauge_manager_pointer']
+    ability_manager_pointer = offsets[_module_name].game_specific['ability_manager_pointer']
+
+    p2_bullet_manager_pointer  = offsets[_module_name].game_specific['p2_bullet_manager_pointer']
+    p2_player_pointer          = offsets[_module_name].game_specific['p2_player_pointer']
+    p2_enemy_manager_pointer   = offsets[_module_name].game_specific['p2_enemy_manager_pointer']
+    p2_item_manager_pointer    = offsets[_module_name].game_specific['p2_item_manager_pointer']
+    p2_spellcard_pointer       = offsets[_module_name].game_specific['p2_spellcard_pointer']
+    p2_laser_manager_pointer   = offsets[_module_name].game_specific['p2_laser_manager_pointer']
+    p2_gauge_manager_pointer   = offsets[_module_name].game_specific['p2_gauge_manager_pointer']
+    p2_ability_manager_pointer = offsets[_module_name].game_specific['p2_ability_manager_pointer']
+
+    charge_attack_threshold = offsets[_module_name].game_specific['charge_attack_threshold']
+    skill_attack_threshold  = offsets[_module_name].game_specific['skill_attack_threshold']
+    ex_attack_threshold     = offsets[_module_name].game_specific['ex_attack_threshold']
+    boss_attack_threshold   = offsets[_module_name].game_specific['boss_attack_threshold']
+    ex_attack_level   = offsets[_module_name].game_specific['ex_attack_level']
+    boss_attack_level = offsets[_module_name].game_specific['boss_attack_level']
+    lives_max = offsets[_module_name].game_specific['lives_max']
+    pvp_wins  = offsets[_module_name].game_specific['pvp_wins']
+
+    p2_input    = offsets[_module_name].game_specific['p2_input']
+    p2_shottype = offsets[_module_name].game_specific['p2_shottype']
+    p2_power    = offsets[_module_name].game_specific['p2_power']
+    p2_charge_attack_threshold = offsets[_module_name].game_specific['p2_charge_attack_threshold']
+    p2_skill_attack_threshold  = offsets[_module_name].game_specific['p2_skill_attack_threshold']
+    p2_ex_attack_threshold     = offsets[_module_name].game_specific['p2_ex_attack_threshold']
+    p2_boss_attack_threshold   = offsets[_module_name].game_specific['p2_boss_attack_threshold']
+    p2_ex_attack_level   = offsets[_module_name].game_specific['p2_ex_attack_level']
+    p2_boss_attack_level = offsets[_module_name].game_specific['p2_boss_attack_level']
+    p2_lives       = offsets[_module_name].game_specific['p2_lives']
+    p2_lives_max   = offsets[_module_name].game_specific['p2_lives_max']
+    p2_bombs       = offsets[_module_name].game_specific['p2_bombs']
+    p2_bomb_pieces = offsets[_module_name].game_specific['p2_bomb_pieces']
+    p2_graze       = offsets[_module_name].game_specific['p2_graze']
+    p2_pvp_wins    = offsets[_module_name].game_specific['p2_pvp_wins']
+
+    pvp_timer_start = offsets[_module_name].game_specific['pvp_timer_start']
+    pvp_timer       = offsets[_module_name].game_specific['pvp_timer']
+    rank_max        = offsets[_module_name].game_specific['rank_max']
 
 # Meaning Arrays
 color_coin     = offsets[_module_name].associations.color_coin
@@ -243,6 +306,7 @@ color8         = offsets[_module_name].associations.color8
 color16        = offsets[_module_name].associations.color16
 sprites        = offsets[_module_name].associations.sprites
 curve_sprites  = offsets[_module_name].associations.curve_sprites
+enemy_anms     = offsets[_module_name].associations.enemy_anms
 item_types     = offsets[_module_name].associations.item_types
 game_states    = offsets[_module_name].associations.game_states
 game_modes     = offsets[_module_name].associations.game_modes
@@ -251,6 +315,8 @@ subshots       = offsets[_module_name].associations.subshots
 difficulties   = offsets[_module_name].associations.difficulties
 life_piece_req = offsets[_module_name].associations.life_piece_req
 bomb_piece_req = offsets[_module_name].associations.bomb_piece_req
+world_width    = offsets[_module_name].associations.world_width
+world_height   = offsets[_module_name].associations.world_height
 
 # ==========================================================
 # Step 1 - Get the game process
@@ -327,10 +393,10 @@ def get_greyscale_screenshot(): #Note: fails if the window is inactive!
 
     # Convert the RGB image to a greyscale image
     grey_screenshot = cv2.cvtColor(rgb_screenshot, cv2.COLOR_BGR2GRAY) # can be saved with imwrite
-    
+
     # Add a channel dimension to the greyscale image    
     return np.expand_dims(grey_screenshot, axis=-1)
-   
+
 def save_screenshot(filename, screenshot): 
     # Swap the R and B channels to match OpenCV's BGR format (no effect for greyscale pics)
     bgr_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
@@ -341,35 +407,50 @@ def read_int(offset, bytes = 4, rel = False):
 
 def read_float(offset, rel = False):
     return struct.unpack('f', _read_memory(offset, 4, rel))[0]
-    
+
 def read_string(offset, length, rel = False):
     return _read_memory(offset, length, rel).decode('utf-8').split('\x00', 1)[0]
-    
+
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
-        
+
+def tabulate(x, min_size=10):
+    x_str = str(x)
+    to_append = min_size - len(x_str)
+    return x_str + " "*to_append
+
 def get_item_type(item_type):
     if item_type in item_types.keys() :
         return item_types[item_type]
     else:
         return None
         #return "Unknown " + str(item_type) #(all item types should be known for supported games)
-        
+
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:
         return sprites[sprite][0].split(' ')[0]
-        
+
     elif sprites[sprite][1] == 3:
         return color_coin[color]
-        
+
     elif sprites[sprite][1] == 4:
         return color4[color]
-        
+
     elif sprites[sprite][1] == 8:
         return color8[color]
-        
+
     elif sprites[sprite][1] == 16:
         return color16[color]
+
+def get_curve_color(sprite, color):
+    if sprite == 0:
+        return color16[color]
+    
+    elif sprite == 1:
+        return 'Cyan'
+    
+    elif sprite == 2:
+        return 'Lime'
 
 # Ordered set of available keys
 _keys = ['shift', 'z', 'left', 'right', 'up', 'down', 'x']
@@ -379,23 +460,23 @@ def apply_action_int(action_int):
     for index, key in enumerate(reversed(_keys)):
         # Check if the bit at the current position is set (1) or not (0)
         bit_set = (action_int >> index) & 1
-        
+
         if bit_set:
             keyboard.press(key)
         else:
             keyboard.release(key)
-            
+
 def apply_action_bin(action_binstr):
     # Iterate through the list of keys and hold/release keys depending on the bit value
     for index, key in enumerate(_keys):
         # Check if the bit at the current position is set (1) or not (0)
         bit_set = (action_binstr[index] == '1')
-        
+
         if bit_set:
             keyboard.press(key)
         else:
             keyboard.release(key)
-            
+
 def apply_action_str(action_text):
     key_presses = action_text.split()
     for key in _keys:
@@ -403,14 +484,14 @@ def apply_action_str(action_text):
             keyboard.press(key)
         else:
             keyboard.release(key)
-           
+
 def wait_global_frame(cur_global_frame=None, count=0):
     if not cur_global_frame:
         cur_global_frame = read_int(global_timer)
         
     while read_int(global_timer) <= cur_global_frame + count:
         pass
-    
+
 auto_termination = False
 def terminate():
     global auto_termination
@@ -418,9 +499,9 @@ def terminate():
 
 def wait_game_frame(cur_game_frame=None, need_active=False):
     if not cur_game_frame:
-        cur_game_frame = read_int(time_in_stage, rel=True)
+        cur_game_frame = read_int(stage_timer)
 
-    while read_int(time_in_stage, rel=True) == cur_game_frame: 
+    while read_int(stage_timer) == cur_game_frame: 
         if read_int(game_state, rel=True) == 1:
             return "Non-run game state detected"
         elif not game_process.is_running():
@@ -438,7 +519,7 @@ def press_key(key):
     wait_global_frame()
     keyboard.release(key)
     wait_global_frame()
-    
+
 def restart_run():  
     apply_action_int(0) #ensure no residual input
     press_key('enter')
@@ -446,18 +527,18 @@ def restart_run():
     press_key('up')
     press_key('up')
     press_key('z')
-    
+
 def pause_game():
     if get_focus() and read_int(game_state, rel=True) == 2:
         press_key('esc')
-        
+
         while read_int(game_state, rel=True) != 0:
             pass
-        
+
         #seems to be a hardcoded 8-frame delay between 
         #when pause starts and when pause menu can take inputs
         wait_global_frame(count=8)
-        
+
 def unpause_game():
     if get_focus() and read_int(game_state, rel=True) == 0:
         press_key('esc')
@@ -474,7 +555,7 @@ def get_focus():
         while _game_window != gw.getActiveWindow():
             pass
     return True
-    
+
 def enact_game_actions_bin(actions): #space-separated action binary strings
     get_focus()
     action_array = actions.split()
@@ -512,13 +593,13 @@ def _random_player():
 
     np.set_printoptions(linewidth=np.inf)
     print(np.array(["Lives", "L.Pieces", "Bombs", "B.Pieces", "Bonus", "Power", "PIV", "Graze", "Game State", "Action", "Time in Stage"]))
-    
+
     while True:            
-        cur_frame = read_int(time_in_stage, rel=True)
+        cur_frame = read_int(stage_timer)
         if wait_game_frame(cur_frame, True):
             apply_action_int(0) #un-press everything
             return
-        
+
         #display game variables and take random actions
         action = random.randint(0, 2**len(_keys))
         print(list(np.array([
@@ -533,5 +614,6 @@ def _random_player():
                     cur_frame+1])))
         apply_action_int(action)
 
-# Step 5 - Read the address of the ascii manager here so timing methods work
+# Step 5 - Set stage/global timer addresses here so timing methods work
 global_timer += read_int(ascii_manager_pointer, rel=True)
+stage_timer += read_int(game_thread_pointer, rel=True)

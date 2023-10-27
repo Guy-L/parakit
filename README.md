@@ -12,12 +12,14 @@ If you have feature requests or need help making your own custom analysis, feel 
 ### Supported games:
 * DDC
 * UM
+* UDoALG
 
 ### Goals:
 * Unix compatibility (for wearr)
 * Polish mallet analyzer: add lasers, account for spread, more useful timing info
 * Porting interface to C++
 * LoLK support
+* TD support 
 * MoF support 
 * State saving/reloading
 * Fix "Error: Operation completed successfully" Windows error
@@ -133,6 +135,35 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Only requires bullets.* | <img alt="UM st5 fireballs enemies" src="https://cdn.discordapp.com/attachments/522639011295002626/1140902507720224788/image.png"> |
 | `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Only requires bullets.* | <img alt="Seki Ascii" src="https://cdn.discordapp.com/attachments/522639011295002626/1140925231171633152/image.png"> |
 | `AnalysisMostBulletsCircleFrame` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, then plots the Mallet circle and prints relevant data.<br>*Only requires bullets.* | <img alt="S4 Casino" src="https://cdn.discordapp.com/attachments/522639011295002626/1140914669658325012/image.png"> |
+
+## Debugging
+
+When running analyzers which use PyPlot on some installations of Python, you may get the following error:
+
+```
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\<user>\AppData\Local\Programs\Python\Python311\Lib\tkinter\__main__.py", line 7, in <module>
+    main()
+  File "C:\Users\<user>\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 4618, in _test
+    root = Tk()
+           ^^^^
+  File "C:\Users\<user>\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 2326, in __init__
+    self.tk = _tkinter.create(screenName, baseName, className, interactive, wantobjects, useTk, sync, use)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: Can't find a usable init.tcl in the following directories:
+    C:/Users/<user>/AppData/Local/Programs/Python/Python311/lib/tcl8.6 C:/lib/tcl8.6 C:/lib/tcl8.6 C:/library C:/library C:/tcl8.6.12/library C:/tcl8.6.12/library
+```
+
+If this occurs, Tkinter (the default back-end for PyPlot) is unable to find Tcl on your system (a default Python library). In some installations, Tcl may be installed in sub-folder `tcl` of the python libraries folder (`/AppData/Local/Programs/Python/Python11/` in this example). Locate this folder on your system and see if the `tcl` subfolder exists. If so, copy the path to the ***latest-versioned subfolder*** of the `tcl` subfolder (`tcl8.6` in this example) and create a `TCL_LIBRARY` system environment variable with that path as the value, or as a temporary fix, run the following in a terminal:
+```bash
+set TCL_LIBRARY=<copied path here> #Windows only
+export TCL_LIBRARY=<copied path here> #Unix only
+```
+With the example Python installation and Tcl version on Windows:
+```
+set TCL_LIBRARY=C:\Users\<user>\AppData\Local\Programs\Python\Python311\tcl\tcl8.6
+``` 
 
 ## For Contributors
 

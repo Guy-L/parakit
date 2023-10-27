@@ -7,13 +7,13 @@ try:
     _commits_response = requests.get('https://api.github.com/repos/Guy-L/parakit/commits?sha=master&per_page=100')
 except Exception as e:
     print(f"\nVersion-checker: Failed to communicate with GitHub ({type(e).__name__}).")
-    input_exit()
+    exit()
 
 try:
     _commits_response.raise_for_status()
 except requests.exceptions.HTTPError as e:
     print(f"\nVersion-checker: HTTP error occurred: {e}")
-    input_exit()
+    exit()
     
 _commits = _commits_response.json()
 _latest_version_date = datetime.strptime(_commits[0]['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)

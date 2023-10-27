@@ -3,8 +3,9 @@ interface_settings = {
     'termination_key': 'F6',
 
     # Select the game here; can be full name, acronym, th## or just the game number.
-    # Supported games: DDC, UM
-    'game': 'UDoALG'
+    # Supported games: DDC, UM, UDoALG
+    # WIP Support: TD, LoLK
+    'game': 'No game selected'
 }
 
 # General Extraction Settings
@@ -15,20 +16,21 @@ extraction_settings = {
     'analyzer': 'AnalysisTemplate',
     
     # Disable extraction of entities not required for your analysis to reduce lag
-    'requires_bullets':     True,
-    'requires_enemies':     True,
-    'requires_items':       True,
-    'requires_lasers':      True,
+    'requires_bullets': True,
+    'requires_enemies': True,
+    'requires_items':   True,
+    'requires_lasers':  True,
     'requires_screenshots': False,
     
     # See settings.md for more info
-    'requires_max_curve_data': False
+    'requires_max_curve_data': False,
+    'requires_side2_pvp': True,
 }
 
 # Single-State Extraction Settings
 # See settings.md for more info.
 singlext_settings = {
-    'show_untracked':  False,
+    'show_untracked': False,
     'only_game_world': True,
     'list_print_limit': 30
 }
@@ -50,7 +52,7 @@ pyplot_settings = {
     'plot_scale': 1.0,
     'pyplot_factor': 0.2,
     'bullet_factor': 35,
-    'enemy_factor': 15,
+    'enemy_factor': 5,
     'plot_laser_circles': True
 }
 

@@ -8,7 +8,7 @@ Settings for the script responsible for interfacing with the game (reading, writ
 | Name / Type | Description | Default |
 |-|-|-|
 | **`termination_key`**<br>(string) | If pressed, interrupts any waiting for the next game frame and returns an error (used to terminate sequence extraction early). | `'F6'` |
-| **`game`**<br>(string) | Select the game here; can be the full name, acronym, `th##` or just the game number. **Fully supported games**: DDC, UM | `'UM'` |
+| **`game`**<br>(string) | Select the game here; can be the full name, acronym, `th##` or just the game number. **Fully supported games**: DDC, UM, UDoALG | `'No game selected'` |
 
 ## General Extraction Settings
 Settings for reading and analyzing game states; used by both single-state and sequence extraction.
@@ -23,6 +23,7 @@ Disable extraction of entities not required for your analysis to reduce lag (esp
 | **`requires_lasers`**<br>(bool) | If enabled, extracted states will contain laser data. | `True` |
 | **`requires_screenshots`**<br>(bool) | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
 | **`requires_max_curve_data`**<br>(bool) | If enabled, non-head curvy laser nodes will also have their speed/angle extracted. Velocity is only extracted for the head node (the value is 0 for all others) and by default, the same applies to speed and angle for performance reasons. Unclear why you'd want this. | `False` |
+| **`requires_side2_pvp`**<br>(bool) | If enabled, extracted states will contain P2 (right side of the screen) data in PvP danmaku games. | `True` |
 
 ## Single-State Extraction Settings
 Settings for single-state extraction, in which the current state of the game is extracted and printed.
@@ -56,7 +57,7 @@ If you want to make your own, check how these are used.
 | **`plot_scale`**<br>(number) | Adjusts the size of the PyPlot window. `2.0` is already really big, don't toast your PC setting this much higher.| `1.0` |
 | **`pyplot_factor`**<br>(number) | Converts sizes in game units to pyplot point/line sizes; seems accurate but may be tweaked. | `0.2` |
 | **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `35` |
-| **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `15` |
+| **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `3` |
 | **`plot_laser_circles`**<br>(bool) | If enabled, draws the head of line lasers and the tails of telegraphed lasers in their respective plots. | `True`
 
 ## ParaKit Script Settings

@@ -1,6 +1,6 @@
 def input_exit():
     print()
-    input("Press Enter to close the program.")
+    input("Press Enter to close the program. ")
     exit()
 
 #Extreme sanity check
@@ -10,13 +10,12 @@ try:
     import os
     import platform
     import subprocess
-    import base64
 except ImportError as e:
     print(f"Setup error: Error while importing standard libraries: {e}\nIf you see this message, please contact the developer!")
     input_exit()
 
-_venv_path   = 'venv'
-_reqs_path   = 'requirements.txt'
+_venv_path = 'venv'
+_reqs_path = 'requirements.txt'
 _worker_script_path = 'state_reader.py'
 _vcheck_script_path = 'version_check.py'
     
