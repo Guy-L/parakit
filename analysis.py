@@ -68,6 +68,8 @@ def enemy_color(anm_page, anm_id):
         return type_str.split(' ')[0]
     elif 'Sunflower Fairy' in type_str:
         return 'gold'
+    elif 'Hellflower Fairy' in type_str:
+        return 'darkred'
     elif 'Wolf Spirit' in type_str:
         return 'red'
     elif 'Otter Spirit' in type_str:
@@ -78,25 +80,44 @@ def enemy_color(anm_page, anm_id):
         return 'C0'
 
 def item_color(item_type):
-    if item_type == 'Power' or item_type == 'Full Power' or item_type == 'Power Card':
-        return 'red'
-    elif item_type == 'Point':
-        return 'blue'
-    elif item_type == 'Life Piece' or item_type == 'LifeP. Card':
-        return 'fuchsia'
-    elif item_type == 'Bomb Piece' or item_type == 'BombP. Card':
-        return 'lime'
-    elif item_type == 'Green':
-        return 'green'
-    elif item_type == 'Cancel':
-        return 'olive'
-    elif item_type == 'Gold' or item_type == 'Gold Card':
-        return 'gold'
-    elif item_type == 'Spirit Power':
+    if 'Full Power' in item_type:
+        return 'yellow'
+    elif 'Spirit Power' in item_type:
         return (0.3, 0.3, 0.45, 0.5)
+    elif 'Power' in item_type:
+        return 'red'
+    elif 'Point' in item_type:
+        return 'blue'
+    elif 'Life' in item_type:
+        return 'fuchsia'
+    elif 'Bomb' in item_type:
+        return 'lime'
+    elif 'Green' in item_type or 'Graze' in item_type:
+        return 'green'
+    elif 'Cancel' in item_type:
+        return 'olive'
+    elif 'Gold' in item_type:
+        return 'gold'
     else:
         return 'black'
 
-plot_scale, pyplot_factor, bullet_factor, enemy_factor, plot_laser_circles = pyplot_settings.values()
+def item_size(item_type):
+    if item_type == 'Full Power':
+        return 150
+
+    for word in ['Life', 'Bomb', 'Big', 'Card']:
+        if word in item_type:
+            return 100
+
+    for type in ['Green', 'Graze', 'Spirit Power']:
+        if item_type == type:
+            return 10
+
+    if item_type == 'Cancel':
+        return 25
+
+    return 50
+
+plot_scale, pyplot_factor, bullet_factor, enemy_factor, plot_laser_circles, plot_enemy_hurtbox = pyplot_settings.values()
 DONT_PLOT = -1
 HIDE_P2 = -2

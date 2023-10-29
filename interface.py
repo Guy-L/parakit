@@ -233,6 +233,19 @@ if game_id == 14:
     seija_flip_y      = offsets[_module_name].game_specific['seija_flip_y']
     zPlayer_scale     = offsets[_module_name].game_specific['zPlayer_scale']
 
+elif game_id == 15:
+    time_in_chapter = offsets[_module_name].game_specific['time_in_chapter']
+    chapter_graze = offsets[_module_name].game_specific['chapter_graze']
+    chapter_enemy_weight_spawned = offsets[_module_name].game_specific['chapter_enemy_weight_spawned']
+    chapter_enemy_weight_destroyed = offsets[_module_name].game_specific['chapter_enemy_weight_destroyed']
+    pointdevice_resets_total = offsets[_module_name].game_specific['pointdevice_resets_total']
+    pointdevice_resets_chapter = offsets[_module_name].game_specific['pointdevice_resets_chapter']
+    modeflags = offsets[_module_name].game_specific['modeflags']
+    zBomb_reisen_shields = offsets[_module_name].game_specific['zBomb_reisen_shields']
+    zEnemy_weight = offsets[_module_name].game_specific['zEnemy_weight']
+    zBullet_graze_timer = offsets[_module_name].game_specific['zBullet_graze_timer']
+    zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
+
 elif game_id == 18:
     funds = offsets[_module_name].game_specific['funds']
     card_nicknames = offsets[_module_name].game_specific['card_nicknames']

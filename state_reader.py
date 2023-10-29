@@ -73,6 +73,10 @@ def extract_bullets(bullet_manager = zBulletManager):
             bullet['show_delay'] = read_int(zBullet + zBullet_ex_delay_timer)
             bullets.append(ShowDelayBullet(**bullet))
 
+        if game_id == 15:
+            bullet['graze_timer'] = read_int(zBullet + zBullet_graze_timer)
+            bullets.append(GrazeTimerBullet(**bullet))
+
         else:
             bullets.append(Bullet(**bullet))
 
@@ -109,6 +113,10 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'hp_max':       read_int(zEnemy + zEnemy_hp_max),
             'iframes':      read_int(zEnemy + zEnemy_iframes),
         }
+
+        if game_id == 15:
+            enemy['shootdown_weight'] = read_int(zEnemy + zEnemy_weight, signed=True)
+            enemies.append(WeightedEnemy(**enemy))
 
         else:
             enemies.append(Enemy(**enemy))
@@ -310,6 +318,19 @@ def extract_game_state(frame_id = None, real_time = None):
             'seija_flip': (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y))
         }
 
+    elif game_id == 15:
+        game_specific = {
+            'item_graze_slowdown_factor': read_float(zItemManager + zItemManager_graze_slowdown_factor),
+            'reisen_bomb_shields': read_int(zBomb + zBomb_reisen_shields),
+            'time_in_chapter': read_int(time_in_chapter, rel=True),
+            'chapter_graze': read_int(chapter_graze, rel=True),
+            'chapter_enemy_weight_spawned': read_int(chapter_enemy_weight_spawned, rel=True),
+            'chapter_enemy_weight_destroyed': read_int(chapter_enemy_weight_destroyed, rel=True),
+            'in_pointdevice': read_int(modeflags, rel=True) & 2**8 != 0,
+            'pointdevice_resets_total': read_int(pointdevice_resets_total, rel=True),
+            'pointdevice_resets_chapter': read_int(pointdevice_resets_chapter, rel=True),
+        }
+
     elif game_id == 18:
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
@@ -489,25 +510,49 @@ def print_game_state(gs: GameState):
         print(f"| Boss timer: {gs.boss_timer}")
 
     if gs.spellcard:
-        print(f"| Spell #{gs.spellcard.spell_id}, SCB: {gs.spellcard.capture_bonus}")
+        print(f"| Spell #{gs.spellcard.spell_id+1}; SCB: {gs.spellcard.capture_bonus}")
+
+    if gs.bomb_state > 0:
+        print(f"| Bomb active (state: {gs.bomb_state})")
 
     #======================================
     # Game-specific prints ================
     if game_id == 14: #DDC
         print(f"| DDC Bonus Count: {gs.game_specific['bonus_count']}")
-        
+
         if gs.game_specific['seija_flip'][0] != 1:
             print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific['seija_flip'][0]+1)/2, 2)}%")
-            
+
         if gs.game_specific['seija_flip'][1] != 1:
             print(f"| DDC Seija Vertical Flip: {round(100*(-gs.game_specific['seija_flip'][1]+1)/2, 2)}%")
-            
+
         if gs.game_specific['player_scale'] > 1:
             print(f"| DDC Player Scale: grew {round(gs.game_specific['player_scale'], 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific['player_scale'], 2)})")
 
+    elif game_id == 15: #LoLK
+        chapter = "Chapter"
+        if gs.stage_chapter:
+            chapter = f"S{read_int(stage, rel=True)}C{gs.stage_chapter+1}"
+
+        chapter_desc = f"{gs.game_specific['chapter_graze']} graze; "
+        chapter_desc += f"shootdown {gs.game_specific['chapter_enemy_weight_destroyed']}/{gs.game_specific['chapter_enemy_weight_spawned']}"
+        if gs.game_specific['chapter_enemy_weight_spawned'] > 0:
+            chapter_desc += f" ({round(100*gs.game_specific['chapter_enemy_weight_destroyed']/gs.game_specific['chapter_enemy_weight_spawned'],1)}%)"
+        chapter_desc += f"; frame #{gs.game_specific['time_in_chapter']}"
+        print(f"| LoLK {chapter}: {chapter_desc}")
+
+        if gs.game_specific['in_pointdevice']:
+            print(f"| LoLK Pointdevice: {gs.game_specific['pointdevice_resets_chapter']} chapter resets / {gs.game_specific['pointdevice_resets_total']} total resets")
+
+        if gs.game_specific['item_graze_slowdown_factor'] < 1:
+            print(f"| LoLK Item Graze Slowdown: {round(gs.game_specific['item_graze_slowdown_factor'],1)}x")
+
+        if gs.game_specific['reisen_bomb_shields'] > 0:
+            print(f"| LoLK Reisen Bomb Shields: {gs.game_specific['reisen_bomb_shields']}")
+
     elif game_id == 18: #UM
         print(f"| UM Funds: {gs.game_specific['funds']:,}")
-        
+
         cards_breakdown = ""
         if gs.game_specific['total_cards'] > 0:
             cards_breakdown += " ("
@@ -596,6 +641,8 @@ def print_game_state(gs: GameState):
             if hasattr(bullet, 'show_delay') and bullet.show_delay > 0:
                 description += f" ({bullet.show_delay} invis. frames)"
 
+            if hasattr(bullet, 'graze_timer') and bullet.graze_timer > 0:
+                description += f" (grazed {bullet.graze_timer}f)"
 
             if bullet.scale != 1:
                 description += f" (scale: {round(bullet.scale, 2)}x)"
@@ -750,6 +797,8 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
+                description += f" ({enemy.shootdown_weight} weight)"
 
             print(description)
 

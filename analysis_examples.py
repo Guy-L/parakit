@@ -104,7 +104,7 @@ class AnalysisPlot(Analysis, ABC):
 
             side1_res = self.plot(axarr[0], False)
             side2_res = self.plot(axarr[1], True)
-            if side1_res != DONT_PLOT or side2_res != DONT_PLOT:
+            if side1_res != DONT_PLOT or (side2_res != DONT_PLOT and side2_res != HIDE_P2):
                 axarr[0].set_title('Player 1')
                 axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*self.lastframe.player_hitbox_rad, marker='X')
 
@@ -219,8 +219,9 @@ class AnalysisPlotItems(AnalysisPlot):
             x_coords = [item.position[0] for item in items]
             y_coords = [item.position[1] for item in items]
             colors = [item_color(item.item_type) for item in items]
+            sizes = [item_size(item.item_type) for item in items]
 
-            ax.scatter(x_coords, y_coords, color=colors, marker='*')
+            ax.scatter(x_coords, y_coords, color=colors, s=sizes, marker='*')
 
         else:
             print(("(Player 2) " if side2 else "") + "No items to plot.")
@@ -425,6 +426,56 @@ class AnalysisPrintBulletsASCII(Analysis):
 
             print(line)
         print("```")
+
+# LoLK: "Print on chapter transition" [no reqs.]
+class AnalysisHookChapterTransition(Analysis):
+    def __init__(self):
+        self.time_in_chapter = 0
+
+    def step(self, state: GameState):
+        if 'time_in_chapter' in state.game_specific:
+            cur_time_in_chapter = state.game_specific['time_in_chapter']
+            if cur_time_in_chapter < self.time_in_chapter:
+                print("Chapter Transition!!")
+
+            self.time_in_chapter = cur_time_in_chapter
+
+    def done(self):
+        pass
+
+# LoLK: "Plot bullets with color intensity based on graze timer" [only requires bullets]
+class AnalysisPlotBulletGraze(AnalysisPlot):
+    plot_title = 'Scatter Plot of Bullets w/ Graze Timer Coloring'
+
+    def plot(self, ax, side2):
+        bullets = self.lastframe.game_specific['side2'].bullets if side2 else self.lastframe.bullets
+
+        if side2:
+            return HIDE_P2
+
+        #if any bullet has it, we're in LoLK, so they all have it
+        if self.lastframe.bullets and any(hasattr(bullet, 'graze_timer') for bullet in self.lastframe.bullets):
+            max_graze_timer = 0
+            for bullet in self.lastframe.bullets:
+                if bullet.graze_timer > max_graze_timer:
+                    max_graze_timer = bullet.graze_timer
+
+            x_coords = [bullet.position[0] for bullet in bullets]
+            y_coords = [bullet.position[1] for bullet in bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
+            alphas = [0.1 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 1 for bullet in bullets]
+
+            if max_graze_timer > 0:
+                colors = [(bullet.graze_timer/max_graze_timer, 0, 0.5) for bullet in bullets]
+            else:
+                colors = 'C0'
+
+            ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
+
+        else:
+            print("No LoLK bullets to plot.")
+            return DONT_PLOT
+
 
 # UM: "Find and plot the biggest mallet spot" [only requires bullets]
 class AnalysisMostBulletsCircleFrame(AnalysisPlot):

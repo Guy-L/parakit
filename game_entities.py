@@ -140,6 +140,15 @@ class GameState:
 class ShowDelayBullet(Bullet):
     show_delay: int
 
+# Legacy of Lunatic Kingdom
+@dataclass
+class GrazeTimerBullet(Bullet):
+    graze_timer: int
+
+@dataclass
+class WeightedEnemy(Enemy):
+    shootdown_weight: int
+
 # Unconnected Marketeers
 @dataclass
 class ActiveCard:

@@ -11,6 +11,7 @@ If you have feature requests or need help making your own custom analysis, feel 
 ### [Settings Documentation](./settings.md)
 ### Supported games:
 * DDC
+* LoLK
 * UM
 * UDoALG
 
@@ -18,7 +19,6 @@ If you have feature requests or need help making your own custom analysis, feel 
 * Unix compatibility (for wearr)
 * Polish mallet analyzer: add lasers, account for spread, more useful timing info
 * Porting interface to C++
-* LoLK support
 * TD support 
 * MoF support 
 * State saving/reloading

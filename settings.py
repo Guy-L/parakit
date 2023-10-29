@@ -3,8 +3,8 @@ interface_settings = {
     'termination_key': 'F6',
 
     # Select the game here; can be full name, acronym, th## or just the game number.
-    # Supported games: DDC, UM, UDoALG
-    # WIP Support: TD, LoLK
+    # Supported games: DDC, LoLK, UM, UDoALG
+    # WIP Support: TD
     'game': 'No game selected'
 }
 
