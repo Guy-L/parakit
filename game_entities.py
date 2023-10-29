@@ -6,22 +6,25 @@ import numpy as np
 class Bullet:
     position: Tuple[float, float]
     velocity: Tuple[float, float]
+    is_active: bool
     speed: float
     angle: float
     scale: float
     hitbox_radius: float
-    show_delay: Optional[int] #game-specific: DDC/ISC/HBM
     iframes: int
     bullet_type: int
     color: int
-    
+
 @dataclass
 class Enemy:
     position: Tuple[float, float]
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
+    no_hurtbox: bool
+    no_hitbox: bool
+    invincible: bool
+    is_rectangle: bool
     is_boss: bool
-    has_hitbox: bool
     subboss_id: int
     rotation: float
     anm_page: int
@@ -121,6 +124,7 @@ class GameState:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    bomb_state: int
     bullets: Optional[List[Bullet]]
     enemies: Optional[List[Enemy]]
     items: Optional[List[Item]]
@@ -130,6 +134,11 @@ class GameState:
 
 # ======================
 # Game specific entities
+
+# DDC / ISC / HBM
+@dataclass
+class ShowDelayBullet(Bullet):
+    show_delay: int
 
 # Unconnected Marketeers
 @dataclass
@@ -156,6 +165,7 @@ class P2Side:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    bomb_state: int
     bullets: Optional[List[Bullet]]
     enemies: Optional[List[Enemy]]
     items: Optional[List[Item]]

@@ -59,6 +59,7 @@ If you want to make your own, check how these are used.
 | **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `35` |
 | **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `3` |
 | **`plot_laser_circles`**<br>(bool) | If enabled, draws the head of line lasers and the tails of telegraphed lasers in their respective plots. | `True`
+| **`plot_enemy_hurtbox`**<br>(bool) | If enabled, draws the outline of enemy hurtboxes on top of their hitbox in enemy scatterplots. | `False`
 
 ## ParaKit Script Settings
 Settings used by the `parakit.py` main script.

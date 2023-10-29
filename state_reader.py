@@ -13,6 +13,7 @@ exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 
 zPlayer        = read_int(player_pointer, rel=True)
+zBomb          = read_int(bomb_pointer, rel=True)
 zBulletManager = read_int(bullet_manager_pointer, rel=True)
 zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
 zItemManager   = read_int(item_manager_pointer, rel=True)
@@ -28,6 +29,7 @@ elif game_id == 19:
     
     if requires_side2_pvp:
         zPlayerP2         = read_int(p2_player_pointer, rel=True)
+        zBombP2           = read_int(p2_bomb_pointer, rel=True)
         zBulletManagerP2  = read_int(p2_bullet_manager_pointer, rel=True)
         zEnemyManagerP2   = read_int(p2_enemy_manager_pointer, rel=True)
         zItemManagerP2    = read_int(p2_item_manager_pointer, rel=True)
@@ -53,38 +55,26 @@ def extract_bullets(bullet_manager = zBulletManager):
         current_bullet_list = read_zList(current_bullet_list["next"])
         zBullet = current_bullet_list["entry"]
 
-        #spawning & cancelled bullets filtered
-        #if you really need them for some reason, let me know
-        if read_int(zBullet + zBullet_state, 2) != 1:
-            continue
-
-        bullet_x       = read_float(zBullet + zBullet_pos)
-        bullet_y       = read_float(zBullet + zBullet_pos + 0x4)
-        bullet_vel_x   = read_float(zBullet + zBullet_velocity)
-        bullet_vel_y   = read_float(zBullet + zBullet_velocity + 0x4)
-        bullet_speed   = read_float(zBullet + zBullet_speed)
-        bullet_angle   = read_float(zBullet + zBullet_angle)
-        bullet_scale   = read_float(zBullet + zBullet_scale)
-        bullet_radius  = read_float(zBullet + zBullet_hitbox_radius)
-        bullet_iframes = read_int(zBullet + zBullet_iframes)
-        bullet_type    = read_int(zBullet + zBullet_type, 2)
-        bullet_color   = read_int(zBullet + zBullet_color, 2)
+        bullet = {
+            'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
+            'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
+            'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
+            'speed':         read_float(zBullet + zBullet_speed),
+            'angle':         read_float(zBullet + zBullet_angle),
+            'scale':         read_float(zBullet + zBullet_scale),
+            'hitbox_radius': read_float(zBullet + zBullet_hitbox_radius),
+            'iframes':       read_int(zBullet + zBullet_iframes),
+            'bullet_type':   read_int(zBullet + zBullet_type, 2),
+            'color':         read_int(zBullet + zBullet_color, 2),
+        }
 
         #Game-specific attributes
-        bullet_delay = read_int(zBullet + zBullet_ex_delay_timer) if game_id in has_bullet_delay else None
+        if game_id in has_bullet_delay:
+            bullet['show_delay'] = read_int(zBullet + zBullet_ex_delay_timer)
+            bullets.append(ShowDelayBullet(**bullet))
 
-        bullets.append(Bullet(
-            position      = (bullet_x, bullet_y), 
-            velocity      = (bullet_vel_x, bullet_vel_y), 
-            speed         = bullet_speed,
-            angle         = bullet_angle,
-            scale         = bullet_scale,
-            hitbox_radius = bullet_radius,
-            show_delay    = bullet_delay,
-            iframes       = bullet_iframes,
-            bullet_type   = bullet_type,
-            color         = bullet_color,
-        ))
+        else:
+            bullets.append(Bullet(**bullet))
 
     return bullets
 
@@ -101,38 +91,27 @@ def extract_enemies(enemy_manager = zEnemyManager):
         if zEnemyFlags & zEnemyFlags_intangible != 0:
             continue
 
-        enemy_x            = read_float(zEnemy + zEnemy_pos)
-        enemy_y            = read_float(zEnemy + zEnemy_pos + 0x4)
-        enemy_hurtbox_x    = read_float(zEnemy + zEnemy_hurtbox)
-        enemy_hurtbox_y    = read_float(zEnemy + zEnemy_hurtbox + 0x4)
-        enemy_hitbox_x     = read_float(zEnemy + zEnemy_hitbox)
-        enemy_hitbox_y     = read_float(zEnemy + zEnemy_hitbox + 0x4)
-        enemy_is_boss      = zEnemyFlags & zEnemyFlags_is_boss != 0
-        enemy_has_hitbox   = zEnemyFlags & zEnemyFlags_no_hitbox == 0
-        enemy_subboss_id   = read_int(zEnemy + zEnemy_subboss_id)
-        enemy_rotation     = read_float(zEnemy + zEnemy_rotation)
-        enemy_anm_page     = read_int(zEnemy + zEnemy_anm_page)
-        enemy_anm_id       = read_int(zEnemy + zEnemy_anm_id)
-        enemy_score_reward = read_int(zEnemy + zEnemy_score_reward)
-        enemy_hp           = read_int(zEnemy + zEnemy_hp)
-        enemy_hp_max       = read_int(zEnemy + zEnemy_hp_max)
-        enemy_iframes      = read_int(zEnemy + zEnemy_iframes)
+        enemy = {
+            'position':          (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
+            'hurtbox':           (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
+            'hitbox':            (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
+            'no_hurtbox':   zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
+            'no_hitbox':    zEnemyFlags & zEnemyFlags_no_hitbox != 0,
+            'invincible':   zEnemyFlags & zEnemyFlags_invincible != 0,
+            'is_rectangle': zEnemyFlags & zEnemyFlags_is_rectangle != 0,
+            'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
+            'subboss_id':   read_int(zEnemy + zEnemy_subboss_id),
+            'rotation':     read_float(zEnemy + zEnemy_rotation),
+            'anm_page':     read_int(zEnemy + zEnemy_anm_page),
+            'anm_id':       read_int(zEnemy + zEnemy_anm_id),
+            'score_reward': read_int(zEnemy + zEnemy_score_reward),
+            'hp':           read_int(zEnemy + zEnemy_hp),
+            'hp_max':       read_int(zEnemy + zEnemy_hp_max),
+            'iframes':      read_int(zEnemy + zEnemy_iframes),
+        }
 
-        enemies.append(Enemy(
-            position     = (enemy_x, enemy_y),
-            hurtbox      = (enemy_hurtbox_x, enemy_hurtbox_y),
-            hitbox       = (enemy_hitbox_x, enemy_hitbox_y),
-            is_boss      = enemy_is_boss,
-            has_hitbox   = enemy_has_hitbox,
-            subboss_id   = enemy_subboss_id,
-            rotation     = enemy_rotation,
-            anm_page     = enemy_anm_page,
-            anm_id       = enemy_anm_id,
-            score_reward = enemy_score_reward,
-            hp           = enemy_hp,
-            hp_max       = enemy_hp_max,
-            iframes      = enemy_iframes,
-        ))
+        else:
+            enemies.append(Enemy(**enemy))
 
     return enemies
 
@@ -179,33 +158,22 @@ def extract_lasers(laser_manager = zLaserManager):
         if game_id == 19: #may need logic group if multiple games use ZUNlists for lasers
             current_laser_ptr = read_int(next_laser_ptr)
 
-        laser_state    = read_int(current_laser_ptr + zLaserBaseClass_state)
-        laser_type     = read_int(current_laser_ptr + zLaserBaseClass_type)
-        laser_timer    = read_int(current_laser_ptr + zLaserBaseClass_timer)
-        laser_offset_x = read_float(current_laser_ptr + zLaserBaseClass_offset)
-        laser_offset_y = read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)
-        laser_angle    = read_float(current_laser_ptr + zLaserBaseClass_angle)
-        laser_length   = read_float(current_laser_ptr + zLaserBaseClass_length)
-        laser_width    = read_float(current_laser_ptr + zLaserBaseClass_width)
-        laser_speed    = read_float(current_laser_ptr + zLaserBaseClass_speed)
-        laser_id       = read_int(current_laser_ptr + zLaserBaseClass_id)
-        laser_iframes  = read_int(current_laser_ptr + zLaserBaseClass_iframes)
-        laser_sprite   = read_int(current_laser_ptr + zLaserBaseClass_sprite)
-        laser_color    = read_int(current_laser_ptr + zLaserBaseClass_color)
+        laser_state = read_int(current_laser_ptr + zLaserBaseClass_state)
+        laser_type  = read_int(current_laser_ptr + zLaserBaseClass_type)
 
         laser_base = {
-            'state': laser_state,
+            'state':      laser_state,
             'laser_type': laser_type,
-            'timer': laser_timer,
-            'position': (laser_offset_x, laser_offset_y), 
-            'angle': laser_angle,
-            'length': laser_length,
-            'width': laser_width,
-            'speed': laser_speed,
-            'id': laser_id,
-            'iframes': laser_iframes,
-            'sprite': laser_sprite,
-            'color': laser_color,
+            'timer':      read_int(current_laser_ptr + zLaserBaseClass_timer),
+            'position':  (read_float(current_laser_ptr + zLaserBaseClass_offset), read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)),
+            'angle':      read_float(current_laser_ptr + zLaserBaseClass_angle),
+            'length':     read_float(current_laser_ptr + zLaserBaseClass_length),
+            'width':      read_float(current_laser_ptr + zLaserBaseClass_width),
+            'speed':      read_float(current_laser_ptr + zLaserBaseClass_speed),
+            'id':         read_int(current_laser_ptr + zLaserBaseClass_id),
+            'iframes':    read_int(current_laser_ptr + zLaserBaseClass_iframes),
+            'sprite':     read_int(current_laser_ptr + zLaserBaseClass_sprite),
+            'color':      read_int(current_laser_ptr + zLaserBaseClass_color),
         }
 
         if laser_type == 0: #LINE
@@ -241,7 +209,7 @@ def extract_line_laser(laser_ptr):
     line_max_length  = read_float(laser_ptr + zLaserLine_max_length)
     line_init_speed  = read_float(laser_ptr + zLaserLine_mgr_speed)
     line_distance    = read_float(laser_ptr + zLaserLine_distance)
-                            
+
     return {
         'start_pos': (line_start_pos_x, line_start_pos_y),
         'init_angle': line_init_angle,
@@ -256,7 +224,7 @@ def extract_infinite_laser(laser_ptr):
     infinite_origin_vel_x  = read_float(laser_ptr + zLaserInfinite_velocity)
     infinite_origin_vel_y  = read_float(laser_ptr + zLaserInfinite_velocity + 0x4)
     infinite_default_angle = read_float(laser_ptr + zLaserInfinite_mgr_angle)
-    infinite_angular_vel   = read_float(laser_ptr + zLaserInfinite_angle_vel)    
+    infinite_angular_vel   = read_float(laser_ptr + zLaserInfinite_angle_vel)
     infinite_init_length   = read_float(laser_ptr + zLaserInfinite_mgr_len)
     infinite_max_length    = read_float(laser_ptr + zLaserInfinite_final_len)
     infinite_max_width     = read_float(laser_ptr + zLaserInfinite_final_width)
@@ -266,7 +234,7 @@ def extract_infinite_laser(laser_ptr):
     infinite_active_time   = read_int(laser_ptr + zLaserInfinite_active_time)
     infinite_shrink_time   = read_int(laser_ptr + zLaserInfinite_shrink_time)
     infinite_distance      = read_float(laser_ptr + zLaserInfinite_mgr_distance)
-    
+
     return {
         'start_pos': (infinite_start_pos_x, infinite_start_pos_y),
         'origin_vel': (infinite_origin_vel_x, infinite_origin_vel_y),
@@ -323,17 +291,17 @@ def extract_curve_laser(laser_ptr):
 def extract_spellcard(spellcard = zSpellCard):
     if read_int(spellcard + zSpellcard_indicator) == 0:
         return None
-    
+
     spell_id = read_int(spellcard + zSpellcard_id)
     spell_capture_bonus = read_int(spellcard + zSpellcard_bonus)
-    
+
     return Spellcard(
         spell_id = spell_id,
         capture_bonus = spell_capture_bonus,
     )
 
 def extract_game_state(frame_id = None, real_time = None):
-    game_specific = None
+    game_specific = {}
 
     if game_id == 14:
         game_specific = {
@@ -397,57 +365,57 @@ def extract_game_state(frame_id = None, real_time = None):
 
         if requires_side2_pvp:
             side2 = P2Side(
-                lives       = read_int(p2_lives, rel=True),
-                lives_max   = read_int(p2_lives_max, rel=True),
-                bombs       = read_int(p2_bombs, rel=True),
-                bomb_pieces = read_int(p2_bomb_pieces, rel=True),
-                power       = read_int(p2_power, rel=True),
-                graze       = read_int(p2_graze, rel=True),
-                boss_timer  = float(f"{read_int(zGui+zGui_p2_bosstimer_s)}.{read_int(zGui+zGui_p2_bosstimer_ms)}") if read_int(zGui+zGui_p2_bosstimer_drawn) == 0 else -1,
-                spellcard   = extract_spellcard(zSpellCardP2),
-                input       = read_int(p2_input, rel=True),
-                player_position   = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
-                player_hitbox_rad = read_float(zPlayerP2 + zPlayer_hit_rad),
-                player_iframes    = read_int(zPlayerP2 + zPlayer_iframes),
-                player_focused    = read_int(zPlayerP2 + zPlayer_focused) == 1,
-                bullets   = extract_bullets(zBulletManagerP2),
-                enemies   = extract_enemies(zEnemyManagerP2),
-                items     = extract_items(zItemManagerP2),
-                lasers    = extract_lasers(zLaserManagerP2),
-                hitstun_status = read_int(zPlayerP2 + zPlayer_hitstun_status),
-                shield_status  = read_int(zPlayerP2 + zPlayer_shield_status),
+                lives               = read_int(p2_lives, rel=True),
+                lives_max           = read_int(p2_lives_max, rel=True),
+                bombs               = read_int(p2_bombs, rel=True),
+                bomb_pieces         = read_int(p2_bomb_pieces, rel=True),
+                power               = read_int(p2_power, rel=True),
+                graze               = read_int(p2_graze, rel=True),
+                boss_timer          = float(f"{read_int(zGui+zGui_p2_bosstimer_s)}.{read_int(zGui+zGui_p2_bosstimer_ms)}") if read_int(zGui+zGui_p2_bosstimer_drawn) == 0 else -1,
+                spellcard           = extract_spellcard(zSpellCardP2),
+                input               = read_int(p2_input, rel=True),
+                player_position     = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
+                player_hitbox_rad   = read_float(zPlayerP2 + zPlayer_hit_rad),
+                player_iframes      = read_int(zPlayerP2 + zPlayer_iframes),
+                player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
+                bomb_state          = read_int(zBombP2 + zBomb_state),
+                bullets             = extract_bullets(zBulletManagerP2),
+                enemies             = extract_enemies(zEnemyManagerP2),
+                items               = extract_items(zItemManagerP2),
+                lasers              = extract_lasers(zLaserManagerP2),
+                hitstun_status      = read_int(zPlayerP2 + zPlayer_hitstun_status),
+                shield_status       = read_int(zPlayerP2 + zPlayer_shield_status),
                 last_combo_hits     = read_int(zPlayerP2 + zPlayer_last_combo_hits),
                 current_combo_hits  = read_int(zPlayerP2 + zPlayer_current_combo_hits),
                 current_combo_chain = read_int(zPlayerP2 + zPlayer_current_combo_chain),
                 enemy_pattern_count = read_int(zEnemyManagerP2 + zEnemyManager_pattern_count),
-                item_spawn_total  = read_int(zItemManagerP2 + zItemManager_spawn_total),
-                gauge_charging    = read_int(zGaugeManagerP2 + zGaugeManager_charging_bool) == 1,
-                gauge_charge      = read_int(zGaugeManagerP2 + zGaugeManager_gauge_charge),
-                gauge_fill        = read_int(zGaugeManagerP2 + zGaugeManager_gauge_fill),
-                ex_attack_level   = read_int(p2_ex_attack_level, rel=True),
-                boss_attack_level = read_int(p2_boss_attack_level, rel=True),
-                pvp_wins          = read_int(p2_pvp_wins, rel=True),
+                item_spawn_total    = read_int(zItemManagerP2 + zItemManager_spawn_total),
+                gauge_charging      = read_int(zGaugeManagerP2 + zGaugeManager_charging_bool) == 1,
+                gauge_charge        = read_int(zGaugeManagerP2 + zGaugeManager_gauge_charge),
+                gauge_fill          = read_int(zGaugeManagerP2 + zGaugeManager_gauge_fill),
+                ex_attack_level     = read_int(p2_ex_attack_level, rel=True),
+                boss_attack_level   = read_int(p2_boss_attack_level, rel=True),
+                pvp_wins            = read_int(p2_pvp_wins, rel=True),
             )
 
         game_specific = {
-            'lives_max': read_int(lives_max, rel=True),
-            'hitstun_status': read_int(zPlayer + zPlayer_hitstun_status),
-            'shield_status': read_int(zPlayer + zPlayer_shield_status),
-            'last_combo_hits': read_int(zPlayer + zPlayer_last_combo_hits),
-            'current_combo_hits': read_int(zPlayer + zPlayer_current_combo_hits),
+            'lives_max':           read_int(lives_max, rel=True),
+            'hitstun_status':      read_int(zPlayer + zPlayer_hitstun_status),
+            'shield_status':       read_int(zPlayer + zPlayer_shield_status),
+            'last_combo_hits':     read_int(zPlayer + zPlayer_last_combo_hits),
+            'current_combo_hits':  read_int(zPlayer + zPlayer_current_combo_hits),
             'current_combo_chain': read_int(zPlayer + zPlayer_current_combo_chain),
             'enemy_pattern_count': read_int(zEnemyManager + zEnemyManager_pattern_count),
-            'item_spawn_total': read_int(zItemManager + zItemManager_spawn_total),
-            'gauge_charging': read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
-            'gauge_charge': read_int(zGaugeManager + zGaugeManager_gauge_charge),
-            'gauge_fill': read_int(zGaugeManager + zGaugeManager_gauge_fill),
-            'ex_attack_level': read_int(ex_attack_level, rel=True),
-            'boss_attack_level': read_int(boss_attack_level, rel=True),
-            'pvp_wins': read_int(pvp_wins, rel=True),
+            'item_spawn_total':    read_int(zItemManager + zItemManager_spawn_total),
+            'gauge_charging':      read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
+            'gauge_charge':        read_int(zGaugeManager + zGaugeManager_gauge_charge),
+            'gauge_fill':          read_int(zGaugeManager + zGaugeManager_gauge_fill),
+            'ex_attack_level':     read_int(ex_attack_level, rel=True),
+            'boss_attack_level':   read_int(boss_attack_level, rel=True),
+            'pvp_wins':            read_int(pvp_wins, rel=True),
             'side2': side2,
             'pvp_timer_start': read_int(pvp_timer_start, rel=True),
             'pvp_timer': read_int(pvp_timer, rel=True),
-            'rank_max': read_int(rank_max, rel=True),
         }
 
     boss_timer = -1
@@ -479,6 +447,7 @@ def extract_game_state(frame_id = None, real_time = None):
         player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
+        bomb_state          = read_int(zBomb + zBomb_state),
         bullets             = extract_bullets() if requires_bullets else None,
         enemies             = extract_enemies() if requires_enemies else None,
         items               = extract_items() if requires_items else None,
@@ -504,7 +473,7 @@ def print_game_state(gs: GameState):
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
     # Player status
-    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); base hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
+    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
 
     # Useful internals
     print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
@@ -553,15 +522,15 @@ def print_game_state(gs: GameState):
                     cards_breakdown += ", "
                 cards_breakdown += f"{gs.game_specific['total_passive']} passive"
             cards_breakdown += ")"
-            
+
         print(f"| UM Cards: {gs.game_specific['total_cards']}" + cards_breakdown)
-        
+
         if gs.game_specific['centipede_multiplier']:
             print(f"| UM Centipede Multiplier: {gs.game_specific['centipede_multiplier']:.3f}x")
-            
+
         if gs.game_specific['lily_counter'] != None:
             print(f"| UM Lily Use Count: {gs.game_specific['lily_counter']} (" + ('next Lily drops Life Piece' if gs.game_specific['lily_counter'] % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
-        
+
         if gs.game_specific['active_cards']:
             print("\nList of active cards:")
             print("  ID   Internal Name   Nickname    Charge / Max     %")
@@ -573,10 +542,10 @@ def print_game_state(gs: GameState):
                 description += tabulate(card.charge, 6) + " / "
                 description += tabulate(card.charge_max, 8)
                 description += tabulate(f"{round(100*card.charge / card.charge_max, 2):.3g}%", 6)
-                
+
                 if card.selected:
                     description += " (selected)"
-                    
+
                 print(description)
 
     elif game_id == 19: #UDoALG
@@ -592,24 +561,26 @@ def print_game_state(gs: GameState):
         if gs.game_specific['pvp_timer_start']:
             print(f"| UDoALG PvP Timer: {round(gs.game_specific['pvp_timer']/60)} / {round(gs.game_specific['pvp_timer_start']/60)}")
 
-        print(f"| UDoALG Max Rank: {gs.game_specific['rank_max']}")
         if gs.game_specific['side2']:
             print("| UDoALG P2 side data included in state.")
 
     #======================================
     # Game entity prints (all optional) ===
-    if gs.bullets: #Bullets
+    if gs.bullets and any(bullet.is_active for bullet in gs.bullets): #Bullets
         counter = 0
         print("\nList of bullets:")
-        print("  Position         Velocity         Speed   Angle   Radius  Color       Type")
+        print("  Position         Velocity         Speed   Angle   Radius  Color        Type")
         for bullet in gs.bullets:
+            if not bullet.is_active:
+                continue
+
             description = "• "
             description += tabulate(f"({round(bullet.position[0], 1)}, {round(bullet.position[1], 1)})", 17)
             description += tabulate(f"({round(bullet.velocity[0], 1)}, {round(bullet.velocity[1], 1)})", 17)
             description += tabulate(round(bullet.speed, 1), 8)
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
-            description += tabulate(get_color(bullet.bullet_type, bullet.color), 12)
+            description += tabulate(get_color(bullet.bullet_type, bullet.color), 13)
 
             #account for mono-color sprites
             bullet_type = sprites[bullet.bullet_type][0]
@@ -619,20 +590,21 @@ def print_game_state(gs: GameState):
             description += tabulate(bullet_type, 15)
 
             #not in table since rare
-            if bullet.iframes > 0: 
-                description += f" ({bullet.iframes} iframes)" 
+            if bullet.iframes > 0:
+                description += f" ({bullet.iframes} iframes)"
 
-            if bullet.show_delay and bullet.show_delay > 0: 
-                description += f" ({bullet.show_delay} invis frames)" 
+            if hasattr(bullet, 'show_delay') and bullet.show_delay > 0:
+                description += f" ({bullet.show_delay} invis. frames)"
+
 
             if bullet.scale != 1:
-                description += f" (scale: {round(bullet.scale, 2)}x)" 
-                
+                description += f" (scale: {round(bullet.scale, 2)}x)"
+
             print(description)
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(f'• ... [{len(gs.bullets)} bullets total]')
+                print(f'• ... [{len(gs.bullets)} active bullets total]')
                 break
 
     if gs.lasers: #Lasers
@@ -640,7 +612,7 @@ def print_game_state(gs: GameState):
         infinite_lasers = [laser for laser in gs.lasers if laser.laser_type == 1]
         curve_lasers = [laser for laser in gs.lasers if laser.laser_type == 2]
         beam_lasers = [laser for laser in gs.lasers if laser.laser_type == 3]
-        
+
         if line_lasers:
             counter = 0
             print("\nList of segment (\"line\") lasers:")
@@ -655,14 +627,14 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
-                
+
                 print(description)
-                
+
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
                     print(f'• ... [{len(line_lasers)} line lasers total]')
                     break
-            
+
         if infinite_lasers:
             counter = 0
             print("\nList of telegraphed (\"infinite\") lasers:")
@@ -676,7 +648,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(f"{round(laser.length, 1)} ({int(100*laser.length/laser.max_length)}%)", 14)
                 description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.max_width)}%)", 14)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
-                
+
                 if laser.state == 3:
                     description += f"Telegraph ({laser.start_time - laser.timer}f)"
                 elif laser.state == 4:
@@ -687,14 +659,14 @@ def print_game_state(gs: GameState):
                     description += f"Shrink ({laser.shrink_time - laser.timer}f)"
                 else:
                     description += "Unknown"
-                
+
                 print(description)
-                
+
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
                     print(f'• ... [{len(infinite_lasers)} telegraphed lasers total]')
                     break
-            
+
         if curve_lasers:
             counter = 0
             print("\nList of curvy lasers:")
@@ -709,15 +681,15 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_curve_color(laser.sprite, laser.color), 8)
-                description += tabulate(curve_sprites[laser.sprite], 8)
-                
+                description += tabulate(curve_sprites[laser.sprite], 10)
+
                 print(description)
-                
+
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
                     print(f'• ... [{len(curve_lasers)} curvy lasers total]')
                     break
-            
+
         if beam_lasers:
             counter = 0
             print("\nList of beam lasers:")
@@ -732,9 +704,9 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color), 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
-                
+
                 print(description)
-                
+
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
                     print(f'• ... [{len(beam_lasers)} beam lasers total]')
@@ -753,24 +725,31 @@ def print_game_state(gs: GameState):
             description += tabulate(enemy.iframes, 9)
             description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
 
+            type = ""
             if enemy.anm_page == 2:
                 if enemy.anm_id in enemy_anms:
-                    description += enemy_anms[enemy.anm_id]
+                    type = enemy_anms[enemy.anm_id]
                 else:
-                    description += f"Unknown #{enemy.anm_id}"
+                    type = f"Unknown #{enemy.anm_id}"
             elif enemy.anm_page == 0 or enemy.anm_page > 2:
                 if enemy.is_boss:
                     if enemy.subboss_id == 0:
-                        description += "Boss"
+                        type = "Boss"
                     else:
-                        description += f"Sub-boss #{enemy.subboss_id}"
+                        type = f"Sub-boss #{enemy.subboss_id}"
                 else:
-                    description += "Boss-specific"
+                    type = "Boss-specific"
             else:
-                description += f"Unknown {enemy.anm_page}/{enemy.anm_id}"
+                type = f"Unknown {enemy.anm_page}/{enemy.anm_id}"
+            description += tabulate(type, 16)
 
-            if not enemy.has_hitbox:
+            #not in table since rare
+            if enemy.no_hurtbox:
+                description += " (Hurtbox Off)"
+            if enemy.no_hitbox:
                 description += " (Hitbox Off)"
+            if enemy.invincible:
+                description += " (Invincible)"
 
             print(description)
 
@@ -782,12 +761,12 @@ def print_game_state(gs: GameState):
     if gs.mode == 7 and gs.items: #Items
         counter = 0
         print("\nList of items:")
-        print("  Type              Position         Velocity")
+        print("  Position         Velocity         Type")
         for item in gs.items:
             description = "• "
-            description += tabulate(item.item_type + ' Item', 18)
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
+            description += item.item_type
             print(description)
 
             counter += 1
@@ -795,8 +774,6 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.items)} items total]')
                 break
 
-
-#easy static stuff to grab (difficulty, stage etc) that's not worth tracking in state
 def print_untracked_vars():
     print("[Bonus] Untracked values:")
     print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")
@@ -811,8 +788,11 @@ def print_untracked_vars():
 
     print(f"| Difficulty: {difficulties[read_int(difficulty, rel=True)]}")
     print(f"| Stage #: {read_int(stage, rel=True)}")
+    print(f"| Continues: {read_int(continues, rel=True)}")
 
     if game_id == 19:
+        print(f"| UDoALG Max Rank: {read_int(rank_max, rel=True)}")
+
         print(f"\n| UDoALG P1 Card Count: {read_int(zAbilityManager + zAbilityManager_total_cards)}")
         print(f"| UDoALG P1 Charge Attack Threshold: {read_int(charge_attack_threshold, rel=True)}")
         print(f"| UDoALG P1 Charge Skill Threshold: {read_int(skill_attack_threshold, rel=True)}")

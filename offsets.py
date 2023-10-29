@@ -49,6 +49,7 @@ class UntrackedStaticsOffsets:
     subshot: int
     difficulty: int
     stage: int
+    continues: int
 
 @dataclass
 class PlayerOffsets:
@@ -57,6 +58,11 @@ class PlayerOffsets:
     zPlayer_hit_rad: int
     zPlayer_iframes: int
     zPlayer_focused: int
+
+@dataclass
+class BombOffsets:
+    bomb_pointer: int
+    zBomb_state: int
 
 @dataclass 
 class BulletOffsets:
@@ -88,7 +94,7 @@ class EnemyOffsets:
     zEnemy_hp: int
     zEnemy_hp_max: int
     zEnemy_iframes: int
-    zEnemy_flags: int   #"flags_low"
+    zEnemy_flags: int #"flags_low"
     zEnemy_subboss_id: int
 
 @dataclass
@@ -202,9 +208,12 @@ class Associations:
     characters: List[str]
     subshots: List[str]
     difficulties: List[str]
-    zEnemyFlags_is_boss: int
-    zEnemyFlags_intangible: int
+    zEnemyFlags_no_hurtbox: int
     zEnemyFlags_no_hitbox: int
+    zEnemyFlags_invincible: int
+    zEnemyFlags_intangible: int
+    zEnemyFlags_is_rectangle: int
+    zEnemyFlags_is_boss: int
     life_piece_req: int
     bomb_piece_req: int
     world_width: int
@@ -215,6 +224,7 @@ class Offset:
     statics: StaticsOffsets
     statics_untracked: UntrackedStaticsOffsets
     player: PlayerOffsets
+    bomb: BombOffsets
     bullets: BulletOffsets
     enemies: EnemyOffsets
     items: ItemOffsets
@@ -335,13 +345,18 @@ offsets = {
             subshot         = 0xf582c,
             difficulty      = 0xf5834,
             stage           = 0xf58a4,
+            continues       = 0xf5838,
         ),
         player = PlayerOffsets(
-            player_pointer  = 0xdb67C,
+            player_pointer  = 0xdb67c,
             zPlayer_pos     = 0x5e0,
             zPlayer_hit_rad = 0x648,
             zPlayer_iframes = 0x182c4,
             zPlayer_focused = 0x184b0,
+        ),
+        bomb = BombOffsets(
+            bomb_pointer = 0xdb52c,
+            zBomb_state = 0x40,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xdb530,
@@ -473,9 +488,12 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya'],
             subshots      = ['A', 'B'],
             difficulties  = usual_difficulties,
-            zEnemyFlags_is_boss    = 0x800000,
-            zEnemyFlags_intangible = 0x20,
-            zEnemyFlags_no_hitbox  = 0x2,
+            zEnemyFlags_no_hurtbox   = 2**0,
+            zEnemyFlags_no_hitbox    = 2**1,
+            zEnemyFlags_invincible   = 2**4,
+            zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_rectangle = 2**12,
+            zEnemyFlags_is_boss      = 2**23,
             life_piece_req = 3,
             bomb_piece_req = 8,
             world_width = usual_world_width,
@@ -483,7 +501,7 @@ offsets = {
         ),
         game_specific = {
             'zBullet_ex_delay_timer': 0x12ec,
-            'seija_anm_pointer': 0xd8f60 + 0x1c8,
+            'seija_anm_pointer': 0xd9128,
             'seija_flip_x': 0x60,
             'seija_flip_y': 0x64,
             'zPlayer_scale': 0x18308,
@@ -706,6 +724,7 @@ offsets = {
             subshot         = 0xCCCF8,
             difficulty      = 0xCCD00,
             stage           = 0xCCCDC,
+            continues       = 0xCCD04,
         ),
         player = PlayerOffsets(
             player_pointer  = 0xCF410,
@@ -713,6 +732,10 @@ offsets = {
             zPlayer_hit_rad = 0x4799C,
             zPlayer_iframes = 0x47778,
             zPlayer_focused = 0x476CC,
+        ),
+        bomb = BombOffsets(
+            bomb_pointer = 0xCF2B8,
+            zBomb_state = 0x30,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xCF2BC,
@@ -844,9 +867,12 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
             subshots      = ['N/A'],
             difficulties  = usual_difficulties,
-            zEnemyFlags_is_boss    = 0x800000,
-            zEnemyFlags_intangible = 0x20,
-            zEnemyFlags_no_hitbox  = 0x2,
+            zEnemyFlags_no_hurtbox   = 2**0,
+            zEnemyFlags_no_hitbox    = 2**1,
+            zEnemyFlags_invincible   = 2**4,
+            zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_rectangle = 2**12,
+            zEnemyFlags_is_boss      = 2**23,
             life_piece_req = 3,
             bomb_piece_req = 3,
             world_width = usual_world_width,
@@ -895,6 +921,7 @@ offsets = {
             subshot         = 0x207920,
             difficulty      = 0x207a90,
             stage           = 0x2082C0,
+            continues       = 0x207a9c,
         ),
         player = PlayerOffsets(
             player_pointer  = 0x1ae474,
@@ -902,6 +929,10 @@ offsets = {
             zPlayer_hit_rad = 0x20c4,
             zPlayer_iframes = 0x2078,
             zPlayer_focused = 0x2070,
+        ),
+        bomb = BombOffsets(
+            bomb_pointer = 0x1ae48c,
+            zBomb_state = 0x18,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0x1ae470,
@@ -1033,9 +1064,12 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             subshots      = ['N/A'],
             difficulties  = usual_difficulties,
-            zEnemyFlags_is_boss    = 0x40,
-            zEnemyFlags_intangible = 0x20,
-            zEnemyFlags_no_hitbox  = 0x2,
+            zEnemyFlags_no_hurtbox   = 2**0,
+            zEnemyFlags_no_hitbox    = 2**1,
+            zEnemyFlags_invincible   = 2**4,
+            zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_rectangle = 2**12,
+            zEnemyFlags_is_boss      = 2**6,
             life_piece_req = None, #note: not in this game
             bomb_piece_req = 3,
             world_width = 296,
@@ -1065,6 +1099,7 @@ offsets = {
             #P2 Struct Pointers
             'p2_bullet_manager_pointer': 0x1ae4ac,
             'p2_player_pointer': 0x1ae4b0,
+            'p2_bomb_pointer': 0x1ae4c8,
             'p2_enemy_manager_pointer': 0x1ae4b4,
             'p2_item_manager_pointer': 0x1ae4b8,
             'p2_spellcard_pointer': 0x1ae4bc,
@@ -1133,6 +1168,7 @@ offsets = {
 #            subshot         = None,
 #            difficulty      = None,
 #            stage           = None,
+#            continues       = None,
 #        ),
 #        player = PlayerOffsets(
 #            player_pointer  = None,
@@ -1140,6 +1176,10 @@ offsets = {
 #            zPlayer_hit_rad = None,
 #            zPlayer_iframes = None,
 #            zPlayer_focused = None,
+#        ),
+#        bomb = BombOffsets(
+#            bomb_pointer = None,
+#            zBomb_state = None,
 #        ),
 #        bullets = BulletOffsets(
 #            bullet_manager_pointer = None,

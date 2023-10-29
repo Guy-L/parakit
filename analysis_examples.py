@@ -55,9 +55,9 @@ class AnalysisCloseBulletsOverTime(Analysis):
         if state.bullets:
             nearby_bullets = 0
             for bullet in state.bullets:
-                if bullet.show_delay == 0 and math.dist(state.player_position, bullet.position) < self.radius:
+                if math.dist(state.player_position, bullet.position) < self.radius and bullet.is_active and (not hasattr(bullet, 'show_delay') or bullet.show_delay == 0):
                     nearby_bullets = nearby_bullets + 1
-                    
+
             self.bulletcounts.append(nearby_bullets)
 
     def done(self):
@@ -148,7 +148,7 @@ class AnalysisPlotBullets(AnalysisPlot):
             y_coords = [bullet.position[1] for bullet in bullets]
             colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in bullets]
             sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
-            alphas = [0.05 if bullet.show_delay else 1 for bullet in bullets]
+            alphas = [0.1 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 1 for bullet in bullets]
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
 
@@ -167,14 +167,42 @@ class AnalysisPlotEnemies(AnalysisPlot):
             for enemy in enemies:
                 color_rgb = mcolors.to_rgba(enemy_color(enemy.anm_page, enemy.anm_id))
 
-                ax.add_patch(Ellipse(
-                    (enemy.position[0], enemy.position[1]),
-                    width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
-                    height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
-                    angle = np.degrees(enemy.rotation),
-                    facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 1 if enemy.has_hitbox else 0.5),
-                    edgecolor=(0, 0, 0, 0.3), linewidth=3
-                ))
+                if enemy.is_rectangle:
+                    ax.add_patch(Rectangle( #plot rectangular enemy hitbox
+                        (enemy.position[0]-enemy.hitbox[0]/2, enemy.position[1]-enemy.hitbox[1]/2),
+                        width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
+                        height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
+                        angle = np.degrees(enemy.rotation),
+                        facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
+                        edgecolor = (0, 0, 0, 0.3), linewidth=3
+                    ))
+
+                    if plot_enemy_hurtbox:
+                        ax.add_patch(Rectangle( #plot rectangular enemy hurtbox
+                            (enemy.position[0]-enemy.hurtbox[0]/2, enemy.position[1]-enemy.hurtbox[1]/2),
+                            width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
+                            height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
+                            angle = np.degrees(enemy.rotation),
+                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hurtbox else 0.5), linewidth=1.5, fill = False
+                        ))
+                else:
+                    ax.add_patch(Ellipse( #plot circular enemy hitbox
+                        (enemy.position[0], enemy.position[1]),
+                        width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
+                        height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
+                        angle = np.degrees(enemy.rotation),
+                        facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
+                        edgecolor = (0, 0, 0, 0.3), linewidth=3
+                    ))
+
+                    if plot_enemy_hurtbox:
+                        ax.add_patch(Ellipse( #plot circular enemy hurtbox
+                            (enemy.position[0], enemy.position[1]),
+                            width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
+                            height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
+                            angle = np.degrees(enemy.rotation),
+                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hurtbox else 0.5), linewidth=1.5, fill = False
+                        ))
 
         else:
             print(("(Player 2) " if side2 else "") + "No enemies to plot.")

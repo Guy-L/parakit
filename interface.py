@@ -85,6 +85,7 @@ character  = offsets[_module_name].statics_untracked.character
 subshot    = offsets[_module_name].statics_untracked.subshot
 difficulty = offsets[_module_name].statics_untracked.difficulty
 stage      = offsets[_module_name].statics_untracked.stage
+continues  = offsets[_module_name].statics_untracked.continues
 
 # Player
 player_pointer  = offsets[_module_name].player.player_pointer
@@ -92,6 +93,10 @@ zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
 zPlayer_hit_rad = offsets[_module_name].player.zPlayer_hit_rad
 zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
 zPlayer_focused = offsets[_module_name].player.zPlayer_focused
+
+# Bomb
+bomb_pointer = offsets[_module_name].bomb.bomb_pointer
+zBomb_state  = offsets[_module_name].bomb.zBomb_state
 
 # Bullets
 bullet_manager_pointer = offsets[_module_name].bullets.bullet_manager_pointer
@@ -125,9 +130,12 @@ zEnemy_iframes        = offsets[_module_name].enemies.zEnemy_iframes
 zEnemy_flags          = offsets[_module_name].enemies.zEnemy_flags
 zEnemy_subboss_id     = offsets[_module_name].enemies.zEnemy_subboss_id
 
-zEnemyFlags_is_boss    = offsets[_module_name].associations.zEnemyFlags_is_boss
-zEnemyFlags_intangible = offsets[_module_name].associations.zEnemyFlags_intangible
-zEnemyFlags_no_hitbox  = offsets[_module_name].associations.zEnemyFlags_no_hitbox
+zEnemyFlags_no_hurtbox   = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
+zEnemyFlags_no_hitbox    = offsets[_module_name].associations.zEnemyFlags_no_hitbox
+zEnemyFlags_invincible   = offsets[_module_name].associations.zEnemyFlags_invincible
+zEnemyFlags_intangible   = offsets[_module_name].associations.zEnemyFlags_intangible
+zEnemyFlags_is_rectangle = offsets[_module_name].associations.zEnemyFlags_is_rectangle
+zEnemyFlags_is_boss      = offsets[_module_name].associations.zEnemyFlags_is_boss
 
 # Items
 item_manager_pointer   = offsets[_module_name].items.item_manager_pointer
@@ -263,6 +271,7 @@ elif game_id == 19:
 
     p2_bullet_manager_pointer  = offsets[_module_name].game_specific['p2_bullet_manager_pointer']
     p2_player_pointer          = offsets[_module_name].game_specific['p2_player_pointer']
+    p2_bomb_pointer            = offsets[_module_name].game_specific['p2_bomb_pointer']
     p2_enemy_manager_pointer   = offsets[_module_name].game_specific['p2_enemy_manager_pointer']
     p2_item_manager_pointer    = offsets[_module_name].game_specific['p2_item_manager_pointer']
     p2_spellcard_pointer       = offsets[_module_name].game_specific['p2_spellcard_pointer']
@@ -402,8 +411,8 @@ def save_screenshot(filename, screenshot):
     bgr_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
     cv2.imwrite(filename, bgr_screenshot)
 
-def read_int(offset, bytes = 4, rel = False):
-    return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little')
+def read_int(offset, bytes = 4, rel = False, signed = False):
+    return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little', signed=signed)
 
 def read_float(offset, rel = False):
     return struct.unpack('f', _read_memory(offset, 4, rel))[0]

@@ -44,7 +44,7 @@ from interface import enemy_anms, world_width, world_height, color16, np
 from scipy.ndimage import uniform_filter
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from matplotlib.patches import Ellipse, Circle
+from matplotlib.patches import Ellipse, Circle, Rectangle
 import math
 
 #cursed pyplot stuff, idem
