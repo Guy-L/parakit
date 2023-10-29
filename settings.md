@@ -47,6 +47,7 @@ Settings for sequence extraction, in which the state of the game is repeatedly e
 | **`auto_unpause`**<br>(bool) | If enabled, automatically unpauses the game when extraction is started. | `False` |
 | **`auto_repause`**<br>(bool) | If enabled, automatically pauses the game when extraction is finished. | `True` |
 | **`need_active`**<br>(bool) | If enabled, terminates extraction when the game window goes out of focus. | `False` |
+| **`infinite_print_updates`**<br>(bool) | If enabled, per-frame extraction update lines will be printed during infinite extraction. **Note**: When disabled, it may look like the program is unresponsive on the terminal unless you add your own printing in your analysis' `step` method. | `True` |
 
 ## Game-World Plotting Settings (Analysis)
 Settings used by sample game world entity plotting analyses.

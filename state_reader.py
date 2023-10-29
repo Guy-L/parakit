@@ -11,6 +11,7 @@ import atexit
 analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_max_curve_data, requires_side2_pvp = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
+infinite_print_updates = seqext_settings['infinite_print_updates']
 
 zPlayer        = read_int(player_pointer, rel=True)
 zBomb          = read_int(bomb_pointer, rel=True)
@@ -962,7 +963,8 @@ else: #State Sequence Extraction
 
         frame_timestamp = read_int(stage_timer)
         if infinite:
-            print(f"Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+            if infinite_print_updates:
+                print(f"Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
         else:
             print(f"[{int(100*frame_counter/frame_count)}%] Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
 

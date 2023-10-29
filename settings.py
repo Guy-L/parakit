@@ -32,18 +32,19 @@ extraction_settings = {
 singlext_settings = {
     'show_untracked': False,
     'only_game_world': True,
-    'list_print_limit': 30
+    'list_print_limit': 30,
 }
 
 # Sequence Extraction Settings 
 # See settings.md for more info.
 seqext_settings = {
-    'ingame_duration': '',      #e.g. '520f', '12.4s', etc. or 'infinite'
-    'exact':           True,
-    'auto_focus':      True,
-    'auto_unpause':    False,
-    'auto_repause':    True,
-    'need_active':     False
+    'ingame_duration':        '', #e.g. '520f', '12.4s', etc. or 'infinite', 'inf'
+    'exact':                  True,
+    'auto_focus':             True,
+    'auto_unpause':           False,
+    'auto_repause':           True,
+    'need_active':            False,
+    'infinite_print_updates': True,
 }
 
 # Game-World Plotting Settings (Analysis)

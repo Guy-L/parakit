@@ -1021,7 +1021,7 @@ offsets = {
         laser_line = LaserLineOffsets(
             zLaserLine_start_pos  = 0x888,
             zLaserLine_mgr_angle  = 0x894,
-            zLaserLine_max_length = 0x89c,
+            zLaserLine_max_length = 0x898,
             zLaserLine_mgr_speed  = 0x8a8,
             zLaserLine_distance   = 0x8b4,
         ),
