@@ -2,4 +2,4 @@ from datetime import datetime, timezone
 
 #note for contributors: this should always be set to a couple minutes in the future when pushing
 #there is a pre-commit hook that will do this for you, see end of README.md
-VERSION_DATE = datetime(2023, 10, 29, 21, 31, 40, tzinfo=timezone.utc)
+VERSION_DATE = datetime(2023, 10, 29, 22, 30, 9, tzinfo=timezone.utc)

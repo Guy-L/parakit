@@ -27,7 +27,7 @@ if game_id == 14:
 
 elif game_id == 19:
     zGaugeManager = read_int(gauge_manager_pointer, rel=True)
-    
+
     if requires_side2_pvp:
         zPlayerP2         = read_int(p2_player_pointer, rel=True)
         zBombP2           = read_int(p2_bomb_pointer, rel=True)
@@ -74,7 +74,7 @@ def extract_bullets(bullet_manager = zBulletManager):
             bullet['show_delay'] = read_int(zBullet + zBullet_ex_delay_timer)
             bullets.append(ShowDelayBullet(**bullet))
 
-        if game_id == 15:
+        elif game_id == 15:
             bullet['graze_timer'] = read_int(zBullet + zBullet_graze_timer)
             bullets.append(GrazeTimerBullet(**bullet))
 
@@ -310,27 +310,27 @@ def extract_spellcard(spellcard = zSpellCard):
     )
 
 def extract_game_state(frame_id = None, real_time = None):
-    game_specific = {}
+    game_specific = None
 
     if game_id == 14:
-        game_specific = {
-            'bonus_count': read_int(bonus_count, rel=True),
-            'player_scale': read_float(zPlayer + zPlayer_scale),
-            'seija_flip': (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y))
-        }
+        game_specific = GameSpecificDDC(
+            bonus_count  = read_int(bonus_count, rel=True),
+            player_scale = read_float(zPlayer + zPlayer_scale),
+            seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
+        )
 
     elif game_id == 15:
-        game_specific = {
-            'item_graze_slowdown_factor': read_float(zItemManager + zItemManager_graze_slowdown_factor),
-            'reisen_bomb_shields': read_int(zBomb + zBomb_reisen_shields),
-            'time_in_chapter': read_int(time_in_chapter, rel=True),
-            'chapter_graze': read_int(chapter_graze, rel=True),
-            'chapter_enemy_weight_spawned': read_int(chapter_enemy_weight_spawned, rel=True),
-            'chapter_enemy_weight_destroyed': read_int(chapter_enemy_weight_destroyed, rel=True),
-            'in_pointdevice': read_int(modeflags, rel=True) & 2**8 != 0,
-            'pointdevice_resets_total': read_int(pointdevice_resets_total, rel=True),
-            'pointdevice_resets_chapter': read_int(pointdevice_resets_chapter, rel=True),
-        }
+        game_specific = GameSpecificLoLK(
+            item_graze_slowdown_factor     = read_float(zItemManager + zItemManager_graze_slowdown_factor),
+            reisen_bomb_shields            = read_int(zBomb + zBomb_reisen_shields),
+            time_in_chapter                = read_int(time_in_chapter, rel=True),
+            chapter_graze                  = read_int(chapter_graze, rel=True),
+            chapter_enemy_weight_spawned   = read_int(chapter_enemy_weight_spawned, rel=True),
+            chapter_enemy_weight_destroyed = read_int(chapter_enemy_weight_destroyed, rel=True),
+            in_pointdevice                 = read_int(modeflags, rel=True) & 2**8 != 0,
+            pointdevice_resets_total       = read_int(pointdevice_resets_total, rel=True),
+            pointdevice_resets_chapter     = read_int(pointdevice_resets_chapter, rel=True),
+        )
 
     elif game_id == 18:
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
@@ -371,16 +371,16 @@ def extract_game_state(frame_id = None, real_time = None):
                 selected      = zCard == selected_active
             ))
 
-        game_specific = {
-            'funds': read_int(funds, rel=True),
-            'total_cards': read_int(zAbilityManager + zAbilityManager_total_cards),
-            'total_actives': read_int(zAbilityManager + zAbilityManager_total_actives),
-            'total_equipmt': read_int(zAbilityManager + zAbilityManager_total_equipmt),
-            'total_passive': read_int(zAbilityManager + zAbilityManager_total_passive),
-            'lily_counter': lily_counter,
-            'centipede_multiplier': centipede_multiplier,
-            'active_cards': active_cards,
-        }
+        game_specific = GameSpecificUM(
+            funds                = read_int(funds, rel=True),
+            total_cards          = read_int(zAbilityManager + zAbilityManager_total_cards),
+            total_actives        = read_int(zAbilityManager + zAbilityManager_total_actives),
+            total_equipmt        = read_int(zAbilityManager + zAbilityManager_total_equipmt),
+            total_passive        = read_int(zAbilityManager + zAbilityManager_total_passive),
+            lily_counter         = lily_counter,
+            centipede_multiplier = centipede_multiplier,
+            active_cards         = active_cards,
+        )
 
     elif game_id == 19:
         side2 = None
@@ -420,25 +420,25 @@ def extract_game_state(frame_id = None, real_time = None):
                 pvp_wins            = read_int(p2_pvp_wins, rel=True),
             )
 
-        game_specific = {
-            'lives_max':           read_int(lives_max, rel=True),
-            'hitstun_status':      read_int(zPlayer + zPlayer_hitstun_status),
-            'shield_status':       read_int(zPlayer + zPlayer_shield_status),
-            'last_combo_hits':     read_int(zPlayer + zPlayer_last_combo_hits),
-            'current_combo_hits':  read_int(zPlayer + zPlayer_current_combo_hits),
-            'current_combo_chain': read_int(zPlayer + zPlayer_current_combo_chain),
-            'enemy_pattern_count': read_int(zEnemyManager + zEnemyManager_pattern_count),
-            'item_spawn_total':    read_int(zItemManager + zItemManager_spawn_total),
-            'gauge_charging':      read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
-            'gauge_charge':        read_int(zGaugeManager + zGaugeManager_gauge_charge),
-            'gauge_fill':          read_int(zGaugeManager + zGaugeManager_gauge_fill),
-            'ex_attack_level':     read_int(ex_attack_level, rel=True),
-            'boss_attack_level':   read_int(boss_attack_level, rel=True),
-            'pvp_wins':            read_int(pvp_wins, rel=True),
-            'side2': side2,
-            'pvp_timer_start': read_int(pvp_timer_start, rel=True),
-            'pvp_timer': read_int(pvp_timer, rel=True),
-        }
+        game_specific = GameSpecificUDoALG(
+            lives_max =           read_int(lives_max, rel=True),
+            hitstun_status =      read_int(zPlayer + zPlayer_hitstun_status),
+            shield_status =       read_int(zPlayer + zPlayer_shield_status),
+            last_combo_hits =     read_int(zPlayer + zPlayer_last_combo_hits),
+            current_combo_hits =  read_int(zPlayer + zPlayer_current_combo_hits),
+            current_combo_chain = read_int(zPlayer + zPlayer_current_combo_chain),
+            enemy_pattern_count = read_int(zEnemyManager + zEnemyManager_pattern_count),
+            item_spawn_total =    read_int(zItemManager + zItemManager_spawn_total),
+            gauge_charging =      read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
+            gauge_charge =        read_int(zGaugeManager + zGaugeManager_gauge_charge),
+            gauge_fill =          read_int(zGaugeManager + zGaugeManager_gauge_fill),
+            ex_attack_level =     read_int(ex_attack_level, rel=True),
+            boss_attack_level =   read_int(boss_attack_level, rel=True),
+            pvp_wins =            read_int(pvp_wins, rel=True),
+            side2 =               side2,
+            pvp_timer_start =     read_int(pvp_timer_start, rel=True),
+            pvp_timer =           read_int(pvp_timer, rel=True),
+        )
 
     boss_timer = -1
     if (game_id in has_boss_timer_drawn_if_indic_zero) == (read_int(zGui+zGui_bosstimer_drawn) == 0):
@@ -519,68 +519,68 @@ def print_game_state(gs: GameState):
     #======================================
     # Game-specific prints ================
     if game_id == 14: #DDC
-        print(f"| DDC Bonus Count: {gs.game_specific['bonus_count']}")
+        print(f"| DDC Bonus Count: {gs.game_specific.bonus_count}")
 
-        if gs.game_specific['seija_flip'][0] != 1:
-            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific['seija_flip'][0]+1)/2, 2)}%")
+        if gs.game_specific.seija_flip[0] != 1:
+            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific.seija_flip[0]+1)/2, 2)}%")
 
-        if gs.game_specific['seija_flip'][1] != 1:
-            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.game_specific['seija_flip'][1]+1)/2, 2)}%")
+        if gs.game_specific.seija_flip[1] != 1:
+            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.game_specific.seija_flip[1]+1)/2, 2)}%")
 
-        if gs.game_specific['player_scale'] > 1:
-            print(f"| DDC Player Scale: grew {round(gs.game_specific['player_scale'], 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific['player_scale'], 2)})")
+        if gs.game_specific.player_scale > 1:
+            print(f"| DDC Player Scale: grew {round(gs.game_specific.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific.player_scale, 2)})")
 
     elif game_id == 15: #LoLK
         chapter = "Chapter"
         if gs.stage_chapter:
             chapter = f"S{read_int(stage, rel=True)}C{gs.stage_chapter+1}"
 
-        chapter_desc = f"{gs.game_specific['chapter_graze']} graze; "
-        chapter_desc += f"shootdown {gs.game_specific['chapter_enemy_weight_destroyed']}/{gs.game_specific['chapter_enemy_weight_spawned']}"
-        if gs.game_specific['chapter_enemy_weight_spawned'] > 0:
-            chapter_desc += f" ({round(100*gs.game_specific['chapter_enemy_weight_destroyed']/gs.game_specific['chapter_enemy_weight_spawned'],1)}%)"
-        chapter_desc += f"; frame #{gs.game_specific['time_in_chapter']}"
+        chapter_desc = f"{gs.game_specific.chapter_graze} graze; "
+        chapter_desc += f"shootdown {gs.game_specific.chapter_enemy_weight_destroyed}/{gs.game_specific.chapter_enemy_weight_spawned}"
+        if gs.game_specific.chapter_enemy_weight_spawned > 0:
+            chapter_desc += f" ({round(100*gs.game_specific.chapter_enemy_weight_destroyed/gs.game_specific.chapter_enemy_weight_spawned,1)}%)"
+        chapter_desc += f"; frame #{gs.game_specific.time_in_chapter}"
         print(f"| LoLK {chapter}: {chapter_desc}")
 
-        if gs.game_specific['in_pointdevice']:
-            print(f"| LoLK Pointdevice: {gs.game_specific['pointdevice_resets_chapter']} chapter resets / {gs.game_specific['pointdevice_resets_total']} total resets")
+        if gs.game_specific.in_pointdevice:
+            print(f"| LoLK Pointdevice: {gs.game_specific.pointdevice_resets_chapter} chapter resets / {gs.game_specific.pointdevice_resets_total} total resets")
 
-        if gs.game_specific['item_graze_slowdown_factor'] < 1:
-            print(f"| LoLK Item Graze Slowdown: {round(gs.game_specific['item_graze_slowdown_factor'],1)}x")
+        if gs.game_specific.item_graze_slowdown_factor < 1:
+            print(f"| LoLK Item Graze Slowdown: {round(gs.game_specific.item_graze_slowdown_factor,1)}x")
 
-        if gs.game_specific['reisen_bomb_shields'] > 0:
-            print(f"| LoLK Reisen Bomb Shields: {gs.game_specific['reisen_bomb_shields']}")
+        if gs.game_specific.reisen_bomb_shields > 0:
+            print(f"| LoLK Reisen Bomb Shields: {gs.game_specific.reisen_bomb_shields}")
 
     elif game_id == 18: #UM
-        print(f"| UM Funds: {gs.game_specific['funds']:,}")
+        print(f"| UM Funds: {gs.game_specific.funds:,}")
 
         cards_breakdown = ""
-        if gs.game_specific['total_cards'] > 0:
+        if gs.game_specific.total_cards > 0:
             cards_breakdown += " ("
-            if gs.game_specific['total_actives'] > 0:
-                cards_breakdown += f"{gs.game_specific['total_actives']} active"
-            if gs.game_specific['total_equipmt'] > 0:
+            if gs.game_specific.total_actives > 0:
+                cards_breakdown += f"{gs.game_specific.total_actives} active"
+            if gs.game_specific.total_equipmt > 0:
                 if cards_breakdown != " (":
                     cards_breakdown += ", "
-                cards_breakdown += f"{gs.game_specific['total_equipmt']} equipment"
-            if gs.game_specific['total_passive'] > 0:
+                cards_breakdown += f"{gs.game_specific.total_equipmt} equipment"
+            if gs.game_specific.total_passive > 0:
                 if cards_breakdown != " (":
                     cards_breakdown += ", "
-                cards_breakdown += f"{gs.game_specific['total_passive']} passive"
+                cards_breakdown += f"{gs.game_specific.total_passive} passive"
             cards_breakdown += ")"
 
-        print(f"| UM Cards: {gs.game_specific['total_cards']}" + cards_breakdown)
+        print(f"| UM Cards: {gs.game_specific.total_cards}" + cards_breakdown)
 
-        if gs.game_specific['centipede_multiplier']:
-            print(f"| UM Centipede Multiplier: {gs.game_specific['centipede_multiplier']:.3f}x")
+        if gs.game_specific.centipede_multiplier:
+            print(f"| UM Centipede Multiplier: {gs.game_specific.centipede_multiplier:.3f}x")
 
-        if gs.game_specific['lily_counter'] != None:
-            print(f"| UM Lily Use Count: {gs.game_specific['lily_counter']} (" + ('next Lily drops Life Piece' if gs.game_specific['lily_counter'] % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
+        if gs.game_specific.lily_counter != None:
+            print(f"| UM Lily Use Count: {gs.game_specific.lily_counter} (" + ('next Lily drops Life Piece' if gs.game_specific.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
 
-        if gs.game_specific['active_cards']:
+        if gs.game_specific.active_cards:
             print("\nList of active cards:")
             print("  ID   Internal Name   Nickname    Charge / Max     %")
-            for card in gs.game_specific['active_cards']:
+            for card in gs.game_specific.active_cards:
                 description = "• "
                 description += tabulate(card.id, 5)
                 description += tabulate(card.internal_name, 16)
@@ -595,19 +595,19 @@ def print_game_state(gs: GameState):
                 print(description)
 
     elif game_id == 19: #UDoALG
-        print(f"| UDoALG Shield: {'Active' if gs.game_specific['shield_status'] == 1 else 'Broken'}; Max Lives: {gs.game_specific['lives_max']}")
-        print(f"| UDoALG Combo Hits: {gs.game_specific['current_combo_hits']}")
-        print(f"| UDoALG Item Spawn Total: {gs.game_specific['item_spawn_total']}")
+        print(f"| UDoALG Shield: {'Active' if gs.game_specific.shield_status == 1 else 'Broken'}; Max Lives: {gs.game_specific.lives_max}")
+        print(f"| UDoALG Combo Hits: {gs.game_specific.current_combo_hits}")
+        print(f"| UDoALG Item Spawn Total: {gs.game_specific.item_spawn_total}")
 
-        if gs.game_specific['gauge_charging']:
-            print(f"| UDoALG Gauge Charge: {gs.game_specific['gauge_charge']} / {gs.game_specific['gauge_fill']}")
-        print(f"| UDoALG Gauge Fill: {gs.game_specific['gauge_fill']} / 2500")
-        print(f"| UDoALG Attack Levels: Lv{gs.game_specific['ex_attack_level'] + 1} Ex, Lv{gs.game_specific['boss_attack_level'] + 1} Boss")
+        if gs.game_specific.gauge_charging:
+            print(f"| UDoALG Gauge Charge: {gs.game_specific.gauge_charge} / {gs.game_specific.gauge_fill}")
+        print(f"| UDoALG Gauge Fill: {gs.game_specific.gauge_fill} / 2500")
+        print(f"| UDoALG Attack Levels: Lv{gs.game_specific.ex_attack_level + 1} Ex, Lv{gs.game_specific.boss_attack_level + 1} Boss")
 
-        if gs.game_specific['pvp_timer_start']:
-            print(f"| UDoALG PvP Timer: {round(gs.game_specific['pvp_timer']/60)} / {round(gs.game_specific['pvp_timer_start']/60)}")
+        if gs.game_specific.pvp_timer_start:
+            print(f"| UDoALG PvP Timer: {round(gs.game_specific.pvp_timer/60)} / {round(gs.game_specific.pvp_timer_start/60)}")
 
-        if gs.game_specific['side2']:
+        if gs.game_specific.side2:
             print("| UDoALG P2 side data included in state.")
 
     #======================================
@@ -988,7 +988,7 @@ else: #State Sequence Extraction
     if not terminated:
         print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.")
 
-    if seqext_settings['auto_repause']:   
+    if seqext_settings['auto_repause']:
         pause_game()
 
     print("================================")

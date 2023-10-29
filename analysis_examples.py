@@ -83,7 +83,7 @@ class AnalysisPlot(Analysis, ABC):
         pass #custom plot behavior to be implemented
 
     def done(self):
-        if 'side2' in self.lastframe.game_specific and self.lastframe.game_specific['side2']:
+        if hasattr(self.lastframe.game_specific, 'side2') and self.lastframe.game_specific.side2:
             fig, axarr = plt.subplots(1, 2, figsize=((world_width/45) * plot_scale, 5.6 * plot_scale))
         else:
             axarr = [plt.subplots(figsize=((world_width/80) * plot_scale, 5.6 * plot_scale))[1]]
@@ -112,19 +112,19 @@ class AnalysisPlot(Analysis, ABC):
                     axarr[1].axis('off')
                 else:
                     axarr[1].set_title('Player 2')
-                    axarr[1].scatter(self.lastframe.game_specific['side2'].player_position[0], self.lastframe.game_specific['side2'].player_position[1], color='maroon', s=25*self.lastframe.game_specific['side2'].player_hitbox_rad, marker='X')
+                    axarr[1].scatter(self.lastframe.game_specific.side2.player_position[0], self.lastframe.game_specific.side2.player_position[1], color='maroon', s=25*self.lastframe.game_specific.side2.player_hitbox_rad, marker='X')
 
                 plt.show()
 
         else:
             player_scale = self.lastframe.player_hitbox_rad
             if game_id == 14:
-                player_scale *= self.lastframe.game_specific['player_scale']
+                player_scale *= self.lastframe.game_specific.player_scale
 
-                if self.lastframe.game_specific['seija_flip'][0] == -1:
+                if self.lastframe.game_specific.seija_flip[0] == -1:
                     axarr[0].invert_xaxis()
 
-                if self.lastframe.game_specific['seija_flip'][1] == -1:
+                if self.lastframe.game_specific.seija_flip[1] == -1:
                     axarr[0].invert_yaxis()
 
             elif game_id == 18:
@@ -141,7 +141,7 @@ class AnalysisPlotBullets(AnalysisPlot):
     plot_title = 'Scatter Plot of Extracted Bullet Positions'
 
     def plot(self, ax, side2):
-        bullets = self.lastframe.game_specific['side2'].bullets if side2 else self.lastframe.bullets
+        bullets = self.lastframe.game_specific.side2.bullets if side2 else self.lastframe.bullets
 
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
@@ -161,7 +161,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
     plot_title = 'Scatter Plot of Extracted Enemy Positions'
 
     def plot(self, ax, side2):
-        enemies = self.lastframe.game_specific['side2'].enemies if side2 else self.lastframe.enemies
+        enemies = self.lastframe.game_specific.side2.enemies if side2 else self.lastframe.enemies
 
         if enemies:
             for enemy in enemies:
@@ -213,7 +213,7 @@ class AnalysisPlotItems(AnalysisPlot):
     plot_title = 'Scatter Plot of Extracted Item Positions'
 
     def plot(self, ax, side2):
-        items = self.lastframe.game_specific['side2'].items if side2 else self.lastframe.items
+        items = self.lastframe.game_specific.side2.items if side2 else self.lastframe.items
 
         if items:
             x_coords = [item.position[0] for item in items]
@@ -232,7 +232,7 @@ class AnalysisPlotLineLasers(AnalysisPlot):
     plot_title = 'Plot of Extracted Line Lasers'
 
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific['side2'].lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
         hasLineLasers = False
 
         if lasers:
@@ -260,7 +260,7 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
     plot_title = 'Plot of Extracted Telegraphed Lasers'
     
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific['side2'].lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
         hasInfiniteLasers = False
 
         if lasers:
@@ -299,7 +299,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
         return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))        
 
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific['side2'].lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
         hasCurveLasers = False
 
         if lasers:
@@ -433,8 +433,8 @@ class AnalysisHookChapterTransition(Analysis):
         self.time_in_chapter = 0
 
     def step(self, state: GameState):
-        if 'time_in_chapter' in state.game_specific:
-            cur_time_in_chapter = state.game_specific['time_in_chapter']
+        if hasattr(state.game_specific, 'time_in_chapter'):
+            cur_time_in_chapter = state.game_specific.time_in_chapter
             if cur_time_in_chapter < self.time_in_chapter:
                 print("Chapter Transition!!")
 
@@ -448,10 +448,10 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
     plot_title = 'Scatter Plot of Bullets w/ Graze Timer Coloring'
 
     def plot(self, ax, side2):
-        bullets = self.lastframe.game_specific['side2'].bullets if side2 else self.lastframe.bullets
-
         if side2:
             return HIDE_P2
+
+        bullets = self.lastframe.bullets
 
         #if any bullet has it, we're in LoLK, so they all have it
         if self.lastframe.bullets and any(hasattr(bullet, 'graze_timer') for bullet in self.lastframe.bullets):
