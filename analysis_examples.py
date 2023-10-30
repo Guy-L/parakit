@@ -35,14 +35,14 @@ class AnalysisMostBulletsFrame(Analysis):
 # Ex2: "Track the number of bullets across time and plot that as a graph" [only requires bullets]
 class AnalysisBulletsOverTime(Analysis):
     def __init__(self):
-        self.bulletcounts = []
+        self.bullet_counts = []
 
     def step(self, state: GameState):
         if state.bullets:
-            self.bulletcounts.append(len(state.bullets))
+            self.bullet_counts.append(len(state.bullets))
 
     def done(self):
-        plt.plot(self.bulletcounts)
+        plt.plot(self.bullet_counts)
         plt.xlabel('Time (frames)')
         plt.ylabel('Bullets')
         plt.title('Bullet Count Over Time')
@@ -53,7 +53,7 @@ class AnalysisCloseBulletsOverTime(Analysis):
     radius = 100
 
     def __init__(self):
-        self.bulletcounts = []
+        self.bullet_counts = []
 
     def step(self, state: GameState):
         if state.bullets:
@@ -62,10 +62,10 @@ class AnalysisCloseBulletsOverTime(Analysis):
                 if math.dist(state.player_position, bullet.position) < self.radius and bullet.is_active and (not hasattr(bullet, 'show_delay') or bullet.show_delay == 0):
                     nearby_bullets = nearby_bullets + 1
 
-            self.bulletcounts.append(nearby_bullets)
+            self.bullet_counts.append(nearby_bullets)
 
     def done(self):
-        plt.plot(self.bulletcounts)
+        plt.plot(self.bullet_counts)
         plt.xlabel('Time (frames)')
         plt.ylabel(f'Bullets in a {self.radius} unit radius around player')
         plt.title('Bullet Count Over Time')
@@ -120,76 +120,84 @@ class AnalysisMostBulletsCircleFrame():
 # TODO: Heatmap version of ^^^ ?
 
 # =======================================================================
-# Dynamic (updating real time) examples =================================
+# Dynamic (updating real time) graph examples ===========================
 # =======================================================================
 
-# TODO: Make abstract base class for dynamic analyses
-
-# Dyn1: "Track the number of bullets across time and plot that as a graph" [only requires bullets]
-class AnalysisBulletsOverTimeDynamic(QtCore.QObject):
+# Dyn0: Abstract base class to factorize common dynamic graph code
+class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObject), type(ABC)), {})):
+    win_title = 'DEFAULT TITLE' #to be customized
     updateSignal = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
-        self.bulletcounts = []
+        self.bullet_counts = []
 
         self.app_thread = QtCore.QThread()
         self.moveToThread(self.app_thread)
-        self.app_thread.started.connect(self.start_app)
+        self.app_thread.started.connect(self._start_graph_thread)
         self.updateSignal.connect(self.update_plot)
 
         self.app_thread.start()
 
-    def start_app(self):
-        # Create a PyQt5 application
+    @abstractmethod
+    def setup_plot(self):
+        pass #to implement
+
+    @abstractmethod
+    def update_plot(self):
+        pass #to implement
+
+    @abstractmethod
+    def update_data(self, state):
+        pass #to implement
+
+    def _start_graph_thread(self):
         self.app = QApplication([])
 
-        # Create a window using GraphicsLayoutWidget
         self.win = pg.GraphicsLayoutWidget()
-        self.win.setWindowTitle('Bullet Count Over Time')
+        self.win.setWindowTitle(self.win_title)
         self.win.setWindowFlags(self.win.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-        self.win.show()  # This will make sure the window is visible
-
-        # Create a plot
-        self.plot = self.win.addPlot(title='Bullet Count Over Time')
-        self.plot.setLabel('left', 'Bullets')
-        self.plot.setLabel('bottom', 'Time (frames)')
-        self.curve = self.plot.plot(pen='y')
-
-        # Using a QTimer to update data
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_plot)
-        self.timer.start(10)
+        self.win.show()
+        self.setup_plot()
 
         self.app.exec_()
 
-        # Add this line to set up a mechanism for external shutdown:
-        self.app.aboutToQuit.connect(self.clean_up)
-
-    def clean_up(self):
-        # Clean up resources if needed
-        self.win.close()
-        self.timer.stop()
-
     def step(self, state):
-        if state.bullets:
-            self.bulletcounts.append(len(state.bullets))
+        self.update_data(state)
         self.updateSignal.emit()
-
-    def update_plot(self):
-        self.curve.setData(np.arange(len(self.bulletcounts)), self.bulletcounts)
-        QApplication.processEvents()
 
     def done(self):
         QtCore.QMetaObject.invokeMethod(self.app, "quit", QtCore.Qt.QueuedConnection)
         self.app_thread.quit()
         self.app_thread.wait()
 
+# Dyn1: "Track the number of bullets across time and plot that as a dynamic graph" [only requires bullets]
+# TODO: investigate spikes in non-exact mode
+class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
+    win_title = 'Bullet Count Over Time'
+
+    def __init__(self):
+        super().__init__()
+        self.bullet_counts = []
+
+    def setup_plot(self):
+        self.plot = self.win.addPlot(title=self.win_title)
+        self.plot.setLabel('left', 'Bullets')
+        self.plot.setLabel('bottom', 'Time (frames)')
+        self.curve = self.plot.plot(pen='y')
+
+    def update_plot(self):
+        self.curve.setData(np.arange(len(self.bullet_counts)), self.bullet_counts)
+
+    def update_data(self, state):
+        if state.bullets is not None:
+            self.bullet_counts.append(len(state.bullets))
+
 # =======================================================================
 # Game world snapshot plots =============================================
 # =======================================================================
 
-# Plot0: Abstract base class to factorize common plotting code
+# Plot0: Abstract base class to factorize common game-world plotting code
 class AnalysisPlot(Analysis, ABC):
     plot_title = 'DEFAULT PLOT TITLE' #to be customized
     lastframe = None
@@ -511,7 +519,35 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
 # Dynamic Game world plots ==============================================
 # =======================================================================
 
-# TODO
+# DynPlot0: Abstract base class to factorize common game-world dynamic plotting code
+class AnalysisPlotDynamic(AnalysisDynamic, ABC):
+    def setup_plot(self):
+        self.plot = self.win.addPlot(title=self.win_title)
+        self.plot.setLabel('left', 'Y Coordinate')
+        self.plot.setXRange(-world_width/2, world_width/2)
+        self.plot.setLabel('bottom', 'X Coordinate')
+        self.plot.setYRange(0, world_height)
+        self.plot.invertY(True)
+        self.scatter = pg.ScatterPlotItem()
+        self.plot.addItem(self.scatter)
+
+        #TODO Actually make this look decent
+
+# DynPlot1: "Plot bullet positions in real time" [only requires bullets]
+class AnalysisPlotDynamicBullets(AnalysisPlotDynamic):
+    win_title = 'Bullet Positions Scatter Plot'
+
+    def __init__(self):
+        super().__init__()
+        self.positions = []
+
+    def update_data(self, state):
+        if state.bullets is not None:
+            self.positions = [bullet.position for bullet in state.bullets]
+
+    def update_plot(self):
+        positions = [{'pos': pos} for pos in self.positions]
+        self.scatter.setData(positions)
 
 # =======================================================================
 # Bonus / Miscellaneous =================================================
