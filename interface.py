@@ -519,21 +519,26 @@ def terminate():
     global auto_termination
     auto_termination = True
 
+def eval_termination_conditions(need_active):
+    if read_int(game_state, rel=True) == 1:
+        return "Non-run game state detected"
+    elif not game_process.is_running():
+        return "Game was closed" #bugged, but not worth fixing (edge case)
+    elif keyboard.is_pressed(_termination_key):
+        return "User pressed termination key"
+    elif auto_termination:
+        return "Automatic termination triggered by analysis step"
+    elif need_active and _game_window != gw.getActiveWindow():
+        return "Game no longer active (need_active set to True)"
+
 def wait_game_frame(cur_game_frame=None, need_active=False):
     if not cur_game_frame:
         cur_game_frame = read_int(stage_timer)
 
     while read_int(stage_timer) == cur_game_frame: 
-        if read_int(game_state, rel=True) == 1:
-            return "Non-run game state detected"
-        elif not game_process.is_running():
-            return "Game was closed"  #bugged, but not worth fixing (edge case)
-        elif keyboard.is_pressed(_termination_key):
-            return "User pressed termination key"
-        elif auto_termination:
-            return "Automatic termination triggered by analysis step"
-        elif need_active and _game_window != gw.getActiveWindow():
-            return "Game no longer active (need_active set to True)"
+        term_ret = eval_termination_conditions(need_active)
+        if term_ret:
+            return term_ret
     return None
 
 def press_key(key):

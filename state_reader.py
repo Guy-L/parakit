@@ -978,12 +978,16 @@ else: #State Sequence Extraction
         if exact:
             game_process.resume()
 
-        #busy wait for next frame
-        wait_return = wait_game_frame(frame_timestamp, need_active)
-        if wait_return:
-            print(f"{wait_return}; terminating now.")
-            terminated = True
-            break
+        #busy wait for new frame
+        while True: #(do...while, ensuring term conditions evaluated at least once)
+            term_return = eval_termination_conditions(need_active)
+            if term_return:
+                print(f"{term_return}; terminating now.")
+                terminated = True
+                break
+
+            if read_int(stage_timer) != frame_timestamp:
+                break
 
     if not terminated:
         print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.")
