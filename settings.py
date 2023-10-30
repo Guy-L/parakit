@@ -14,14 +14,14 @@ extraction_settings = {
     # Name of an analysis class (e.g. 'AnalysisMostBulletsFrame') in analysis.py.
     # Sample analyses to get started and plot various entities can be found in analysis_examples.py.
     'analyzer': 'AnalysisTemplate',
-    
+
     # Disable extraction of entities not required for your analysis to reduce lag
     'requires_bullets': True,
     'requires_enemies': True,
     'requires_items':   True,
     'requires_lasers':  True,
     'requires_screenshots': False,
-    
+
     # See settings.md for more info
     'requires_max_curve_data': False,
     'requires_side2_pvp': True,

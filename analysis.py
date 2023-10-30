@@ -42,10 +42,16 @@ from settings import pyplot_settings
 from interface import save_screenshot, terminate, get_color, get_curve_color
 from interface import enemy_anms, world_width, world_height, color16, np
 from scipy.ndimage import uniform_filter
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib.patches import Ellipse, Circle, Rectangle
 import math
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore
+from PyQt5.QtWidgets import QApplication
+import os
+os.environ['QT_LOGGING_RULES'] = '*=false'
 
 #cursed pyplot stuff, idem
 def pyplot_color(color_str):

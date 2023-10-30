@@ -7,12 +7,16 @@ from analysis import *
 # Fold All in Notepad++: View -> Fold Level -> 1 [Alt+1]
 # ==========================================
 
+# =======================================================================
+# Basic examples ========================================================
+# =======================================================================
+
 # Ex1: "Get the frame with the most bullets (and save the screen if screenshots are on)" [only requires bullets & optionally screenshots]
 class AnalysisMostBulletsFrame(Analysis):
     def __init__(self):
         self.frame_with_most_bullets = None
         self.max_bullets = 0
-    
+
     def step(self, state: GameState):
         if state.bullets and len(state.bullets) > self.max_bullets:
             self.max_bullets = len(state.bullets)
@@ -32,7 +36,7 @@ class AnalysisMostBulletsFrame(Analysis):
 class AnalysisBulletsOverTime(Analysis):
     def __init__(self):
         self.bulletcounts = []
-    
+
     def step(self, state: GameState):
         if state.bullets:
             self.bulletcounts.append(len(state.bullets))
@@ -47,10 +51,10 @@ class AnalysisBulletsOverTime(Analysis):
 # Ex3: "Track the number of bullets near the player across time and plot that as a graph" [only requires bullets]
 class AnalysisCloseBulletsOverTime(Analysis):
     radius = 100
-    
+
     def __init__(self):
         self.bulletcounts = []
-    
+
     def step(self, state: GameState):
         if state.bullets:
             nearby_bullets = 0
@@ -66,6 +70,124 @@ class AnalysisCloseBulletsOverTime(Analysis):
         plt.ylabel(f'Bullets in a {self.radius} unit radius around player')
         plt.title('Bullet Count Over Time')
         plt.show()
+
+# Ex4: "Find the frame and position of a circle with set radius covering the most bullets" [only requires bullets]
+class AnalysisMostBulletsCircleFrame():
+    circle_radius = 50
+    step_size = 10
+
+    best_frame = None
+    best_bullet_count = 0
+    best_position = (-1, -1)
+
+    def __count_circle_points(self, center_x, center_y, points):
+        count = 0
+        for x, y in points:
+            if (x - center_x) ** 2 + (y - center_y) ** 2 <= self.circle_radius ** 2:
+                count += 1
+        return count
+
+    def step(self, state: GameState):
+        bullet_positions = [bullet.position for bullet in state.bullets if -world_width/2 <= bullet.position[0] <= world_width/2 and 0 <= bullet.position[1] <= world_height]
+
+        frame_best_count = 0
+
+        for x in range(int(-world_width/2), int(world_width/2), self.step_size):
+            for y in range(0, world_height, self.step_size):
+                count = self.__count_circle_points(x, y, bullet_positions)
+
+                if count > frame_best_count:
+                    frame_best_count = count
+                    frame_best_position = (x, y)
+
+        if frame_best_count > self.best_bullet_count:
+            self.best_position = frame_best_position
+            self.best_bullet_count = frame_best_count
+            self.best_frame = state
+
+        elif not self.best_frame:
+            self.best_frame = state
+
+    def done(self):
+        if self.best_bullet_count == 0:
+            print("No frame had bullets on screen.")
+            return
+
+        print(f"Circle radius {self.circle_radius} with most bullet found @ stage frame {self.best_frame.frame_stage} {'('+str(self.best_frame.boss_timer)+' on boss timer)' if self.best_frame.boss_timer != -1 else ''}")
+        print(f"Circle encompasses {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]})")
+        print("\nNote: The first optimal solution found was displayed - it may be\nunnecessarily biased towards the left/top but remains optimal.")
+
+# TODO: Heatmap version of ^^^ ?
+
+# =======================================================================
+# Dynamic (updating real time) examples =================================
+# =======================================================================
+
+# TODO: Make abstract base class for dynamic analyses
+
+# Dyn1: "Track the number of bullets across time and plot that as a graph" [only requires bullets]
+class AnalysisBulletsOverTimeDynamic(QtCore.QObject):
+    updateSignal = QtCore.pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.bulletcounts = []
+
+        self.app_thread = QtCore.QThread()
+        self.moveToThread(self.app_thread)
+        self.app_thread.started.connect(self.start_app)
+        self.updateSignal.connect(self.update_plot)
+
+        self.app_thread.start()
+
+    def start_app(self):
+        # Create a PyQt5 application
+        self.app = QApplication([])
+
+        # Create a window using GraphicsLayoutWidget
+        self.win = pg.GraphicsLayoutWidget()
+        self.win.setWindowTitle('Bullet Count Over Time')
+        self.win.setWindowFlags(self.win.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+        self.win.show()  # This will make sure the window is visible
+
+        # Create a plot
+        self.plot = self.win.addPlot(title='Bullet Count Over Time')
+        self.plot.setLabel('left', 'Bullets')
+        self.plot.setLabel('bottom', 'Time (frames)')
+        self.curve = self.plot.plot(pen='y')
+
+        # Using a QTimer to update data
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start(10)
+
+        self.app.exec_()
+
+        # Add this line to set up a mechanism for external shutdown:
+        self.app.aboutToQuit.connect(self.clean_up)
+
+    def clean_up(self):
+        # Clean up resources if needed
+        self.win.close()
+        self.timer.stop()
+
+    def step(self, state):
+        if state.bullets:
+            self.bulletcounts.append(len(state.bullets))
+        self.updateSignal.emit()
+
+    def update_plot(self):
+        self.curve.setData(np.arange(len(self.bulletcounts)), self.bulletcounts)
+        QApplication.processEvents()
+
+    def done(self):
+        QtCore.QMetaObject.invokeMethod(self.app, "quit", QtCore.Qt.QueuedConnection)
+        self.app_thread.quit()
+        self.app_thread.wait()
+
+# =======================================================================
+# Game world snapshot plots =============================================
+# =======================================================================
 
 # Plot0: Abstract base class to factorize common plotting code
 class AnalysisPlot(Analysis, ABC):
@@ -86,7 +208,8 @@ class AnalysisPlot(Analysis, ABC):
         if hasattr(self.lastframe.game_specific, 'side2') and self.lastframe.game_specific.side2:
             fig, axarr = plt.subplots(1, 2, figsize=((world_width/45) * plot_scale, 5.6 * plot_scale))
         else:
-            axarr = [plt.subplots(figsize=((world_width/80) * plot_scale, 5.6 * plot_scale))[1]]
+            fig, ax = plt.subplots(figsize=((world_width/80) * plot_scale, 5.6 * plot_scale))
+            axarr = [ax]
 
         axarr[0].set_ylabel('Y Coordinate')
         for ax in axarr:
@@ -94,7 +217,7 @@ class AnalysisPlot(Analysis, ABC):
             ax.set_xlim(-world_width/2, world_width/2)
             ax.set_ylim(0, world_height)
             ax.invert_yaxis()
-        plt.gcf().canvas._tkcanvas.master.title(self.plot_title)
+        fig.canvas.setWindowTitle(self.plot_title)
 
         if len(axarr) == 2: #PvP game
             axarr[1].set_yticklabels([])
@@ -309,7 +432,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                     if not hasCurveLasers:
                         hasCurveLasers = True
 
-                    if self.smooth:       
+                    if self.smooth:
                         sizes = [laser.width * pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
 
                         if self.has_points:
@@ -384,6 +507,16 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
         ax.imshow(self.heatmap, origin='lower', cmap='viridis', extent=(-world_width/2, world_width/2, 0, world_height))
         ax.figure.colorbar(ax.get_images()[0], ax=ax, label='Bullet hits')
 
+# =======================================================================
+# Dynamic Game world plots ==============================================
+# =======================================================================
+
+# TODO
+
+# =======================================================================
+# Bonus / Miscellaneous =================================================
+# =======================================================================
+
 # Bonus: "Render the bullet positions as ASCII art in the terminal" [only requires bullets] [useless]
 class AnalysisPrintBulletsASCII(Analysis):
     def __init__(self):
@@ -426,6 +559,10 @@ class AnalysisPrintBulletsASCII(Analysis):
 
             print(line)
         print("```")
+
+# =======================================================================
+# Useful analyzers & templates for specific games =======================
+# =======================================================================
 
 # LoLK: "Print on chapter transition" [no reqs.]
 class AnalysisHookChapterTransition(Analysis):
@@ -476,51 +613,15 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
             print("No LoLK bullets to plot.")
             return DONT_PLOT
 
-
 # UM: "Find and plot the biggest mallet spot" [only requires bullets]
-class AnalysisMostBulletsCircleFrame(AnalysisPlot):
+class AnalysisBestMallet(AnalysisPlot, AnalysisMostBulletsCircleFrame):
     plot_title = 'Scatter Plot of Bullets w/ Best Mallet'
-    mallet_player_distance = 100 
-
-    def __init__(self):
-        self.mallet_radius = 66
-        self.best_bullet_count = 0
-        self.best_x = -1
-        self.best_y = -1
-        self.step_size = 10
-
-    def calculate_exact_count(self, center, points):
-        # Count the number of points within the circle centered at center
-        x_center, y_center = center
-        count = 0
-        for x, y in points:
-            if (x - x_center) ** 2 + (y - y_center) ** 2 <= self.mallet_radius ** 2:
-                count += 1
-        return count
+    mallet_player_distance = 100
+    circle_radius = 66
 
     def step(self, state: GameState):
-        # Get bullet positions
-        bullet_positions = [bullet.position for bullet in state.bullets if -world_width/2 <= bullet.position[0] <= world_width/2 and 0 <= bullet.position[1] <= world_height]
-
-        # Initialize best values
-        best_count = 0
-        best_position = (0, 0)
-
-        # Iterate over the grid with a certain step size
-        for x in range(int(-world_width/2), int(world_width/2), self.step_size):
-            for y in range(0, world_height, self.step_size):
-                count = self.calculate_exact_count((x, y), bullet_positions)
-                if count > best_count:
-                    best_count = count
-                    best_position = (x, y)
-
-        # Update the best values
-        if best_count > self.best_bullet_count:
-            self.best_x, self.best_y = best_position
-            self.best_bullet_count = best_count
-            self.lastframe = state
-        elif not self.lastframe:
-            self.lastframe = state
+        AnalysisMostBulletsCircleFrame.step(self, state)
+        self.lastframe = self.best_frame
 
     def plot(self, ax, side2):
         if side2:
@@ -529,14 +630,15 @@ class AnalysisMostBulletsCircleFrame(AnalysisPlot):
         if self.best_bullet_count == 0:
             print("No frame had bullets on screen.")
             return DONT_PLOT
-        
-        AnalysisPlotBullets(self.lastframe).plot(ax, side2)
-        AnalysisPlotLineLasers(self.lastframe).plot(ax, side2)
 
-        ax.add_patch(Circle((self.best_x, self.best_y), self.mallet_radius, color='red', fill=False))
+        AnalysisPlotBullets(self.best_frame).plot(ax, False)
+        AnalysisPlotEnemies(self.best_frame).plot(ax, False)
+        #AnalysisPlotLineLasers(self.lastframe).plot(ax, False)
 
-        print(f"Best mallet @ stage frame {self.lastframe.frame_stage} {'('+str(self.lastframe.boss_timer)+' on boss timer)' if self.lastframe.boss_timer != -1 else ''}")
-        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_x}, {self.best_y}); required player position ({self.best_x}, {self.best_y - self.mallet_player_distance})")
+        ax.add_patch(Circle((self.best_position[0], self.best_position[1]), self.circle_radius, color='red', fill=False))
+
+        print(f"Best mallet @ stage frame {self.best_frame.frame_stage} {'('+str(self.best_frame.boss_timer)+' on boss timer)' if self.best_frame.boss_timer != -1 else ''}")
+        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]}); required player position ({self.best_position[0]}, {self.best_position[1] - self.mallet_player_distance})")
         print(f"Vanilla expected gold gain ~= {int(self.best_bullet_count*0.365692)}") #thanks to Dai for ZUN-rng distribution analysis
         print(f"Static mallet gold gain = {int(self.best_bullet_count*(11/30))}")
 
