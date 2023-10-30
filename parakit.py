@@ -42,7 +42,7 @@ def get_installed_packages(venv_path):
 
 def get_required_packages(requirements_path):
     with open(requirements_path) as reqs:
-        return {line.split('==')[0] for line in reqs if line and not line.startswith('#')}
+        return {line.strip() for line in reqs if line and not line.startswith('#')}
         
 if get_required_packages(_reqs_path) - get_installed_packages(_venv_path):
     print("Setup: Missing packages detected; running pip install.")
