@@ -22,7 +22,10 @@ zLaserManager  = read_int(laser_manager_pointer, rel=True)
 zSpellCard     = read_int(spellcard_pointer, rel=True)
 zGui           = read_int(gui_pointer, rel=True)
 
-if game_id == 14:
+if game_id == 13:
+    zSpiritManager = read_int(spirit_manager_pointer, rel=True)
+
+elif game_id == 14:
     ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
 elif game_id == 19:
@@ -61,7 +64,7 @@ def extract_bullets(bullet_manager = zBulletManager):
             'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
             'speed':         read_float(zBullet + zBullet_speed),
             'angle':         read_float(zBullet + zBullet_angle),
-            'scale':         read_float(zBullet + zBullet_scale),
+            'scale':         read_float(zBullet + zBullet_scale) if zBullet_scale else 1,
             'hitbox_radius': read_float(zBullet + zBullet_hitbox_radius),
             'iframes':       read_int(zBullet + zBullet_iframes),
             'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
@@ -133,7 +136,47 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'iframes':      read_int(zEnemy + zEnemy_iframes),
         }
 
-        if game_id == 15:
+        if game_id == 13:
+            spirit_time_max  = read_int(zEnemy + zEnemy_spirit_time_max)
+            remaining_frames =  spirit_time_max - read_int(zEnemy + zEnemy_timer)
+
+            if remaining_frames >= 0:
+                interval_size = spirit_time_max // read_int(zEnemy + zEnemy_max_spirit_count)
+                enemy['speedkill_blue_drops'] = (remaining_frames // interval_size) + (2 if difficulty >= 2 else 1)
+                enemy['speedkill_time_left_for_amt'] = remaining_frames - (remaining_frames // interval_size) * interval_size + 1
+
+            else:
+                enemy['speedkill_blue_drops'] = 0
+                enemy['speedkill_time_left_for_amt'] = 0
+
+            kyouko_echo = None
+            special_func = read_int(zEnemy + zEnemy_special_func)
+            if special_func == square_echo_func:
+                kyouko_echo = RectangleEcho(
+                    left_x   = enemy['position'][0] + read_float(zEnemy + zEnemy_f0_echo_x1),
+                    right_x  = enemy['position'][0] + read_float(zEnemy + zEnemy_f1_echo_x2),
+                    top_y    = enemy['position'][1] + read_float(zEnemy + zEnemy_f2_echo_y1),
+                    bottom_y = enemy['position'][1] + read_float(zEnemy + zEnemy_f3_echo_y2),
+                )
+
+            elif special_func == inv_square_echo_func:
+                kyouko_echo = RectangleEcho(
+                    left_x   = read_float(zEnemy + zEnemy_f0_echo_x1),
+                    right_x  = read_float(zEnemy + zEnemy_f1_echo_x2),
+                    top_y    = read_float(zEnemy + zEnemy_f2_echo_y1),
+                    bottom_y = read_float(zEnemy + zEnemy_f3_echo_y2),
+                )
+
+            elif special_func == circle_echo_func:
+                kyouko_echo = CircleEcho(
+                    position = (read_float(zEnemy + zEnemy_f1_echo_x2), read_float(zEnemy + zEnemy_f2_echo_y1)),
+                    radius   = read_float(zEnemy + zEnemy_f0_echo_x1),
+                )
+
+            enemy['kyouko_echo'] = kyouko_echo
+            enemies.append(TDEnemy(**enemy))
+
+        elif game_id == 15:
             enemy['shootdown_weight'] = read_int(zEnemy + zEnemy_weight, signed=True)
             enemies.append(WeightedEnemy(**enemy))
 
@@ -170,6 +213,30 @@ def extract_items(item_manager = zItemManager):
         ))
 
     return items
+
+# Ten Desires only
+def extract_spirit_items():
+    spirit_items = []
+    spirit_array_start = zSpiritManager + zSpiritManager_array
+    spirit_array_end   = spirit_array_start + zSpiritManager_array_len * zSpiritItem_len
+
+    for spirit_item in range(spirit_array_start, spirit_array_end, zSpiritItem_len):
+        if read_int(spirit_item + zSpiritItem_state) != 0:
+            spirit_item_type  = read_int(spirit_item + zSpiritItem_type)
+            spirit_item_x     = read_float(spirit_item + zSpiritItem_pos)
+            spirit_item_y     = read_float(spirit_item + zSpiritItem_pos + 0x4)
+            spirit_item_vel_x = read_float(spirit_item + zSpiritItem_vel)
+            spirit_item_vel_y = read_float(spirit_item + zSpiritItem_vel + 0x4)
+            spirit_item_timer = read_int(spirit_item + zSpiritItem_timer)
+
+            spirit_items.append(SpiritItem(
+                spirit_type = spirit_item_type,
+                position    = (spirit_item_x, spirit_item_y),
+                velocity    = (spirit_item_vel_x, spirit_item_vel_y),
+                timer       = spirit_item_timer,
+            ))
+
+    return spirit_items
 
 def extract_lasers(laser_manager = zLaserManager):
     lasers = []
@@ -327,7 +394,21 @@ def extract_spellcard(spellcard = zSpellCard):
 def extract_game_state(frame_id = None, real_time = None):
     game_specific = None
 
-    if game_id == 14:
+    if game_id == 13:
+        global life_piece_req
+        life_piece_reqs = [8, 10, 12, 15, 18, 20, 25]
+        life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
+
+        game_specific = GameSpecificTD(
+            life_piece_req = life_piece_req,
+            trance_active  = read_int(trance_state, rel=True) != 0,
+            trance_meter   = read_int(trance_meter, rel=True),
+            chain_timer    = read_int(zSpiritManager + zSpiritManager_chain_timer),
+            chain_counter  = read_int(zSpiritManager + zSpiritManager_chain_counter),
+            spirit_items   = extract_spirit_items() if requires_items else [],
+        )
+
+    elif game_id == 14:
         game_specific = GameSpecificDDC(
             bonus_count  = read_int(bonus_count, rel=True),
             player_scale = read_float(zPlayer + zPlayer_scale),
@@ -533,7 +614,34 @@ def print_game_state(gs: GameState):
 
     #======================================
     # Game-specific prints ================
-    if game_id == 14: #DDC
+    if game_id == 13: #TD
+        print(f"| TD Trance Meter: {round(gs.game_specific.trance_meter/200, 2)} / 3.0")
+
+        if gs.game_specific.trance_active:
+            print(f"| TD Active Trance: {gs.game_specific.trance_meter/60:.2f}s")
+
+        if gs.game_specific.chain_counter:
+            print(f"| TD Chain {'Active' if gs.game_specific.chain_counter > 9 else 'Starting (no greys)'}: {gs.game_specific.chain_counter} blues spawned; {gs.game_specific.chain_timer}f left")
+
+        if gs.game_specific.spirit_items:
+            counter = 0
+
+            print("\nList of spirit items:")
+            print("  Type       Position         Velocity         Frames Left")
+            for spirit in gs.game_specific.spirit_items:
+                description = "• "
+                description += tabulate(spirit_types[spirit.spirit_type], 11)
+                description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
+                description += tabulate(f"({round(spirit.velocity[0], 1)}, {round(spirit.velocity[1], 1)})", 17)
+                description += str(522 - spirit.timer)
+                print(description)
+
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(gs.game_specific.spirit_items)} spirit item total]')
+                    break
+
+    elif game_id == 14: #DDC
         print(f"| DDC Bonus Count: {gs.game_specific.bonus_count}")
 
         if gs.game_specific.seija_flip[0] != 1:
@@ -816,12 +924,16 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if hasattr(enemy, 'kyouko_echo') and enemy.kyouko_echo:
+                description += f" (Echoing)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
 
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
                 description += "\n  • Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
+                if game_id == 13 and enemy.speedkill_blue_drops:
+                    description += f" (+ {enemy.speedkill_blue_drops} Blue Spirit; will be {enemy.speedkill_blue_drops-1} in {enemy.speedkill_time_left_for_amt}f)"
 
             print(description)
 
@@ -859,7 +971,7 @@ def print_untracked_vars():
     else:
         print(f"| Sub-Shot: {subshots[read_int(subshot, rel=True)]}")
 
-    print(f"| Difficulty: {difficulties[read_int(difficulty, rel=True)]}")
+    print(f"| Difficulty: {difficulties[difficulty]}")
     print(f"| Stage #: {read_int(stage, rel=True)}")
     print(f"| Continues: {read_int(continues, rel=True)}")
 

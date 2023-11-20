@@ -2,7 +2,7 @@
 
 # ParaKit - Touhou Data Analysis
 
-ParaKit is a customizable Python toolset capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed. 
+ParaKit is a customizable Python tool and scripting framework capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed.
 
 Many analyses come pre-built to help you get started, such as "graph bullet count over time", "plot all game entities" or "find the biggest bullet cluster of a given size" (see below screenshots). All the Touhou data you could need is given to you, and it's your turn to find the best ways to use it!
 
@@ -10,21 +10,21 @@ If you have feature requests or need help making your own custom analysis, feel 
 
 ### [Settings Documentation](./settings.md)
 ### Supported games:
+* TD
 * DDC
 * LoLK
 * UM
 * UDoALG
 
 ### Goals:
-* Unix compatibility (for wearr)
-* Polish mallet analyzer: add lasers, account for spread, more useful timing info
-* Porting interface to C++
-* TD support 
-* MoF support 
-* State saving/reloading
-* Fix "Error: Operation completed successfully" Windows error
-* Player bullet/bomb data?
-
+* Faster inter-process reads
+* Built-in analyzers for dynamic entity plotting
+* All-game support
+* Player options data
+* Player projectile data
+* Bomb data (more)
+* Cross-run and cross-stage extraction
+* Better UX
 
 ## Setup 
 **Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, **I heavily recommend that you get a bit of experience with Git** to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out. All you'll need to know is how to `clone` (download) and `pull` (update) a project.
@@ -120,21 +120,26 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 
 | Name / Description | Screenshot(s) |
 |--|--|
-| `AnalysisTemplate`<br>See [Custom Analyzers](#custom-analyzers).<br>*Requires nothing.*  | <img alt="template" src="https://cdn.discordapp.com/attachments/522639011295002626/1140885985337552946/image.png" width="5000px"> |
-| `AnalysisMostBulletsFrame` <br>Finds the recorded frame which had the most bullets; saves the frame as `most_bullets.png` if screenshots are on. <br>*Only requires bullets, optionally screenshots.* | <img alt="most bullets" src="https://cdn.discordapp.com/attachments/522639011295002626/1140889040514711633/image.png" width="500px"> |
-| `AnalysisBulletsOverTime` <br>Tracks the amount of bullets across time and plots that as a graph. <br>*Only requires bullets.* | <img alt="9head bullet count over time" src="https://i.imgur.com/nLY7TPQ.png"> |
-| `AnalysisCloseBulletsOverTime` <br>Tracks the amount of bullets in a radius around the player across time and plots that as a graph. <br>*Only requires bullets.* | <img alt="FMH close bullets over time" src="https://i.imgur.com/o11hOLC.png">
+| `AnalysisTemplate`<br>See [Custom Analyzers](#custom-analyzers). | <img alt="template" src="https://github.com/Guy-L/parakit/assets/55163797/a73fb8a2-b4ac-4d96-9d07-3c30f4c2449d" width="500px"> |
+| `AnalysisMostBulletsFrame` <br>Finds the recorded frame which had the most bullets; saves the frame as `most_bullets.png` if screenshots are on. <br>*Uses bullets & optionally screenshots.* | <img alt="most bullets" src="https://github.com/Guy-L/parakit/assets/55163797/194e03ad-1de5-4b20-9455-bbfc42898d0e" width="500px"> |
+| `AnalysisBulletsOverTime` <br>Tracks the amount of bullets across time and plots that as a graph. <br>*Uses bullets.* | <img alt="9head bullet count over time" src="https://github.com/Guy-L/parakit/assets/55163797/419df0ff-a449-41c4-9607-d83c949a6154"> |
+| `AnalysisCloseBulletsOverTime` <br>Tracks the amount of bullets in a radius around the player across time and plots that as a graph. <br>*Uses bullets.* | <img alt="FMH close bullets over time" src="https://github.com/Guy-L/parakit/assets/55163797/ae30aae2-488b-4bc4-8f76-7946f5d58dc9">
+| `AnalysisMostBulletsCircleFrame` <br>Finds the time and position of the circle covering the most bullets. <br>*Uses bullets.* | <img alt="TD Yahoo easy most bullets circle" src="https://github.com/Guy-L/parakit/assets/55163797/2e1c65dc-393e-43a8-9329-dee6ed323f6a"> |
 | `AnalysisPlot` <br> Abstract base class to factorize common plotting code.<br>See [Custom Analyzers](#custom-analyzers). |  |
-| `AnalysisPlotBullets` <br>Plots the bullet positions of the last frame. <br>*Only requires bullets.* | <img alt="Kudoku Gourmet" src="https://cdn.discordapp.com/attachments/522639011295002626/1140912067193352274/image.png"> |
-| `AnalysisPlotEnemies` <br>Plots the enemy positions of the last frame. <br>*Only requires enemies.* |  <img alt="DDC St5 PostMid" src="https://cdn.discordapp.com/attachments/522639011295002626/1140921709713702932/image.png"> |
-| `AnalysisPlotItems` <br>Plots the item positions of the last frame. <br>*Only requires items.* | <img alt="UM st2 woozy yy" src="https://cdn.discordapp.com/attachments/522639011295002626/1140893844947357736/image.png"> |
-| `AnalysisPlotLineLasers` <br>Plots the line laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Shimmy non 4" src="https://cdn.discordapp.com/attachments/522639011295002626/1140922776262295623/image.png"> |
-| `AnalysisPlotInfiniteLasers` <br>Plots the telegraphed laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Megu Final" src="https://cdn.discordapp.com/attachments/522639011295002626/1140896990440456212/image.png"> |
-| `AnalysisPlotCurveLasers` <br>Plots the curvy laser positions of the last frame. <br>*Only requires lasers.* | <img alt="Sky Pendra" src="https://cdn.discordapp.com/attachments/522639011295002626/1140906836246138920/image.png"> |
-| `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="DDC St4 Final" src="https://cdn.discordapp.com/attachments/522639011295002626/1140923987631808563/image.png"> |
-| `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Only requires bullets.* | <img alt="UM st5 fireballs enemies" src="https://cdn.discordapp.com/attachments/522639011295002626/1140902507720224788/image.png"> |
-| `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Only requires bullets.* | <img alt="Seki Ascii" src="https://cdn.discordapp.com/attachments/522639011295002626/1140925231171633152/image.png"> |
-| `AnalysisMostBulletsCircleFrame` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, then plots the Mallet circle and prints relevant data.<br>*Only requires bullets.* | <img alt="S4 Casino" src="https://cdn.discordapp.com/attachments/522639011295002626/1140914669658325012/image.png"> |
+| `AnalysisPlotBullets` <br>Plots the bullet positions of the last frame. <br>*Uses bullets.* | <img alt="Kudoku Gourmet" src="https://github.com/Guy-L/parakit/assets/55163797/3c955a52-819f-40b0-a82a-93356adadf29"> |
+| `AnalysisPlotEnemies` <br>Plots the enemy positions of the last frame. <br>*Uses enemies.* |  <img alt="TD s5c1" src="https://github.com/Guy-L/parakit/assets/55163797/9ed6d4e2-1dac-48e2-a915-03aa112de5de"> |
+| `AnalysisPlotItems` <br>Plots the item positions of the last frame. <br>*Uses items.* | <img alt="UM st2 woozy yy" src="https://github.com/Guy-L/parakit/assets/55163797/99aa15b2-84de-4220-bb96-2f0084186b6e"> |
+| `AnalysisPlotLineLasers` <br>Plots the line laser positions of the last frame. <br>*Uses lasers.* | <img alt="Shimmy non 4" src="https://github.com/Guy-L/parakit/assets/55163797/71adbb99-4724-427b-a190-0e11b96d0adf"> |
+| `AnalysisPlotInfiniteLasers` <br>Plots the telegraphed laser positions of the last frame. <br>*Uses lasers.* | <img alt="Megu Final" src="https://github.com/Guy-L/parakit/assets/55163797/f860e2bb-a00b-44ff-a759-aac3cb84968a"> |
+| `AnalysisPlotCurveLasers` <br>Plots the curvy laser positions of the last frame. <br>*Uses lasers.* | <img alt="Score Desire Eater" src="https://github.com/Guy-L/parakit/assets/55163797/f46e37d7-28dc-425b-88b9-c09c05fe2ba7"> |
+| `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="DDC St4 Final" src="https://github.com/Guy-L/parakit/assets/55163797/f7076cab-4bbb-42d9-be50-48069e103914"> |
+| `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Uses bullets.* | <img alt="UM st5 fireballs enemies" src="https://github.com/Guy-L/parakit/assets/55163797/71c8e758-8c02-4278-9d12-9a42ae3f82e8"> |
+| `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Uses bullets.* | <img alt="Seki Ascii" src="https://github.com/Guy-L/parakit/assets/55163797/fae9f00a-36dd-4576-bac6-04bd9b438050"> |
+| `AnalysisPlotTD` <br>Plots the spirit item positions and Kyouko echo bounds of the last frame. <br>*Uses items & enemies.* | <img alt="Kyouko non 2" src="https://github.com/Guy-L/parakit/assets/55163797/c79dfd28-f4b8-4c29-b08b-8363e0102dde"> |
+| `AnalysisPlotEnemiesBlueDrops` <br>Plots enemies with color intensity based on time-based blue spirit drops, shows the total number of blue spirit drops and the remaining time to get that amount.<br>*Uses enemies.* | <img alt="TD s4 post midboss" src="https://github.com/Guy-L/parakit/assets/55163797/9f0e0824-2a15-48da-8ce9-1b0d6dee9bb8"> |
+| `AnalysisHookChapterTransition` <br>Example showing how to programatically detect chapter transitions in LoLK. | <img alt="Log of chapter detected transitions" src="https://github.com/Guy-L/parakit/assets/55163797/37900ec6-0961-4f8e-9b96-121be65aa3b0"> |
+| `AnalysisPlotBulletGraze` <br>Plots bullets with color intensity based on graze timer. <br>*Uses bullets.* | <img alt="EX Doremy final" src="https://github.com/Guy-L/parakit/assets/55163797/8727b316-9f84-4201-ade7-9d5e8bbb3f08"> |
+| `AnalysisBestMallet` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, plots Mallet circle and prints relevant data.<br>*Uses bullets.* | <img alt="S4 Casino" src="https://github.com/Guy-L/parakit/assets/55163797/6b4b288c-6417-453c-acc7-f9f3ba0c231c"> |
 
 ## For Contributors
 

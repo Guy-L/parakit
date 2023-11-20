@@ -13,7 +13,7 @@ class Bullet:
     velocity: Tuple[float, float]
     speed: float
     angle: float
-    scale: float
+    scale: float #set to 1 in pre-DDC for convenience
     hitbox_radius: float
     iframes: int
     is_active: bool
@@ -107,6 +107,25 @@ class Spellcard:
 # Game specific game entities ====================
 # ================================================
 
+# Ten Desires
+@dataclass
+class RectangleEcho:
+    left_x: float
+    right_x: float
+    top_y: float
+    bottom_y: float
+
+@dataclass
+class CircleEcho:
+    position: Tuple[float, float]
+    radius: float
+
+@dataclass
+class TDEnemy(Enemy):
+    kyouko_echo: RectangleEcho | CircleEcho
+    speedkill_blue_drops: int
+    speedkill_time_left_for_amt: int
+
 # DDC / ISC / HBM
 @dataclass
 class ShowDelayBullet(Bullet):
@@ -124,6 +143,14 @@ class WeightedEnemy(Enemy):
 # ================================================
 # Game specific objects ==========================
 # ================================================
+
+# Ten Desires
+@dataclass
+class SpiritItem:
+    spirit_type: int
+    position: Tuple[float, float]
+    velocity: Tuple[float, float]
+    timer: int #[0, 521] frames alive
 
 # Unconnected Marketeers
 @dataclass

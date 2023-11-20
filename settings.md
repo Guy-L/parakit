@@ -8,7 +8,7 @@ Settings for the script responsible for interfacing with the game (reading, writ
 | Name / Type | Description | Default |
 |-|-|-|
 | **`termination_key`**<br>(string) | If pressed, interrupts any waiting for the next game frame and returns an error (used to terminate sequence extraction early). | `'F6'` |
-| **`game`**<br>(string) | Select the game here; can be the full name, acronym, `th##` or just the game number. **Fully supported games**: DDC, LoLK, UM, UDoALG | `'No game selected'` |
+| **`game`**<br>(string) | Select the game here; can be the full name, acronym, `th##` or just the game number. **Fully supported games**: TD, DDC, LoLK, UM, UDoALG | `'No game selected'` |
 
 ## General Extraction Settings
 Settings for reading and analyzing game states; used by both single-state and sequence extraction.

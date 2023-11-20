@@ -480,7 +480,11 @@ class AnalysisPlotAll(AnalysisPlot):
         plottedInfinites = AnalysisPlotInfiniteLasers(self.lastframe).plot(ax, side2)
         plottedCurves = AnalysisPlotCurveLasers(self.lastframe).plot(ax, side2)
 
-        if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == DONT_PLOT:
+        plottedGameSpecific = DONT_PLOT
+        if game_id == 13:
+            plottedGameSpecific = AnalysisPlotTD(self.lastframe).plot(ax, side2)
+
+        if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
             return DONT_PLOT
 
 # Plot8: "Plot a heatmap of positions hit by bullets over time" [only requires bullets]
@@ -654,6 +658,101 @@ class AnalysisPrintBulletsASCII(Analysis):
 # =======================================================================
 # Useful analyzers & templates for specific games =======================
 # =======================================================================
+
+# TD: "Plot spirit items & Kyouko echos" [only requires items & enemies]
+class AnalysisPlotTD(AnalysisPlot):
+    plot_title = 'Spirit Item Scatter Plot'
+    face_alpha = 0.65
+    edge_alpha = 0.3
+    type_colors = [(1.0, 0.0, 1.0), (0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (0.5, 0.5, 0.5)]
+    type_sizes = [200, 150, 200, 150]
+
+    use_visual_sizes = True
+    actual_size = 150 #not sure
+
+    def plot(self, ax, side2):
+        if side2:
+            return HIDE_P2
+
+        spirit_items = self.lastframe.game_specific.spirit_items
+        has_spirits = bool(spirit_items)
+        has_echoes = False
+
+        if has_spirits:
+            x_coords = [spirit.position[0] for spirit in spirit_items]
+            y_coords = [spirit.position[1] for spirit in spirit_items]
+            face_colors = [self.type_colors[spirit.spirit_type] + (self.face_alpha,) for spirit in spirit_items]
+            edge_colors = [self.type_colors[spirit.spirit_type] + (self.edge_alpha,) for spirit in spirit_items]
+
+            if self.use_visual_sizes and not self.lastframe.game_specific.trance_active:
+                sizes = [((522 - spirit.timer)/522) * self.type_sizes[spirit.spirit_type] for spirit in spirit_items]
+            else:
+                sizes = self.actual_size
+
+            ax.scatter(x_coords, y_coords, facecolor=face_colors, s=sizes, marker='p',
+                       edgecolor = edge_colors, linewidth=2)
+
+        #if any enemy has it, we're in TD, so they all have it
+        if self.lastframe.enemies and any(hasattr(enemy, 'kyouko_echo') for enemy in self.lastframe.enemies):
+            for enemy in self.lastframe.enemies:
+                if enemy.kyouko_echo != None:
+                    has_echoes = True
+
+                    if hasattr(enemy.kyouko_echo, 'radius'):
+                        ax.add_patch(Circle(
+                            (enemy.kyouko_echo.position[0], enemy.kyouko_echo.position[1]),
+                            enemy.kyouko_echo.radius, color = (0, 0, 1, 0.2),
+                            linewidth=1.5, fill = False))
+
+                    else:
+                        ax.add_patch(Rectangle(
+                            (enemy.kyouko_echo.left_x, enemy.kyouko_echo.top_y),
+                            width = enemy.kyouko_echo.right_x - enemy.kyouko_echo.left_x,
+                            height = enemy.kyouko_echo.bottom_y - enemy.kyouko_echo.top_y,
+                            color = (0, 0, 1, 0.2), linewidth=1.5, fill = False
+                        ))
+
+        if not has_spirits:
+            print("No spirit items to plot.")
+            if not has_echoes:
+                return DONT_PLOT
+
+# TD: "Plot enemy with color intensity based on blue drop count" [only requires enemies]
+class AnalysisPlotEnemiesBlueDrops(AnalysisPlot):
+    plot_title = 'Scatter Plot of Enemies w/ Blue Drop Counts'
+
+    def plot(self, ax, side2):
+        enemies = self.lastframe.enemies
+
+        #if any enemy has it, we're in TD, so they all have it
+        if enemies and any(hasattr(enemy, 'speedkill_blue_drops') for enemy in enemies):
+            max_blue_drops = 0
+            for enemy in enemies:
+                if enemy.speedkill_blue_drops > max_blue_drops:
+                    max_blue_drops = enemy.speedkill_blue_drops
+
+            for enemy in enemies:
+                ax.add_patch(Ellipse(
+                            (enemy.position[0], enemy.position[1]),
+                            width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
+                            height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
+                            angle = np.degrees(enemy.rotation),
+                            facecolor = (0.5, 0, enemy.speedkill_blue_drops/max_blue_drops if max_blue_drops > 0 else 1, 0.5 if enemy.no_hitbox else 1),
+                            edgecolor = (0, 0, 0, 0.3), linewidth=3
+                        ))
+
+                #fixed blue drops are added to text only, not counted for coloring calculation
+                ax.text(enemy.position[0], enemy.position[1],
+                    str(enemy.speedkill_blue_drops + enemy.drops.get(11, 0) + enemy.drops.get(14, 0)),
+                    color='white', ha='center', va='center')
+
+                if enemy.speedkill_time_left_for_amt:
+                    ax.text(enemy.position[0], enemy.position[1]+18,
+                        str(enemy.speedkill_time_left_for_amt) + "f",
+                        color='black', fontsize=5, ha='center', va='center')
+
+        else:
+            return AnalysisPlotEnemies(self.lastframe).plot(ax, side2)
 
 # LoLK: "Print on chapter transition" [no reqs.]
 class AnalysisHookChapterTransition(Analysis):

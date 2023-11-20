@@ -75,7 +75,7 @@ class BulletOffsets:
     zBullet_speed: int
     zBullet_angle: int
     zBullet_hitbox_radius: int
-    zBullet_scale: int
+    zBullet_scale: Optional[int] #absent in pre-DDC
     zBullet_state: int
     zBullet_type: int
     zBullet_color: int
@@ -266,6 +266,9 @@ modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run 
 modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
 
 usual_difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
+difficulties_pre_td = usual_difficulties + ['Phantasm']
+difficulties_post_td = usual_difficulties + ['Overdrive']
+
 usual_world_width = 384
 usual_world_height = 448
 
@@ -313,7 +316,207 @@ offsets = {
 
     # TOUHOU 13 -- Ten Desires ===================================
     #=============================================================
-    'th13.exe': None,
+    'th13.exe': Offset(
+        statics = StaticsOffsets(
+            score         = 0xbe7c0,
+            graze         = 0xbe7d0,
+            piv           = 0xbe7dc,
+            power         = 0xbe7e8,
+            lives         = 0xbe7f4,
+            life_pieces   = 0xbe7f8,
+            bombs         = 0xbe800,
+            bomb_pieces   = 0xbe804,
+            stage_chapter = 0xbe824,
+            rank          = 0xbe7cc,
+            input         = 0xe4c08,
+            rng           = 0xdc324,
+            pause_state   = 0xdf120,
+        ),
+        statics_untracked = UntrackedStaticsOffsets(
+            game_speed      = 0xc0a28,
+            visual_rng      = 0xdc31c,
+            character       = 0xbe7b8,
+            subshot         = 0xbe7bc,
+            difficulty      = 0xbe7c4,
+            stage           = 0xbe81c,
+            continues       = 0xbe7c8,
+        ),
+        player = PlayerOffsets(
+            player_pointer  = 0xc22c4,
+            zPlayer_pos     = 0x5b8,
+            zPlayer_hit_rad = 0x620,
+            zPlayer_iframes = 0x14688,
+            zPlayer_focused = 0x14840,
+        ),
+        bomb = BombOffsets(
+            bomb_pointer = 0xc2170,
+            zBomb_state  = 0x40,
+        ),
+        bullets = BulletOffsets(
+            bullet_manager_pointer = 0xc2174,
+            zBulletManager_list    = 0x80,
+            zBullet_iframes        = 0x24,
+            zBullet_pos            = 0xb70,
+            zBullet_velocity       = 0xb7c,
+            zBullet_speed          = 0xb88,
+            zBullet_angle          = 0xb8c,
+            zBullet_hitbox_radius  = 0xb90,
+            zBullet_scale          = None,
+            zBullet_state          = 0xbbe,
+            zBullet_type           = 0x1354,
+            zBullet_color          = 0x1356,
+        ),
+        enemies = EnemyOffsets(
+            enemy_manager_pointer = 0xc2188,
+            zEnemyManager_list    = 0xb0,
+            zEnemy_data           = 0x11ec,
+            zEnemy_pos            = 0x11ec + 0x44,
+            zEnemy_hurtbox        = 0x11ec + 0x110,
+            zEnemy_hitbox         = 0x11ec + 0x118,
+            zEnemy_rotation       = 0x11ec + 0x20, #unsure if in game (seems to be set to 0 every frame?)
+            zEnemy_anm_page       = 0x11ec + 0x264,
+            zEnemy_anm_id         = 0x11ec + 0x268,
+            zEnemy_score_reward   = 0x11ec + 0x3f48,
+            zEnemy_hp             = 0x11ec + 0x3f4c,
+            zEnemy_hp_max         = 0x11ec + 0x3f50,
+            zEnemy_drops          = 0x11ec + 0x3f68,
+            zEnemy_iframes        = 0x11ec + 0x3fd0,
+            zEnemy_flags          = 0x11ec + 0x4030,
+            zEnemy_subboss_id     = 0x11ec + 0x4040,
+        ),
+        items = ItemOffsets(
+            item_manager_pointer   = 0xc229c,
+            zItemManager_array     = 0x14,
+            zItemManager_array_len = 0xa58,
+            zItem_state = 0xba0,
+            zItem_type  = 0xba4,
+            zItem_pos   = 0xb5c,
+            zItem_vel   = 0xb68,
+            zItem_len   = 0xbc8,
+        ),
+        laser_base = LaserBaseOffsets(
+            laser_manager_pointer   = 0xc22a0,
+            zLaserManager_list      = 0x5d0,
+            zLaserBaseClass_state   = 0xc,
+            zLaserBaseClass_type    = 0x10,
+            zLaserBaseClass_timer   = 0x18,
+            zLaserBaseClass_offset  = 0x50,
+            zLaserBaseClass_angle   = 0x68,
+            zLaserBaseClass_length  = 0x6c,
+            zLaserBaseClass_width   = 0x70,
+            zLaserBaseClass_speed   = 0x74,
+            zLaserBaseClass_iframes = 0x5b4,
+            zLaserBaseClass_sprite  = 0x5b8,
+            zLaserBaseClass_color   = 0x5bc,
+        ),
+        laser_line = LaserLineOffsets(
+            zLaserLine_start_pos  = 0x5c0,
+            zLaserLine_mgr_angle  = 0x5cc,
+            zLaserLine_max_length = 0x5d0,
+            zLaserLine_mgr_speed  = 0x5e0,
+            zLaserLine_distance   = 0x5ec,
+        ),
+        laser_infinite = LaserInfiniteOffsets(
+            zLaserInfinite_start_pos    = 0x5c0,
+            zLaserInfinite_velocity     = 0x5cc,
+            zLaserInfinite_mgr_angle    = 0x5d8,
+            zLaserInfinite_angle_vel    = 0x5dc,
+            zLaserInfinite_final_len    = 0x5e0,
+            zLaserInfinite_mgr_len      = 0x5e4,
+            zLaserInfinite_final_width  = 0x5e8,
+            zLaserInfinite_mgr_speed    = 0x5ec,
+            zLaserInfinite_start_time   = 0x5f0,
+            zLaserInfinite_expand_time  = 0x5f4,
+            zLaserInfinite_active_time  = 0x5f8,
+            zLaserInfinite_shrink_time  = 0x5fc,
+            zLaserInfinite_mgr_distance = 0x60c,
+        ),
+        laser_curve = LaserCurveOffsets(
+            zLaserCurve_max_length = 0x5e0,
+            zLaserCurve_distance   = 0x5e4,
+            zLaserCurve_array      = 0x145c,
+        ),
+        laser_curve_node = LaserCurveNodeOffsets(
+            zLaserCurveNode_pos   = 0x0,
+            zLaserCurveNode_vel   = 0xc,
+            zLaserCurveNode_angle = 0x18,
+            zLaserCurveNode_speed = 0x1c,
+            zLaserCurveNode_size  = 0x20,
+        ),
+        ascii = AsciiOffsets(
+            ascii_manager_pointer = 0xc2160,
+            global_timer          = 0x19190,
+        ),
+        spell_card = SpellCardOffsets(
+            spellcard_pointer    = 0xc2178,
+            zSpellcard_indicator = 0x20,
+            zSpellcard_id        = 0x78,
+            zSpellcard_bonus     = 0x80,
+        ),
+        gui = GUIOffsets(
+            gui_pointer          = 0xc2190,
+            zGui_bosstimer_s     = 0x1a0,
+            zGui_bosstimer_ms    = 0x1a4,
+            zGui_bosstimer_drawn = 0x1ac,
+        ),
+        game_thread = GameThreadOffsets(
+            game_thread_pointer = 0xc2194,
+            stage_timer = 0x14,
+        ),
+        supervisor = SupervisorOffsets(
+            supervisor_addr = 0xdc6a0,
+            game_mode       = 0xdc6a0 + 0x580,
+            rng_seed        = 0xdc6a0 + 0x5c0,
+        ),
+        associations = Associations(
+            sprites       = sprites_post_td,
+            enemy_anms    = modern_enemy_anms_pre_ddc,
+            item_types    = item_types_td,
+            pause_states  = modern_pause_states,
+            game_modes    = modern_game_modes,
+            characters    = ['Reimu', 'Marisa', 'Sanae', 'Youmu'],
+            subshots      = ['N/A'],
+            difficulties  = difficulties_post_td,
+            zEnemyFlags_no_hurtbox   = 2**0,
+            zEnemyFlags_no_hitbox    = 2**1,
+            zEnemyFlags_invincible   = 2**4,
+            zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_rectangle = 2**15,
+            zEnemyFlags_is_boss      = 2**24,
+            life_piece_req = None,
+            bomb_piece_req = 8,
+            world_width    = usual_world_width,
+            world_height   = usual_world_height,
+        ),
+        game_specific = {
+            'trance_meter': 0xbe808,
+            'trance_state': 0xbe80c,
+            'extend_count': 0xbe7fc,
+            'spirit_types': ['LifeP.', 'Blue', 'BombP.', 'Gray'],
+            'spirit_manager_pointer': 0xc22a4,
+            'zSpiritManager_array': 0x14,
+            'zSpiritManager_array_len': 0x100,
+            'zSpiritManager_chain_timer': 0x8828,
+            'zSpiritManager_chain_counter': 0x8838,
+            'zSpiritItem_state': 0x0, #0 = free, 1 = used/active
+            'zSpiritItem_type': 0x4,
+            'zSpiritItem_pos': 0x14,
+            'zSpiritItem_vel': 0x48,
+            'zSpiritItem_timer': 0x60,
+            'zSpiritItem_len': 0x88,
+            'zEnemy_special_func': 0x11ec + 0x40e8, #if useful in multiple games, add to Enemy offset spec
+            'square_echo_func': 0x422150,
+            'inv_square_echo_func': 0x4224b0,
+            'circle_echo_func': 0x4228b0,
+            'zEnemy_f0_echo_x1': 0x11ec + 0x298, #if useful in multiple games, add to Enemy offset spec
+            'zEnemy_f1_echo_x2': 0x11ec + 0x29c, #if useful in multiple games, add to Enemy offset spec
+            'zEnemy_f2_echo_y1': 0x11ec + 0x2a0, #if useful in multiple games, add to Enemy offset spec
+            'zEnemy_f3_echo_y2': 0x11ec + 0x2a4, #if useful in multiple games, add to Enemy offset spec
+            'zEnemy_timer': 0x11ec + 0x2bc,      #if useful in multiple games, add to Enemy offset spec
+            'zEnemy_spirit_time_max': 0x11ec + 0x3ff4,
+            'zEnemy_max_spirit_count': 0x11ec + 0x3ff8,
+        }
+    ),
 
     # TOUHOU 14 -- Double Dealing Character ======================
     #=============================================================
@@ -1137,7 +1340,7 @@ offsets = {
     ),
 }
 
-# Template as of post-UM support
+# Template as of post-TD support
 # ==============================
 # 
 #    'thXX.exe': Offset(

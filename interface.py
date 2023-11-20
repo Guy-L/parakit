@@ -225,7 +225,36 @@ rng_seed        = offsets[_module_name].supervisor.rng_seed
 if game_id in has_bullet_delay:
     zBullet_ex_delay_timer = offsets[_module_name].game_specific['zBullet_ex_delay_timer']
 
-if game_id == 14:
+if game_id == 13:
+    trance_meter = offsets[_module_name].game_specific['trance_meter']
+    trance_state = offsets[_module_name].game_specific['trance_state']
+    extend_count = offsets[_module_name].game_specific['extend_count']
+    spirit_types = offsets[_module_name].game_specific['spirit_types']
+
+    spirit_manager_pointer       = offsets[_module_name].game_specific['spirit_manager_pointer']
+    zSpiritManager_array         = offsets[_module_name].game_specific['zSpiritManager_array']
+    zSpiritManager_array_len     = offsets[_module_name].game_specific['zSpiritManager_array_len']
+    zSpiritManager_chain_timer   = offsets[_module_name].game_specific['zSpiritManager_chain_timer']
+    zSpiritManager_chain_counter = offsets[_module_name].game_specific['zSpiritManager_chain_counter']
+    zSpiritItem_type  = offsets[_module_name].game_specific['zSpiritItem_type']
+    zSpiritItem_state = offsets[_module_name].game_specific['zSpiritItem_state']
+    zSpiritItem_pos   = offsets[_module_name].game_specific['zSpiritItem_pos']
+    zSpiritItem_vel   = offsets[_module_name].game_specific['zSpiritItem_vel']
+    zSpiritItem_timer = offsets[_module_name].game_specific['zSpiritItem_timer']
+    zSpiritItem_len   = offsets[_module_name].game_specific['zSpiritItem_len']
+    zEnemy_special_func  = offsets[_module_name].game_specific['zEnemy_special_func']
+    square_echo_func     = offsets[_module_name].game_specific['square_echo_func']
+    inv_square_echo_func = offsets[_module_name].game_specific['inv_square_echo_func']
+    circle_echo_func     = offsets[_module_name].game_specific['circle_echo_func']
+    zEnemy_f0_echo_x1    = offsets[_module_name].game_specific['zEnemy_f0_echo_x1']
+    zEnemy_f1_echo_x2    = offsets[_module_name].game_specific['zEnemy_f1_echo_x2']
+    zEnemy_f2_echo_y1    = offsets[_module_name].game_specific['zEnemy_f2_echo_y1']
+    zEnemy_f3_echo_y2    = offsets[_module_name].game_specific['zEnemy_f3_echo_y2']
+    zEnemy_timer         = offsets[_module_name].game_specific['zEnemy_timer']
+    zEnemy_spirit_time_max  = offsets[_module_name].game_specific['zEnemy_spirit_time_max']
+    zEnemy_max_spirit_count = offsets[_module_name].game_specific['zEnemy_max_spirit_count']
+
+elif game_id == 14:
     bonus_count       = offsets[_module_name].game_specific['bonus_count']
     seija_anm_pointer = offsets[_module_name].game_specific['seija_anm_pointer']
     seija_flip_x      = offsets[_module_name].game_specific['seija_flip_x']
@@ -676,3 +705,4 @@ def _random_player():
 # Step 5 - Set stage/global timer addresses here so timing methods work
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
+difficulty = read_int(difficulty, rel=True) #not in states but useful
