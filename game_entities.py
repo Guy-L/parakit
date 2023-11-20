@@ -37,11 +37,12 @@ class Enemy:
     score_reward: int
     hp: int
     hp_max: int
+    drops: Dict[int, int]
     iframes: int
 
 @dataclass
 class Item:
-    item_type: str
+    item_type: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]
 

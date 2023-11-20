@@ -93,6 +93,7 @@ class EnemyOffsets:
     zEnemy_score_reward: int
     zEnemy_hp: int
     zEnemy_hp_max: int
+    zEnemy_drops: int
     zEnemy_iframes: int
     zEnemy_flags: int #"flags_low"
     zEnemy_subboss_id: int
@@ -195,10 +196,6 @@ class SupervisorOffsets:
 
 @dataclass
 class Associations:
-    color_coin: List[str] #color type '3'
-    color4: List[str]
-    color8: List[str]
-    color16: List[str]
     sprites: List[Tuple[str, int]]
     curve_sprites: List[str]
     enemy_anms: Dict[int, str]
@@ -392,6 +389,7 @@ offsets = {
             zEnemy_score_reward   = 0x11f0 + 0x3f70,
             zEnemy_hp             = 0x11f0 + 0x3f74,
             zEnemy_hp_max         = 0x11f0 + 0x3f78,
+            zEnemy_drops          = 0x11f0 + 0x3f90,
             zEnemy_iframes        = 0x11f0 + 0x3ff0,
             zEnemy_flags          = 0x11f0 + 0x4054,
             zEnemy_subboss_id     = 0x11f0 + 0x4064,
@@ -585,6 +583,7 @@ offsets = {
             zEnemy_score_reward   = 0x120c + 0x3f70,
             zEnemy_hp             = 0x120c + 0x3f74,
             zEnemy_hp_max         = 0x120c + 0x3f78,
+            zEnemy_drops          = 0x120c + 0x3f90,
             zEnemy_iframes        = 0x120c + 0x3ffc,
             zEnemy_flags          = 0x120c + 0x4060,
             zEnemy_subboss_id     = 0x120c + 0x4070,
@@ -791,6 +790,7 @@ offsets = {
             zEnemy_score_reward   = 0x122C + 0x4FF0,
             zEnemy_hp             = 0x122C + 0x4FF4,
             zEnemy_hp_max         = 0x122C + 0x4FF8,
+            zEnemy_drops          = 0x122C + 0x5010,
             zEnemy_iframes        = 0x122C + 0x50F4,
             zEnemy_flags          = 0x122C + 0x5130,
             zEnemy_subboss_id     = 0x122C + 0x5140,
@@ -861,7 +861,7 @@ offsets = {
         ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xCF2C0,
-            zSpellcard_indicator = 0x1c, #todo: game code seem to use 0x78, to check (cf. instruction @ 0x423756 in PseudoC) -> i think that's flags and not always 0 outside spells?
+            zSpellcard_indicator = 0x1C,
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7C,
         ),
@@ -988,6 +988,7 @@ offsets = {
             zEnemy_score_reward   = 0x1230 + 0x5004,
             zEnemy_hp             = 0x1230 + 0x5008,
             zEnemy_hp_max         = 0x1230 + 0x500c,
+            zEnemy_drops          = 0x1230 + 0x5028,
             zEnemy_iframes        = 0x1230 + 0x512c,
             zEnemy_flags          = 0x1230 + 0x516c,
             zEnemy_subboss_id     = 0x1230 + 0x5180,
@@ -1230,9 +1231,12 @@ offsets = {
 #            zEnemy_hurtbox        = None,
 #            zEnemy_hitbox         = None,
 #            zEnemy_rotation       = None,
+#            zEnemy_anm_page       = None,
+#            zEnemy_anm_id         = None,
 #            zEnemy_score_reward   = None,
 #            zEnemy_hp             = None,
 #            zEnemy_hp_max         = None,
+#            zEnemy_drops          = None,
 #            zEnemy_iframes        = None,
 #            zEnemy_flags          = None,
 #            zEnemy_subboss_id     = None,

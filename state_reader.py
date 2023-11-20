@@ -83,6 +83,23 @@ def extract_bullets(bullet_manager = zBulletManager):
 
     return bullets
 
+def extract_enemy_drops(enemy_drops):
+    drops = {}
+
+    for item_id in item_types:
+        drop_count = read_int(enemy_drops + 0x4*item_id)
+        if drop_count:
+            drops[item_id] = drop_count
+
+    main_drop_id = read_int(enemy_drops)
+    if main_drop_id:
+        if main_drop_id in drops:
+            drops[main_drop_id] += 1
+        else:
+            drops[main_drop_id] = 1
+
+    return drops
+
 def extract_enemies(enemy_manager = zEnemyManager):
     enemies = []
     current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
@@ -97,21 +114,22 @@ def extract_enemies(enemy_manager = zEnemyManager):
             continue
 
         enemy = {
-            'position':          (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
-            'hurtbox':           (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
-            'hitbox':            (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
+            'position':     (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
+            'hurtbox':      (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
+            'hitbox':       (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
             'no_hurtbox':   zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
             'no_hitbox':    zEnemyFlags & zEnemyFlags_no_hitbox != 0,
             'invincible':   zEnemyFlags & zEnemyFlags_invincible != 0,
             'is_rectangle': zEnemyFlags & zEnemyFlags_is_rectangle != 0,
             'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
-            'subboss_id':   read_int(zEnemy + zEnemy_subboss_id),
+            'subboss_id':   read_int(zEnemy + zEnemy_subboss_id, signed=True),
             'rotation':     read_float(zEnemy + zEnemy_rotation),
             'anm_page':     read_int(zEnemy + zEnemy_anm_page),
             'anm_id':       read_int(zEnemy + zEnemy_anm_id),
             'score_reward': read_int(zEnemy + zEnemy_score_reward),
             'hp':           read_int(zEnemy + zEnemy_hp),
             'hp_max':       read_int(zEnemy + zEnemy_hp_max),
+            'drops':        extract_enemy_drops(zEnemy + zEnemy_drops),
             'iframes':      read_int(zEnemy + zEnemy_iframes),
         }
 
@@ -614,6 +632,7 @@ def print_game_state(gs: GameState):
     # Game entity prints (all optional) ===
     if gs.bullets and any(bullet.is_active for bullet in gs.bullets): #Bullets
         counter = 0
+
         print("\nList of bullets:")
         print("  Position         Velocity         Speed   Angle   Radius  Color        Type")
         for bullet in gs.bullets:
@@ -626,7 +645,7 @@ def print_game_state(gs: GameState):
             description += tabulate(round(bullet.speed, 1), 8)
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
-            description += tabulate(get_color(bullet.bullet_type, bullet.color), 13)
+            description += tabulate(get_color(bullet.bullet_type, bullet.color)[0], 13)
 
             #account for mono-color sprites
             bullet_type = sprites[bullet.bullet_type][0]
@@ -663,6 +682,7 @@ def print_game_state(gs: GameState):
 
         if line_lasers:
             counter = 0
+
             print("\nList of segment (\"line\") lasers:")
             print("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite")
             for laser in line_lasers:
@@ -673,9 +693,8 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.length, 1), 6) + " / "
                 description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
-                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
-
                 print(description)
 
                 counter += 1
@@ -685,6 +704,7 @@ def print_game_state(gs: GameState):
 
         if infinite_lasers:
             counter = 0
+
             print("\nList of telegraphed (\"infinite\") lasers:")
             print("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)")
             for laser in infinite_lasers:
@@ -695,7 +715,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(f"({format(laser.angular_vel, '.3f').rstrip('0').rstrip('.')})", 9)
                 description += tabulate(f"{round(laser.length, 1)} ({int(100*laser.length/laser.max_length)}%)", 14)
                 description += tabulate(f"{round(laser.width, 1)} ({int(100*laser.width/laser.max_width)}%)", 14)
-                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
 
                 if laser.state == 3:
                     description += f"Telegraph ({laser.start_time - laser.timer}f)"
@@ -717,6 +737,7 @@ def print_game_state(gs: GameState):
 
         if curve_lasers:
             counter = 0
+
             print("\nList of curvy lasers:")
             print("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
             for laser in curve_lasers:
@@ -728,9 +749,8 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.nodes[0].angle, 2), 8)
                 description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
-                description += tabulate(get_curve_color(laser.sprite, laser.color), 8)
+                description += tabulate(get_curve_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(curve_sprites[laser.sprite], 10)
-
                 print(description)
 
                 counter += 1
@@ -740,6 +760,7 @@ def print_game_state(gs: GameState):
 
         if beam_lasers:
             counter = 0
+
             print("\nList of beam lasers:")
             print("Note: Beam lasers are not fully supported; data may be inaccurate.")
             print("  Position         Speed   Angle   Length  Width   Color   Sprite")
@@ -750,9 +771,8 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.angle, 2), 8)
                 description += tabulate(round(laser.length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
-                description += tabulate(get_color(laser.sprite, laser.color), 8)
+                description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(sprites[laser.sprite][0], 8)
-
                 print(description)
 
                 counter += 1
@@ -762,6 +782,7 @@ def print_game_state(gs: GameState):
 
     if gs.enemies: #Enemies
         counter = 0
+
         print("\nList of enemies:")
         print("  Position        Hurtbox         Hitbox          Rotation  IFrames  HP / Max HP     Type")
         for enemy in gs.enemies:
@@ -801,6 +822,10 @@ def print_game_state(gs: GameState):
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
 
+            #note: boss drops are never properly set prior to the frame they're instructed to drop
+            if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
+                description += "\n  • Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
+
             print(description)
 
             counter += 1
@@ -810,13 +835,14 @@ def print_game_state(gs: GameState):
 
     if gs.mode == 7 and gs.items: #Items
         counter = 0
+
         print("\nList of items:")
         print("  Position         Velocity         Type")
         for item in gs.items:
             description = "• "
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
-            description += item.item_type
+            description += get_item_type(item.item_type)
             print(description)
 
             counter += 1

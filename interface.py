@@ -126,6 +126,7 @@ zEnemy_anm_id         = offsets[_module_name].enemies.zEnemy_anm_id
 zEnemy_score_reward   = offsets[_module_name].enemies.zEnemy_score_reward
 zEnemy_hp             = offsets[_module_name].enemies.zEnemy_hp
 zEnemy_hp_max         = offsets[_module_name].enemies.zEnemy_hp_max
+zEnemy_drops          = offsets[_module_name].enemies.zEnemy_drops
 zEnemy_iframes        = offsets[_module_name].enemies.zEnemy_iframes
 zEnemy_flags          = offsets[_module_name].enemies.zEnemy_flags
 zEnemy_subboss_id     = offsets[_module_name].enemies.zEnemy_subboss_id
@@ -321,11 +322,7 @@ elif game_id == 19:
     pvp_timer       = offsets[_module_name].game_specific['pvp_timer']
     rank_max        = offsets[_module_name].game_specific['rank_max']
 
-# Meaning Arrays
-color_coin     = offsets[_module_name].associations.color_coin
-color4         = offsets[_module_name].associations.color4
-color8         = offsets[_module_name].associations.color8
-color16        = offsets[_module_name].associations.color16
+# Associations
 sprites        = offsets[_module_name].associations.sprites
 curve_sprites  = offsets[_module_name].associations.curve_sprites
 enemy_anms     = offsets[_module_name].associations.enemy_anms
@@ -339,6 +336,34 @@ life_piece_req = offsets[_module_name].associations.life_piece_req
 bomb_piece_req = offsets[_module_name].associations.bomb_piece_req
 world_width    = offsets[_module_name].associations.world_width
 world_height   = offsets[_module_name].associations.world_height
+
+# Tweak graph colors here
+_gold        = ('Gold',        (255, 215, 0))
+_silver      = ('Silver',      (190, 190, 190))
+_bronze      = ('Bronze',      (205, 130, 50))
+_black       = ('Black',       (50, 50, 50))
+_dark_red    = ('Dark Red',    (150, 50, 50))
+_red         = ('Red',         (255, 0, 0))
+_purple      = ('Purple',      (190, 70, 210))
+_violet      = ('Violet',      (130, 10, 250)) #used for fireballs
+_pink        = ('Pink',        (255, 75, 235))
+_dark_blue   = ('Dark Blue',   (20, 0, 150))
+_blue        = ('Blue',        (0, 0, 255))
+_dark_cyan   = ('Dark Cyan',   (0, 200, 200))
+_cyan        = ('Cyan',        (65, 255, 255))
+_dark_green  = ('Dark Green',  (115, 255, 115))
+_green       = ('Green',       (135, 255, 145))
+_lime        = ('Lime',        (190, 255, 85))
+_dark_yellow = ('Dark Yellow', (180, 200, 45))
+_yellow      = ('Yellow',      (255, 255, 40))
+_orange      = ('Orange',      (255, 180, 40))
+_white       = ('White',       (230, 230, 230))
+
+color_coin    = [_gold, _silver, _bronze]
+color4        = [_red, _blue, _green, _yellow]
+color8        = [_black, _red, _pink, _blue, _cyan, _green, _yellow, _white]
+color16       = [_black, _dark_red, _red, _purple, _pink, _dark_blue, _blue, _dark_cyan, _cyan, _dark_green, _green, _lime, _dark_yellow, _yellow, _orange, _white]
+curve_sprites = ['Standard', 'Thunder', 'Grapevine'] #not worth setting per-game
 
 # ==========================================================
 # Step 1 - Get the game process
@@ -385,7 +410,7 @@ _game_window = None
 for window in gw.getAllWindows():
     pid = ctypes.c_ulong()
     ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
-    
+
     if pid.value == game_process.pid:
         _game_window = window
         break
@@ -450,7 +475,20 @@ def get_item_type(item_type):
 
 def get_color(sprite, color):
     if sprites[sprite][1] == 0:
-        return sprites[sprite][0].split(' ')[0]
+        sprite_str = sprites[sprite][0]
+
+        if 'Red' in sprite_str:
+            return _red
+        elif 'Purple' in sprite_str:
+            return _purple
+        elif 'Violet' in sprite_str:
+            return _violet
+        elif 'Blue' in sprite_str:
+            return _blue
+        elif 'Yellow' in sprite_str:
+            return _yellow
+        elif 'Orange' in sprite_str:
+            return _orange
 
     elif sprites[sprite][1] == 3:
         return color_coin[color]
@@ -469,10 +507,10 @@ def get_curve_color(sprite, color):
         return color16[color]
     
     elif sprite == 1:
-        return 'Cyan'
+        return _cyan
     
     elif sprite == 2:
-        return 'Lime'
+        return _lime
 
 # Ordered set of available keys
 _keys = ['shift', 'z', 'left', 'right', 'up', 'down', 'x']
@@ -547,7 +585,7 @@ def press_key(key):
     keyboard.release(key)
     wait_global_frame()
 
-def restart_run():  
+def restart_run():
     apply_action_int(0) #ensure no residual input
     press_key('enter')
     press_key('esc')
@@ -605,7 +643,7 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
 _buffers = {} #caching helps!
 _kernel32 = ctypes.windll.kernel32 # minor optimization
 _byref = ctypes.byref(ctypes.c_ulonglong()) # minor optimization
-def _read_memory(address, size, rel): #TODO: may want to split abs/rel into two methods
+def _read_memory(address, size, rel):
     if size not in _buffers:
         _buffers[size] = ctypes.create_string_buffer(size)
     buffer = _buffers[size]

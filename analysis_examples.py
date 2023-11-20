@@ -117,8 +117,6 @@ class AnalysisMostBulletsCircleFrame():
         print(f"Circle encompasses {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]})")
         print("\nNote: The first optimal solution found was displayed - it may be\nunnecessarily biased towards the left/top but remains optimal.")
 
-# TODO: Heatmap version of ^^^ ?
-
 # =======================================================================
 # Dynamic (updating real time) graph examples ===========================
 # =======================================================================
@@ -126,44 +124,52 @@ class AnalysisMostBulletsCircleFrame():
 # Dyn0: Abstract base class to factorize common dynamic graph code
 class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObject), type(ABC)), {})):
     win_title = 'DEFAULT TITLE' #to be customized
+    state = None #current state on graph update
     updateSignal = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, state: GameState = None):
         super().__init__()
-        self.bullet_counts = []
 
         self.app_thread = QtCore.QThread()
         self.moveToThread(self.app_thread)
         self.app_thread.started.connect(self._start_graph_thread)
-        self.updateSignal.connect(self.update_plot)
+        self.updateSignal.connect(self.update_graph)
 
         self.app_thread.start()
 
     @abstractmethod
-    def setup_plot(self):
+    def setup_graph(self):
         pass #to implement
 
     @abstractmethod
-    def update_plot(self):
-        pass #to implement
-
-    @abstractmethod
-    def update_data(self, state):
+    def update_graph(self):
         pass #to implement
 
     def _start_graph_thread(self):
         self.app = QApplication([])
 
         self.win = pg.GraphicsLayoutWidget()
+        #pg.setConfigOption('background', 'w')
+        #pg.setConfigOption('foreground', 'k')
         self.win.setWindowTitle(self.win_title)
         self.win.setWindowFlags(self.win.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.win.show()
-        self.setup_plot()
+
+        self.graph = self.win.addPlot()
+        self.graph.setTitle(self.win_title)
+
+        try:
+            self.setup_graph()
+        except Exception as e:
+            print("\nError during plot setup:", e)
+            print(traceback.format_exc())
+            print("As a result of this error, you may see other errors in update_plot before the program terminates.")
+            terminate()
 
         self.app.exec_()
 
     def step(self, state):
-        self.update_data(state)
+        self.state = state
         self.updateSignal.emit()
 
     def done(self):
@@ -172,7 +178,6 @@ class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObje
         self.app_thread.wait()
 
 # Dyn1: "Track the number of bullets across time and plot that as a dynamic graph" [only requires bullets]
-# TODO: investigate spikes in non-exact mode
 class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
     win_title = 'Bullet Count Over Time'
 
@@ -180,18 +185,16 @@ class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
         super().__init__()
         self.bullet_counts = []
 
-    def setup_plot(self):
-        self.plot = self.win.addPlot(title=self.win_title)
-        self.plot.setLabel('left', 'Bullets')
-        self.plot.setLabel('bottom', 'Time (frames)')
-        self.curve = self.plot.plot(pen='y')
+    def setup_graph(self):
+        self.graph.setLabel('left', 'Bullets')
+        self.graph.setLabel('bottom', 'Time (frames)')
+        self.bullet_curve = self.graph.plot(pen='y')
 
-    def update_plot(self):
-        self.curve.setData(np.arange(len(self.bullet_counts)), self.bullet_counts)
+    def update_graph(self):
+        if self.state.bullets is not None:
+            self.bullet_counts.append(len(self.state.bullets))
 
-    def update_data(self, state):
-        if state.bullets is not None:
-            self.bullet_counts.append(len(state.bullets))
+        self.bullet_curve.setData(np.arange(len(self.bullet_counts)), self.bullet_counts)
 
 # =======================================================================
 # Game world snapshot plots =============================================
@@ -277,7 +280,7 @@ class AnalysisPlotBullets(AnalysisPlot):
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
             y_coords = [bullet.position[1] for bullet in bullets]
-            colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)) for bullet in bullets]
+            colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]) for bullet in bullets]
             sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
             alphas = [0.1 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 1 for bullet in bullets]
 
@@ -349,8 +352,8 @@ class AnalysisPlotItems(AnalysisPlot):
         if items:
             x_coords = [item.position[0] for item in items]
             y_coords = [item.position[1] for item in items]
-            colors = [item_color(item.item_type) for item in items]
-            sizes = [item_size(item.item_type) for item in items]
+            colors = [item_color(get_item_type(item.item_type)) for item in items]
+            sizes = [item_size(get_item_type(item.item_type)) for item in items]
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, marker='*')
 
@@ -377,10 +380,10 @@ class AnalysisPlotLineLasers(AnalysisPlot):
                     tail_y = laser.position[1]
                     head_x = tail_x + laser.length * np.cos(laser.angle)
                     head_y = tail_y + laser.length * np.sin(laser.angle)
-                    ax.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)), zorder=0)
+                    ax.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0)
 
                     if plot_laser_circles:
-                        ax.scatter(head_x, head_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)), s=75, zorder=1)
+                        ax.scatter(head_x, head_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=75, zorder=1)
 
         if not hasLineLasers:
             print(("(Player 2) " if side2 else "") + "No line lasers to plot.")
@@ -405,10 +408,10 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
                     origin_y = laser.position[1]
                     end_x = origin_x + laser.length * np.cos(laser.angle)
                     end_y = origin_y + laser.length * np.sin(laser.angle)
-                    ax.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)), zorder=0, alpha=(1 if laser.state==2 else 0.25))
+                    ax.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0, alpha=(1 if laser.state==2 else 0.25))
 
                     if plot_laser_circles:
-                        ax.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
+                        ax.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
 
         if not hasInfiniteLasers:
             print(("(Player 2) " if side2 else "") + "No telegraphed lasers to plot.")
@@ -446,20 +449,20 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                         if self.has_points:
                             x_coords = [nodes.position[0] for nodes in laser.nodes]
                             y_coords = [nodes.position[1] for nodes in laser.nodes]
-                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color), s=sizes) 
+                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=sizes)
 
                         if self.has_line:
                             for i in range(len(laser.nodes) - 1): #i hate this
-                                ax.plot([laser.nodes[i].position[0], laser.nodes[i+1].position[0]], [laser.nodes[i].position[1], laser.nodes[i+1].position[1]], color=get_curve_color(laser.sprite, laser.color), linewidth=(sizes[i]+sizes[i+1])/2)
+                                ax.plot([laser.nodes[i].position[0], laser.nodes[i+1].position[0]], [laser.nodes[i].position[1], laser.nodes[i+1].position[1]], color=get_curve_color(laser.sprite, laser.color)[0], linewidth=(sizes[i]+sizes[i+1])/2)
                     else: 
                         x_coords = [nodes.position[0] for nodes in laser.nodes]
                         y_coords = [nodes.position[1] for nodes in laser.nodes]
 
                         if self.has_points:
-                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color), s=laser.width * pyplot_factor)
+                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=laser.width * pyplot_factor)
 
                         if self.has_line:
-                            ax.plot(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color), linewidth=laser.width * pyplot_factor)
+                            ax.plot(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], linewidth=laser.width * pyplot_factor)
 
         if not hasCurveLasers:
             print(("(Player 2) " if side2 else "") + "No curvy lasers to plot.")
@@ -519,35 +522,87 @@ class AnalysisPlotBulletHeatmap(AnalysisPlot):
 # Dynamic Game world plots ==============================================
 # =======================================================================
 
-# DynPlot0: Abstract base class to factorize common game-world dynamic plotting code
+# DynPlot0: Abstract base class to factorize common dynamic game-world plotting code
 class AnalysisPlotDynamic(AnalysisDynamic, ABC):
-    def setup_plot(self):
-        self.plot = self.win.addPlot(title=self.win_title)
-        self.plot.setLabel('left', 'Y Coordinate')
-        self.plot.setXRange(-world_width/2, world_width/2)
-        self.plot.setLabel('bottom', 'X Coordinate')
-        self.plot.setYRange(0, world_height)
-        self.plot.invertY(True)
+    def setup_graph(self):
+        self.graph.setLabel('left', 'Y Coordinate')
+        self.graph.setXRange(-world_width/2, world_width/2)
+        self.graph.setLabel('bottom', 'X Coordinate')
+        self.graph.setYRange(0, world_height)
+        self.graph.invertY(True)
+        self.graph.setFixedWidth(world_width)
+        self.graph.setFixedHeight(world_height)
+
         self.scatter = pg.ScatterPlotItem()
-        self.plot.addItem(self.scatter)
+        self.graph.addItem(self.scatter)
+        self.scatter.setPen(None)
 
-        #TODO Actually make this look decent
+    def update_graph(self):
+        player_scale = self.state.player_hitbox_rad
+        if game_id == 14:
+            player_scale *= self.state.game_specific.player_scale
 
-# DynPlot1: "Plot bullet positions in real time" [only requires bullets]
-class AnalysisPlotDynamicBullets(AnalysisPlotDynamic):
-    win_title = 'Bullet Positions Scatter Plot'
+            if self.state.game_specific.seija_flip[0] == -1:
+                self.graph.invertX(True)
+            elif self.graph.getViewBox().getState()['xInverted']:
+                self.graph.invertX(False)
 
-    def __init__(self):
-        super().__init__()
-        self.positions = []
+            if self.state.game_specific.seija_flip[1] == -1:
+                self.graph.invertY(False)
+            elif not self.graph.getViewBox().getState()['yInverted']:
+                self.graph.invertY(True)
 
-    def update_data(self, state):
-        if state.bullets is not None:
-            self.positions = [bullet.position for bullet in state.bullets]
+        self.plot()
+        self.scatter.addPoints([{
+            'pos': self.state.player_position,
+            'size': player_scale*10,
+            'symbol': 'star',
+            'brush': (100, 0, 0),
+        }])
 
-    def update_plot(self):
-        positions = [{'pos': pos} for pos in self.positions]
-        self.scatter.setData(positions)
+    @abstractmethod
+    def plot(self):
+        pass #to implement
+
+def plot_bullets_pg(scatter, bullets):
+    if bullets is not None:
+        scatter.setData([
+            {
+                'pos': bullet.position,
+                'size': (bullet.scale**1.2) * bullet.hitbox_radius,
+                'brush': get_color(bullet.bullet_type, bullet.color)[1] + (25 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 255,)
+            }
+            for bullet in bullets
+        ])
+
+def plot_enemies_pg(scatter, enemies):
+    if enemies is not None:
+        scatter.setData([
+            {
+                'pos': bullet.position,
+                'size': (bullet.scale**1.2) * bullet.hitbox_radius,
+                'brush': get_color(bullet.bullet_type, bullet.color)[1]
+            }
+            for bullet in bullets
+        ])
+
+# DynPlot1: "Plot all game entities in real time" [only doesn't require screenshots]
+class AnalysisPlotDynamicAll(AnalysisPlotDynamic):
+    win_title = 'Game Entity Scatter Plot'
+
+    def plot(self):
+        plot_bullets_pg(self.scatter, self.state.bullets)
+        #plot_enemies_pg(self.scatter, self.state.enemies)
+        #plot_items_pg(self.scatter, self.state.enemies)
+
+        #if lasers:
+        #    for laser in lasers:
+        #        if laser.laser_type == 0:
+        #            plot_line_laser_pg(self.scatter, laser)
+        #        elif laser.laser_type == 1:
+        #            plot_infinite_laser_pg(self.scatter, laser)
+        #        elif laser.laser_type == 2:
+        #            plot_curve_laser_pg(self.scatter, laser)
 
 # =======================================================================
 # Bonus / Miscellaneous =================================================

@@ -33,7 +33,7 @@ Performed if `ingame_duration` is unspecified or less than 2.
 | Name / Type | Description | Default |
 |-|-|-|
 | **`show_untracked`**<br>(bool) | If enabled, prints additional state data (difficulty, character, visual RNG...) deemed not worth tracking for sequence extraction due to either not changing often or being irrelevant. | `False` |
-| **`only_game_world`**<br>(bool) | If enabled, prevents accidentally starting extraction when there is no loaded game world. Also affects sequence extraction, but "not in game world" is one of its termination conditions anyways. | `True` |
+| **`show_enemy_drops`**<br>(bool) | If enabled, a second line listing enemy drops will be added to enemy lines (when applicable). | `False` |
 | **`list_print_limit`**<br>(int) | Maximum number of lines in an entity list to be printed before being cut off. | `30` |
 
 ## Sequence Extraction Settings 
