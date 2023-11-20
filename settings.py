@@ -23,15 +23,14 @@ extraction_settings = {
     'requires_screenshots': False,
 
     # See settings.md for more info
-    'requires_max_curve_data': False,
     'requires_side2_pvp': True,
+    'only_game_world': True,
 }
 
 # Single-State Extraction Settings
 # See settings.md for more info.
 singlext_settings = {
     'show_untracked': False,
-    'only_game_world': True,
     'show_enemy_drops': False,
     'list_print_limit': 30,
 }

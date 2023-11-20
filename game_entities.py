@@ -151,10 +151,10 @@ class P2Side:
     player_iframes: int
     player_focused: bool
     bomb_state: int
-    bullets: Optional[List[Bullet]]
-    enemies: Optional[List[Enemy]]
-    items: Optional[List[Item]]
-    lasers: Optional[List[Laser]]
+    bullets: List[Bullet]
+    enemies: List[Enemy]
+    items: List[Item]
+    lasers: List[Laser]
     hitstun_status: int
     shield_status: int
     last_combo_hits: int
@@ -272,9 +272,9 @@ class GameState:
     player_iframes: int
     player_focused: bool
     bomb_state: int
-    bullets: Optional[List[Bullet]]
-    enemies: Optional[List[Enemy]]
-    items: Optional[List[Item]]
-    lasers: Optional[List[Laser]]
+    bullets: List[Bullet]
+    enemies: List[Enemy]
+    items: List[Item]
+    lasers: List[Laser]
     screen: Optional[np.ndarray]
     game_specific: GameSpecific

@@ -8,7 +8,7 @@ import time
 import atexit
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_max_curve_data, requires_side2_pvp = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_side2_pvp, only_game_world = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 infinite_print_updates = seqext_settings['infinite_print_updates']
@@ -144,29 +144,27 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
 def extract_items(item_manager = zItemManager):
     items = []
-    current_item = item_manager + zItemManager_array
+    item_array_start = item_manager + zItemManager_array
+    item_array_end   = item_array_start + zItemManager_array_len * zItem_len
 
-    while current_item < item_manager + zItemManager_array_len:
-        current_item += zItem_len
-
-        if read_int(current_item + zItem_state) == 0:
+    for item in range(item_array_start, item_array_end, zItem_len):
+        if read_int(item + zItem_state) == 0:
             continue
 
-        item_type = read_int(current_item + zItem_type)
-        item_type_str = get_item_type(item_type)
+        item_type = read_int(item + zItem_type)
 
-        if not item_type_str:
+        if not get_item_type(item_type):
             if item_type < 50:
                 print(f"Found and skipped unknown item with type ID {item_type}. If this is a real in-game item, please report it to the developper!")
             continue
 
-        item_x     = read_float(current_item + zItem_pos)
-        item_y     = read_float(current_item + zItem_pos + 0x4)
-        item_vel_x = read_float(current_item + zItem_vel)
-        item_vel_y = read_float(current_item + zItem_vel + 0x4)
+        item_x     = read_float(item + zItem_pos)
+        item_y     = read_float(item + zItem_pos + 0x4)
+        item_vel_x = read_float(item + zItem_vel)
+        item_vel_y = read_float(item + zItem_vel + 0x4)
 
         items.append(Item(
-            item_type = item_type_str, 
+            item_type = item_type,
             position  = (item_x, item_y), 
             velocity  = (item_vel_x, item_vel_y),
         ))
@@ -291,7 +289,7 @@ def extract_curve_laser(laser_ptr):
         node_angle = None
         node_speed = None
 
-        if i == 0 or requires_max_curve_data:
+        if i == 0:
             node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
             node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
 
@@ -418,10 +416,10 @@ def extract_game_state(frame_id = None, real_time = None):
                 player_iframes      = read_int(zPlayerP2 + zPlayer_iframes),
                 player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
                 bomb_state          = read_int(zBombP2 + zBomb_state),
-                bullets             = extract_bullets(zBulletManagerP2),
-                enemies             = extract_enemies(zEnemyManagerP2),
-                items               = extract_items(zItemManagerP2),
-                lasers              = extract_lasers(zLaserManagerP2),
+                bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
+                enemies             = extract_enemies(zEnemyManagerP2) if requires_enemies else [],
+                items               = extract_items(zItemManagerP2) if requires_items else [],
+                lasers              = extract_lasers(zLaserManagerP2) if requires_lasers else [],
                 hitstun_status      = read_int(zPlayerP2 + zPlayer_hitstun_status),
                 shield_status       = read_int(zPlayerP2 + zPlayer_shield_status),
                 last_combo_hits     = read_int(zPlayerP2 + zPlayer_last_combo_hits),
@@ -487,10 +485,10 @@ def extract_game_state(frame_id = None, real_time = None):
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
         bomb_state          = read_int(zBomb + zBomb_state),
-        bullets             = extract_bullets() if requires_bullets else None,
-        enemies             = extract_enemies() if requires_enemies else None,
-        items               = extract_items() if requires_items else None,
-        lasers              = extract_lasers() if requires_lasers else None,
+        bullets             = extract_bullets() if requires_bullets else [],
+        enemies             = extract_enemies() if requires_enemies else [],
+        items               = extract_items() if requires_items else [],
+        lasers              = extract_lasers() if requires_lasers else [],
         screen              = get_rgb_screenshot() if requires_screenshots else None,
         game_specific       = game_specific,
     )
@@ -907,7 +905,7 @@ atexit.register(on_exit)
 
 print("================================")
 
-if singlext_settings['only_game_world'] and read_int(game_mode, rel=True) != 7:
+if only_game_world and read_int(game_mode, rel=True) != 7:
     print("Error: Game world not loaded (only_game_world set to True).")
     exit()
 
