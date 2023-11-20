@@ -59,12 +59,12 @@ def extract_bullets(bullet_manager = zBulletManager):
         bullet = {
             'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
             'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
-            'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
             'speed':         read_float(zBullet + zBullet_speed),
             'angle':         read_float(zBullet + zBullet_angle),
             'scale':         read_float(zBullet + zBullet_scale),
             'hitbox_radius': read_float(zBullet + zBullet_hitbox_radius),
             'iframes':       read_int(zBullet + zBullet_iframes),
+            'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
             'bullet_type':   read_int(zBullet + zBullet_type, 2),
             'color':         read_int(zBullet + zBullet_color, 2),
         }
@@ -197,7 +197,6 @@ def extract_lasers(laser_manager = zLaserManager):
             'length':     read_float(current_laser_ptr + zLaserBaseClass_length),
             'width':      read_float(current_laser_ptr + zLaserBaseClass_width),
             'speed':      read_float(current_laser_ptr + zLaserBaseClass_speed),
-            'id':         read_int(current_laser_ptr + zLaserBaseClass_id),
             'iframes':    read_int(current_laser_ptr + zLaserBaseClass_iframes),
             'sprite':     read_int(current_laser_ptr + zLaserBaseClass_sprite),
             'color':      read_int(current_laser_ptr + zLaserBaseClass_color),
@@ -320,7 +319,7 @@ def extract_spellcard(spellcard = zSpellCard):
         return None
 
     spell_id = read_int(spellcard + zSpellcard_id)
-    spell_capture_bonus = read_int(spellcard + zSpellcard_bonus)
+    spell_capture_bonus = read_int(spellcard + zSpellcard_bonus, signed=True)
 
     return Spellcard(
         spell_id = spell_id,
@@ -468,11 +467,11 @@ def extract_game_state(frame_id = None, real_time = None):
         stage_chapter       = read_int(stage_chapter, rel=True),
         seq_frame_id        = frame_id,
         seq_real_time       = real_time,
-        state               = read_int(game_state, rel=True),
-        mode                = read_int(game_mode, rel=True),
+        pause_state         = read_int(pause_state, rel=True),
+        game_mode           = read_int(game_mode, rel=True),
         score               = read_int(score, rel=True) * 10,
-        lives               = read_int(lives, rel=True),
-        life_pieces         = read_int(life_pieces, rel=True) if life_pieces else None,
+        lives               = read_int(lives, rel=True, signed=True),
+        life_pieces         = read_int(life_pieces, rel=True) if life_pieces else 0,
         bombs               = read_int(bombs, rel=True),
         bomb_pieces         = read_int(bomb_pieces, rel=True),
         power               = read_int(power, rel=True),
@@ -505,10 +504,10 @@ def print_game_state(gs: GameState):
 
     # Basic resources
     basic_resources = f"| {gs.lives} lives"
-    if gs.life_pieces:
+    if life_piece_req != None:
         basic_resources += f" ({gs.life_pieces}/{life_piece_req} pieces)"
     basic_resources += f"; {gs.bombs} bombs"
-    if gs.bomb_pieces:
+    if bomb_piece_req != None:
         basic_resources += f" ({gs.bomb_pieces}/{bomb_piece_req} pieces)"
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
@@ -516,7 +515,7 @@ def print_game_state(gs: GameState):
     print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
 
     # Useful internals
-    print(f"| Game state: {game_states[gs.state]} ({game_modes[gs.mode]})")
+    print(f"| Game state: {pause_states[gs.pause_state]} ({game_modes[gs.game_mode]})")
     print(f"| Input bitflag: {gs.input:08b}")
     print(f"| RNG value: {gs.rng}")
 
@@ -526,10 +525,10 @@ def print_game_state(gs: GameState):
     #======================================
     # Situational prints ==================
     if gs.boss_timer != -1:
-        print(f"| Boss timer: {gs.boss_timer}")
+        print(f"| Boss timer: {gs.boss_timer:.2f}")
 
     if gs.spellcard:
-        print(f"| Spell #{gs.spellcard.spell_id+1}; SCB: {gs.spellcard.capture_bonus}")
+        print(f"| Spell #{gs.spellcard.spell_id+1}; SCB: {gs.spellcard.capture_bonus if gs.spellcard.capture_bonus > 0 else 'Failed'}")
 
     if gs.bomb_state > 0:
         print(f"| Bomb active (state: {gs.bomb_state})")
@@ -833,7 +832,7 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.enemies)} enemies total]')
                 break
 
-    if gs.mode == 7 and gs.items: #Items
+    if gs.game_mode == 7 and gs.items: #Items
         counter = 0
 
         print("\nList of items:")

@@ -39,22 +39,22 @@ singlext_settings = {
 # Sequence Extraction Settings 
 # See settings.md for more info.
 seqext_settings = {
-    'ingame_duration':        '', #e.g. '520f', '12.4s', etc. or 'infinite', 'inf'
-    'exact':                  True,
-    'auto_focus':             True,
-    'auto_unpause':           False,
-    'auto_repause':           True,
-    'need_active':            False,
+    'ingame_duration': '', #e.g. '520f', '12.4s', etc. or 'infinite', 'inf'
+    'exact':        True,
+    'auto_focus':   True,
+    'auto_unpause': False,
+    'auto_repause': True,
+    'need_active':  False,
     'infinite_print_updates': True,
 }
 
 # Game-World Plotting Settings (Analysis)
 # See settings.md for more info.
 pyplot_settings = {
-    'plot_scale': 1.0,
+    'plot_scale':    1.0,
     'pyplot_factor': 0.2,
     'bullet_factor': 35,
-    'enemy_factor': 5,
+    'enemy_factor':  5,
     'plot_laser_circles': True,
     'plot_enemy_hurtbox': False,
 }

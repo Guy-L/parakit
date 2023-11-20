@@ -272,7 +272,7 @@ class AnalysisPlot(Analysis, ABC):
 
 # Plot1: "Plot the bullet positions of the last frame at game scale (+player)" [only requires bullets]
 class AnalysisPlotBullets(AnalysisPlot):
-    plot_title = 'Scatter Plot of Extracted Bullet Positions'
+    plot_title = 'Bullet Scatter Plot'
 
     def plot(self, ax, side2):
         bullets = self.lastframe.game_specific.side2.bullets if side2 else self.lastframe.bullets
@@ -292,7 +292,7 @@ class AnalysisPlotBullets(AnalysisPlot):
 
 # Plot2: "Plot the enemy positions of the last frame at game scale (+player)" [only requires enemies]
 class AnalysisPlotEnemies(AnalysisPlot):
-    plot_title = 'Scatter Plot of Extracted Enemy Positions'
+    plot_title = 'Enemy Scatter Plot'
 
     def plot(self, ax, side2):
         enemies = self.lastframe.game_specific.side2.enemies if side2 else self.lastframe.enemies
@@ -311,13 +311,13 @@ class AnalysisPlotEnemies(AnalysisPlot):
                         edgecolor = (0, 0, 0, 0.3), linewidth=3
                     ))
 
-                    if plot_enemy_hurtbox:
+                    if plot_enemy_hurtbox and not enemy.no_hurtbox:
                         ax.add_patch(Rectangle( #plot rectangular enemy hurtbox
                             (enemy.position[0]-enemy.hurtbox[0]/2, enemy.position[1]-enemy.hurtbox[1]/2),
                             width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
                             height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
                             angle = np.degrees(enemy.rotation),
-                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hurtbox else 0.5), linewidth=1.5, fill = False
+                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
                 else:
                     ax.add_patch(Ellipse( #plot circular enemy hitbox
@@ -329,13 +329,13 @@ class AnalysisPlotEnemies(AnalysisPlot):
                         edgecolor = (0, 0, 0, 0.3), linewidth=3
                     ))
 
-                    if plot_enemy_hurtbox:
+                    if plot_enemy_hurtbox and not enemy.no_hurtbox:
                         ax.add_patch(Ellipse( #plot circular enemy hurtbox
                             (enemy.position[0], enemy.position[1]),
                             width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
                             height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
                             angle = np.degrees(enemy.rotation),
-                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hurtbox else 0.5), linewidth=1.5, fill = False
+                            edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
 
         else:
@@ -344,7 +344,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
 
 # Plot3: "Plot the item positions of the last frame at game scale (+player)" [only requires items]
 class AnalysisPlotItems(AnalysisPlot):
-    plot_title = 'Scatter Plot of Extracted Item Positions'
+    plot_title = 'Item Scatter Plot'
 
     def plot(self, ax, side2):
         items = self.lastframe.game_specific.side2.items if side2 else self.lastframe.items
@@ -363,7 +363,7 @@ class AnalysisPlotItems(AnalysisPlot):
 
 # Plot4: "Plot the line lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotLineLasers(AnalysisPlot):
-    plot_title = 'Plot of Extracted Line Lasers'
+    plot_title = 'Line Laser Plot'
 
     def plot(self, ax, side2):
         lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
@@ -391,7 +391,7 @@ class AnalysisPlotLineLasers(AnalysisPlot):
 
 # Plot5: "Plot the infinite lasers of the last frame at game scale (+player)" [only requires lasers]
 class AnalysisPlotInfiniteLasers(AnalysisPlot): 
-    plot_title = 'Plot of Extracted Telegraphed Lasers'
+    plot_title = 'Telegraphed Laser Plot'
     
     def plot(self, ax, side2):
         lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
@@ -422,15 +422,15 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
     has_points = False
     has_line = True
     smooth = True
-    smooth_steepness = 0.1
+    smooth_steepness = 0.2
 
     @property
     def plot_title(self):
-        return f"Plot of Extracted Curvy Lasers\nwith Points {'on' if self.has_points else 'off'}, Line {'on' if self.has_line else 'off'} and Smoothing {'on (' + str(self.smooth_steepness) + ')' if self.smooth else 'off'}"
+        return f"Curvy Laser Plot\nwith Points {'on' if self.has_points else 'off'}, Line {'on' if self.has_line else 'off'} and Smoothing {'on (' + str(self.smooth_steepness) + ')' if self.smooth else 'off'}"
 
     def __sigmoid_factor(self, x, left, right): #note: looks bad with small lasers (<15 nodes)
         shift = (self.smooth_steepness ** -1) 
-        return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))        
+        return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))
 
     def plot(self, ax, side2):
         lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
@@ -470,7 +470,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
 
 # Plot7: "Plot all the above at game scale (+player)" [only doesn't require screenshots]
 class AnalysisPlotAll(AnalysisPlot):
-    plot_title = 'Scatter Plot of Extracted... Everything!'
+    plot_title = 'Game Entity Scatter Plot'
 
     def plot(self, ax, side2):
         plottedBullets = AnalysisPlotBullets(self.lastframe).plot(ax, side2)
@@ -676,15 +676,12 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
     plot_title = 'Scatter Plot of Bullets w/ Graze Timer Coloring'
 
     def plot(self, ax, side2):
-        if side2:
-            return HIDE_P2
-
         bullets = self.lastframe.bullets
 
         #if any bullet has it, we're in LoLK, so they all have it
-        if self.lastframe.bullets and any(hasattr(bullet, 'graze_timer') for bullet in self.lastframe.bullets):
+        if bullets and any(hasattr(bullet, 'graze_timer') for bullet in bullets):
             max_graze_timer = 0
-            for bullet in self.lastframe.bullets:
+            for bullet in bullets:
                 if bullet.graze_timer > max_graze_timer:
                     max_graze_timer = bullet.graze_timer
 
@@ -701,8 +698,7 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
 
         else:
-            print("No LoLK bullets to plot.")
-            return DONT_PLOT
+            return AnalysisPlotBullets(self.lastframe).plot(ax, side2)
 
 # UM: "Find and plot the biggest mallet spot" [only requires bullets]
 class AnalysisBestMallet(AnalysisPlot, AnalysisMostBulletsCircleFrame):

@@ -51,7 +51,8 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from PyQt5.QtWidgets import QApplication
 import os
-os.environ['QT_LOGGING_RULES'] = '*=false'
+os.environ['QT_LOGGING_RULES'] = '*=false;*.critical=true;*.fatal=true'
+import traceback
 
 #cursed pyplot stuff, idem
 def pyplot_color(color_str):

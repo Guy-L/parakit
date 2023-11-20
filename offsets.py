@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple, Optional
 # if shared by a majority of windows games (>= 10)
     # offsets.py: defined Optional for all offset objects, set to None when absent
     # game_entities: defined Optional for all game state objects, set to None if offset is None
+        #OR (preferred): non-optional in game states & set to default value if offset is None
 
 # object properties: if not shared by a majority of windows games (<10)
     # offsets.py: defined only in game_specifc dict
@@ -32,14 +33,14 @@ class StaticsOffsets:
     piv: int
     power: int
     lives: int
-    life_pieces: Optional[int] #game-specific: not in pre-SA & UDoALG
+    life_pieces: Optional[int] #absent in pre-SA & UDoALG
     bombs: int
     bomb_pieces: int
     stage_chapter: int
     rank: int
     input: int
     rng: int
-    game_state: int
+    pause_state: int
 
 @dataclass 
 class UntrackedStaticsOffsets:
@@ -84,7 +85,7 @@ class EnemyOffsets:
     enemy_manager_pointer: int
     zEnemyManager_list: int
     zEnemy_data: int
-    zEnemy_pos: int
+    zEnemy_pos: int #"final_pos"
     zEnemy_hurtbox: int
     zEnemy_hitbox: int
     zEnemy_rotation: int
@@ -121,7 +122,6 @@ class LaserBaseOffsets:
     zLaserBaseClass_length: int
     zLaserBaseClass_width: int
     zLaserBaseClass_speed: int
-    zLaserBaseClass_id: int
     zLaserBaseClass_iframes: int
     zLaserBaseClass_sprite: int
     zLaserBaseClass_color: int
@@ -197,10 +197,9 @@ class SupervisorOffsets:
 @dataclass
 class Associations:
     sprites: List[Tuple[str, int]]
-    curve_sprites: List[str]
     enemy_anms: Dict[int, str]
     item_types: Dict[int, str]
-    game_states: List[str]
+    pause_states: List[str]
     game_modes: Dict[int, str]
     characters: List[str]
     subshots: List[str]
@@ -243,40 +242,32 @@ class Offset:
 
 
 
-## Association arrays that are shared between games.
-# Assuming these are the same between UM and DDC until proven otherwise 
-# If proven otherwise then just define it seperately in both instances
-# If any of these don't change at all in any game, remove from offset class
-modern_color_coin = ['Gold', 'Silver', 'Bronze']
-modern_color4 = ['Red', 'Blue', 'Green', 'Yellow']     
-modern_color8 = ['Black', 'Red', 'Pink', 'Blue', 'Cyan', 'Green', 'Yellow', 'White'] 
-modern_color16 = ['Black', 'Dark Red', 'Red', 'Purple', 'Pink', 'Dark Blue', 'Blue', 'Dark Cyan', 'Cyan', 'Dark Green', 'Green', 'Lime', 'Dark Yellow', 'Yellow', 'Orange', 'White'] 
+## Maps & properties shared between games
+# Always re-evaluate when adding new games
+sprites_post_td = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16)] #TD-DDC
+sprites_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star CW', 8), ('Big Star CCW', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #LoLK-WBaWC
+sprites_post_um = sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)] #UM/HBM(?)/UDoALG
 
-#re-evaluate when adding new modern games.
-modern_sprites_pre_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #assuming the second spinning star came with lolk
-modern_sprites_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star CW', 8), ('Big Star CCW', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Yellow Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)]
-modern_sprites_post_um = modern_sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)]
-modern_curve_sprites = ['Standard', 'Thunder', 'Grapevine']
+enemy_anms_base = {0: "Blue Fairy", 5: "Red Fairy", 10: "Green Fairy", 15: "Yellow Fairy", 20: "Blue Flower Fairy", 25: "Red Flower Fairy", 30: "Maroon Fairy", 35: "Teal Fairy", 40: "Sunflower Fairy"}
+modern_enemy_anms_pre_ddc = {**enemy_anms_base, 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 65: "Red Yin-Yang", 68: "Green Yin-Yang", 71: "Blue Yin-Yang", 74: "Purple Yin-Yang", 78: "Red Spirit", 79:"Red Spirit", 80: "Green Spirit", 82: "Blue Spirit", 83: "Green Spirit", 87:"Blue Spirit", 91: "Yellow Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"}
+modern_enemy_anms_post_ddc = {**modern_enemy_anms_pre_ddc, 80: "Red Inverted Spirit", 84: "Green Inverted Spirit", 88: "Blue Inverted Spirit", 92: "Yellow Inverted Spirit"}
+modern_enemy_anms_post_wbawc = {**modern_enemy_anms_post_ddc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
 
-modern_enemy_anms_pre_wbawc = {0: "Blue Fairy", 5: "Red Fairy", 10: "Green Fairy", 15: "Yellow Fairy", 20: "Blue Flower Fairy", 25: "Red Flower Fairy", 30: "Maroon Fairy", 35: "Teal Fairy", 40: "Sunflower Fairy", 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 79:"Red Spirit", 87:"Blue Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"} #missing pre-WBaWC Green Spirit
-modern_enemy_anms_post_wbawc = {**modern_enemy_anms_pre_wbawc, 65: "Red Yin-Yang", 68: "Green Yin-Yang", 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
+item_types_td = {1: "Power", 2: "Point", 3:"Big Power", 4:"Big Point", 5:"Bomb Piece", 6: "Life", 7: "Bomb", 8: "Full Power", 9: "Cancel", 10: "LifeP. Spirit", 11: "Blue Spirit", 12: "BombP. Spirit", 13: "Grey Spirit", 14: "Blue Spirit"} #TD
+item_types_post_ddc = {1: "Power", 2: "Point", 3:"Big Power", 4:"Life Piece", 5:"Life", 6:"Bomb Piece", 7:"Bomb", 8:"Full Power", 9:"Green", 10:"Cancel", 11:"Big Cancel", 12:"Undiff. Piece"} #shared DDC-LoLK
+item_types_post_hsifs = {**item_types_post_ddc, 10:"Green++", 11:"Cancel", 12:"Cancel++", 13:"Big Cancel", 14:"Big Cancel++", 15:"Bomb Piece"} #shared HSiFS-WBaWC
+item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
 
-modern_item_types_base_post_ddc = {1: "Power", 2: "Point", 3:"Big Power", 4:"Life Piece", 5:"Life", 6:"Bomb Piece", 7:"Bomb", 8:"Full Power", 9:"Green", 10:"Cancel", 11:"Big Cancel"} #shared DDC-LoLK
-modern_item_types_post_hsifs = {**modern_item_types_base_post_ddc, 10:"Green++", 11:"Cancel", 12:"Cancel++", 13:"Big Cancel", 14:"Big Cancel++", 15:"Bomb Piece"} #shared HSiFS-WBaWC
-modern_item_types_post_um = {**modern_item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
+#to add when supporting these
+#hsifs: item_types    = {**item_types_post_hsifs, 16:"Season"}
+#wbawc: item_types    = {**item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit"}
 
-#to add
-#hsifs: item_types    = {**modern_item_types_post_hsifs, 16:"Season"}
-#wbawc: item_types    = {**modern_item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit"}
-
-modern_game_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
+modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
 modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
 
 usual_difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
 usual_world_width = 384
 usual_world_height = 448
-
-## The mother of all dictionaries...
 
 offsets = {
 
@@ -340,7 +331,7 @@ offsets = {
             rank          = 0xf583c,
             input         = 0xd6a90,
             rng           = 0xdb510,
-            game_state    = 0xf7ac8,
+            pause_state   = 0xf7ac8,
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xd8f58,
@@ -360,7 +351,7 @@ offsets = {
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xdb52c,
-            zBomb_state = 0x40,
+            zBomb_state  = 0x40,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xdb530,
@@ -415,7 +406,6 @@ offsets = {
             zLaserBaseClass_length  = 0x70,
             zLaserBaseClass_width   = 0x74,
             zLaserBaseClass_speed   = 0x78,
-            zLaserBaseClass_id      = 0x80,
             zLaserBaseClass_iframes = 0x5b4,
             zLaserBaseClass_sprite  = 0x5b8,
             zLaserBaseClass_color   = 0x5bc,
@@ -480,19 +470,14 @@ offsets = {
             rng_seed        = 0xd8f60 + 0x728,
         ),
         associations = Associations(
-            color_coin    = modern_color_coin,
-            color4        = modern_color4,
-            color8        = modern_color8,
-            color16       = modern_color16,
-            sprites       = modern_sprites_pre_lolk,
-            curve_sprites = modern_curve_sprites,
-            enemy_anms    = {**modern_enemy_anms_pre_wbawc, 80:"Red Inverted Spirit", 88:"Blue Inverted Spirit"},
-            item_types    = {**modern_item_types_base_post_ddc, 12:"Undiff. Piece"},
-            game_states   = modern_game_states,
+            sprites       = sprites_post_td + [('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)],
+            enemy_anms    = modern_enemy_anms_post_ddc,
+            item_types    = item_types_post_ddc,
+            pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Sakuya'],
             subshots      = ['A', 'B'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -501,8 +486,8 @@ offsets = {
             zEnemyFlags_is_boss      = 2**23,
             life_piece_req = 3,
             bomb_piece_req = 8,
-            world_width = usual_world_width,
-            world_height = usual_world_height,
+            world_width    = usual_world_width,
+            world_height   = usual_world_height,
         ),
         game_specific = {
             'zBullet_ex_delay_timer': 0x12ec,
@@ -534,7 +519,7 @@ offsets = {
             rank          = 0xe7418,
             input         = 0xe6f28,
             rng           = 0xe9a48,
-            game_state    = 0x11bc60,
+            pause_state   = 0x11bc60,
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xe73e8,
@@ -554,7 +539,7 @@ offsets = {
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xe9a68,
-            zBomb_state = 0x24,
+            zBomb_state  = 0x24,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xe9a6c,
@@ -609,7 +594,6 @@ offsets = {
             zLaserBaseClass_length  = 0x70,
             zLaserBaseClass_width   = 0x74,
             zLaserBaseClass_speed   = 0x78,
-            zLaserBaseClass_id      = 0x80,
             zLaserBaseClass_iframes = 0x5c8,
             zLaserBaseClass_sprite  = 0x5cc,
             zLaserBaseClass_color   = 0x5d0,
@@ -674,19 +658,14 @@ offsets = {
             rng_seed        = 0xe77d0 + 0x73c,
         ),
         associations = Associations(
-            color_coin    = modern_color_coin,
-            color4        = modern_color4,
-            color8        = modern_color8,
-            color16       = modern_color16,
-            sprites       = modern_sprites_post_lolk,
-            curve_sprites = modern_curve_sprites,
-            enemy_anms    = modern_enemy_anms_pre_wbawc,
-            item_types    = {**modern_item_types_base_post_ddc, 12:"Undiff. Piece", 13:"Graze"},
-            game_states   = modern_game_states,
+            sprites       = sprites_post_lolk,
+            enemy_anms    = modern_enemy_anms_post_ddc,
+            item_types    = {**item_types_post_ddc, 13:"Graze"},
+            pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Reisen'],
             subshots      = ['N/A'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -695,8 +674,8 @@ offsets = {
             zEnemyFlags_is_boss      = 2**23,
             life_piece_req = 3,
             bomb_piece_req = 5,
-            world_width = usual_world_width,
-            world_height = usual_world_height,
+            world_width    = usual_world_width,
+            world_height   = usual_world_height,
         ),
         game_specific = {
             'time_in_chapter': 0xe7400,
@@ -741,7 +720,7 @@ offsets = {
             rank          = 0xCCD08,
             input         = 0xCA428,
             rng           = 0xCF288,
-            game_state    = 0x16AD00,
+            pause_state   = 0x16AD00,
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0xCCBF0,
@@ -761,7 +740,7 @@ offsets = {
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xCF2B8,
-            zBomb_state = 0x30,
+            zBomb_state  = 0x30,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xCF2BC,
@@ -816,7 +795,6 @@ offsets = {
             zLaserBaseClass_length  = 0x70,
             zLaserBaseClass_width   = 0x74,
             zLaserBaseClass_speed   = 0x78,
-            zLaserBaseClass_id      = 0x80,
             zLaserBaseClass_iframes = 0x77C,
             zLaserBaseClass_sprite  = 0x780,
             zLaserBaseClass_color   = 0x784,
@@ -881,19 +859,14 @@ offsets = {
             rng_seed        = 0xCCDF0 + 0x838,
         ),
         associations = Associations(
-            color_coin    = modern_color_coin,
-            color4        = modern_color4,
-            color8        = modern_color8,
-            color16       = modern_color16,
-            sprites       = modern_sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)],
-            curve_sprites = modern_curve_sprites,
+            sprites       = sprites_post_um,
             enemy_anms    = {**modern_enemy_anms_post_wbawc, 251: "Jimbo"},
-            item_types    = {**modern_item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
-            game_states   = modern_game_states,
+            item_types    = {**item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
+            pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
             subshots      = ['N/A'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -902,8 +875,8 @@ offsets = {
             zEnemyFlags_is_boss      = 2**23,
             life_piece_req = 3,
             bomb_piece_req = 3,
-            world_width = usual_world_width,
-            world_height = usual_world_height,
+            world_width    = usual_world_width,
+            world_height   = usual_world_height,
         ),
         game_specific = {
             'funds': 0xCCD34,
@@ -939,7 +912,7 @@ offsets = {
             rank          = 0x207aa0,
             input         = 0x200aec,
             rng           = 0x1ae420,
-            game_state    = 0x20b210,
+            pause_state   = 0x20b210,
         ),
         statics_untracked = UntrackedStaticsOffsets(
             game_speed      = 0x1a356c,
@@ -959,7 +932,7 @@ offsets = {
         ),
         bomb = BombOffsets(
             bomb_pointer = 0x1ae48c,
-            zBomb_state = 0x18,
+            zBomb_state  = 0x18,
         ),
         bullets = BulletOffsets(
             bullet_manager_pointer = 0x1ae470,
@@ -1014,7 +987,6 @@ offsets = {
             zLaserBaseClass_length  = 0x7c,
             zLaserBaseClass_width   = 0x80,
             zLaserBaseClass_speed   = 0x84,
-            zLaserBaseClass_id      = 0x94,
             zLaserBaseClass_iframes = 0x85c,
             zLaserBaseClass_sprite  = 0x874,
             zLaserBaseClass_color   = 0x878,
@@ -1079,19 +1051,14 @@ offsets = {
             rng_seed        = 0x208380 + 0x950,
         ),
         associations = Associations(
-            color_coin    = modern_color_coin,
-            color4        = modern_color4,
-            color8        = modern_color8,
-            color16       = modern_color16,
-            sprites       = modern_sprites_post_um,
-            curve_sprites = modern_curve_sprites,
+            sprites       = sprites_post_um,
             enemy_anms    = {**modern_enemy_anms_post_wbawc, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
-            item_types    = {**modern_item_types_post_um, 9: "Spirit Power"}, #technically more changes in HBM/UDoALG with bigger-sized spirit power items, but never used afaik
-            game_states   = modern_game_states,
+            item_types    = {**item_types_post_um, 9: "Spirit Power"}, #technically more changes in HBM/UDoALG with bigger-sized spirit power items, but never used afaik
+            pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             subshots      = ['N/A'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -1100,8 +1067,8 @@ offsets = {
             zEnemyFlags_is_boss      = 2**6,
             life_piece_req = None, #note: not in this game
             bomb_piece_req = 3,
-            world_width = 296,
-            world_height = usual_world_height,
+            world_width    = 296,
+            world_height   = usual_world_height,
         ),
         game_specific = {
             #Struct Members (Singletons)
@@ -1187,7 +1154,7 @@ offsets = {
 #            rank          = None,
 #            input         = None,
 #            rng           = None,
-#            game_state    = None,
+#            pause_state   = None,
 #        ),
 #        statics_untracked = UntrackedStaticsOffsets(
 #            game_speed      = None,
@@ -1207,7 +1174,7 @@ offsets = {
 #        ),
 #        bomb = BombOffsets(
 #            bomb_pointer = None,
-#            zBomb_state = None,
+#            zBomb_state  = None,
 #        ),
 #        bullets = BulletOffsets(
 #            bullet_manager_pointer = None,
@@ -1262,7 +1229,6 @@ offsets = {
 #            zLaserBaseClass_length  = None,
 #            zLaserBaseClass_width   = None,
 #            zLaserBaseClass_speed   = None,
-#            zLaserBaseClass_id      = None,
 #            zLaserBaseClass_iframes = None,
 #            zLaserBaseClass_sprite  = None,
 #            zLaserBaseClass_color   = None,
@@ -1327,26 +1293,24 @@ offsets = {
 #            rng_seed        = None,
 #        ),
 #        associations = Associations(
-#            color_coin    = None,
-#            color4        = None,
-#            color8        = None,
-#            color16       = None,
 #            sprites       = None,
-#            curve_sprites = None,
 #            enemy_anms    = None,
 #            item_types    = None,
-#            game_states   = None,
+#            pause_states  = None,
 #            game_modes    = None,
 #            characters    = None,
 #            subshots      = None,
 #            difficulties  = None,
-#            zEnemyFlags_is_boss    = None,
-#            zEnemyFlags_intangible = None,
-#            zEnemyFlags_no_hitbox  = None,
+#            zEnemyFlags_no_hurtbox   = None,
+#            zEnemyFlags_no_hitbox    = None,
+#            zEnemyFlags_invincible   = None,
+#            zEnemyFlags_intangible   = None,
+#            zEnemyFlags_is_rectangle = None,
+#            zEnemyFlags_is_boss      = None,
 #            life_piece_req = None,
 #            bomb_piece_req = None,
-#            world_width = None,
-#            world_height = None,
+#            world_width    = None,
+#            world_height   = None,
 #        ),
 #        game_specific = { }
 #    ),

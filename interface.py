@@ -76,7 +76,7 @@ stage_chapter = offsets[_module_name].statics.stage_chapter
 rank          = offsets[_module_name].statics.rank
 input         = offsets[_module_name].statics.input
 rng           = offsets[_module_name].statics.rng
-game_state    = offsets[_module_name].statics.game_state
+pause_state   = offsets[_module_name].statics.pause_state
 
 # Untracked Statics
 game_speed = offsets[_module_name].statics_untracked.game_speed
@@ -116,7 +116,6 @@ zBullet_color          = offsets[_module_name].bullets.zBullet_color
 enemy_manager_pointer = offsets[_module_name].enemies.enemy_manager_pointer
 zEnemyManager_list    = offsets[_module_name].enemies.zEnemyManager_list
 zEnemy_data           = offsets[_module_name].enemies.zEnemy_data
-zEnemyManager_list    = offsets[_module_name].enemies.zEnemyManager_list
 zEnemy_pos            = offsets[_module_name].enemies.zEnemy_pos
 zEnemy_hurtbox        = offsets[_module_name].enemies.zEnemy_hurtbox
 zEnemy_hitbox         = offsets[_module_name].enemies.zEnemy_hitbox
@@ -142,11 +141,11 @@ zEnemyFlags_is_boss      = offsets[_module_name].associations.zEnemyFlags_is_bos
 item_manager_pointer   = offsets[_module_name].items.item_manager_pointer
 zItemManager_array     = offsets[_module_name].items.zItemManager_array
 zItemManager_array_len = offsets[_module_name].items.zItemManager_array_len
-zItem_len    = offsets[_module_name].items.zItem_len
 zItem_state  = offsets[_module_name].items.zItem_state
 zItem_type   = offsets[_module_name].items.zItem_type
 zItem_pos    = offsets[_module_name].items.zItem_pos
 zItem_vel    = offsets[_module_name].items.zItem_vel
+zItem_len    = offsets[_module_name].items.zItem_len
 
 # Laser (Base)
 laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
@@ -159,7 +158,6 @@ zLaserBaseClass_angle   = offsets[_module_name].laser_base.zLaserBaseClass_angle
 zLaserBaseClass_length  = offsets[_module_name].laser_base.zLaserBaseClass_length
 zLaserBaseClass_width   = offsets[_module_name].laser_base.zLaserBaseClass_width
 zLaserBaseClass_speed   = offsets[_module_name].laser_base.zLaserBaseClass_speed
-zLaserBaseClass_id      = offsets[_module_name].laser_base.zLaserBaseClass_id
 zLaserBaseClass_iframes = offsets[_module_name].laser_base.zLaserBaseClass_iframes
 zLaserBaseClass_sprite  = offsets[_module_name].laser_base.zLaserBaseClass_sprite
 zLaserBaseClass_color   = offsets[_module_name].laser_base.zLaserBaseClass_color
@@ -220,8 +218,8 @@ stage_timer         = offsets[_module_name].game_thread.stage_timer
 
 # Supervisor
 supervisor_addr = offsets[_module_name].supervisor.supervisor_addr
-game_mode = offsets[_module_name].supervisor.game_mode
-rng_seed = offsets[_module_name].supervisor.rng_seed
+game_mode       = offsets[_module_name].supervisor.game_mode
+rng_seed        = offsets[_module_name].supervisor.rng_seed
 
 # Game-specific
 if game_id in has_bullet_delay:
@@ -236,15 +234,15 @@ if game_id == 14:
 
 elif game_id == 15:
     time_in_chapter = offsets[_module_name].game_specific['time_in_chapter']
-    chapter_graze = offsets[_module_name].game_specific['chapter_graze']
-    chapter_enemy_weight_spawned = offsets[_module_name].game_specific['chapter_enemy_weight_spawned']
+    chapter_graze   = offsets[_module_name].game_specific['chapter_graze']
+    chapter_enemy_weight_spawned   = offsets[_module_name].game_specific['chapter_enemy_weight_spawned']
     chapter_enemy_weight_destroyed = offsets[_module_name].game_specific['chapter_enemy_weight_destroyed']
-    pointdevice_resets_total = offsets[_module_name].game_specific['pointdevice_resets_total']
-    pointdevice_resets_chapter = offsets[_module_name].game_specific['pointdevice_resets_chapter']
-    modeflags = offsets[_module_name].game_specific['modeflags']
+    pointdevice_resets_total       = offsets[_module_name].game_specific['pointdevice_resets_total']
+    pointdevice_resets_chapter     = offsets[_module_name].game_specific['pointdevice_resets_chapter']
+    modeflags            = offsets[_module_name].game_specific['modeflags']
     zBomb_reisen_shields = offsets[_module_name].game_specific['zBomb_reisen_shields']
-    zEnemy_weight = offsets[_module_name].game_specific['zEnemy_weight']
-    zBullet_graze_timer = offsets[_module_name].game_specific['zBullet_graze_timer']
+    zEnemy_weight        = offsets[_module_name].game_specific['zEnemy_weight']
+    zBullet_graze_timer  = offsets[_module_name].game_specific['zBullet_graze_timer']
     zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
 
 elif game_id == 18:
@@ -324,10 +322,9 @@ elif game_id == 19:
 
 # Associations
 sprites        = offsets[_module_name].associations.sprites
-curve_sprites  = offsets[_module_name].associations.curve_sprites
 enemy_anms     = offsets[_module_name].associations.enemy_anms
 item_types     = offsets[_module_name].associations.item_types
-game_states    = offsets[_module_name].associations.game_states
+pause_states   = offsets[_module_name].associations.pause_states
 game_modes     = offsets[_module_name].associations.game_modes
 characters     = offsets[_module_name].associations.characters
 subshots       = offsets[_module_name].associations.subshots
@@ -424,24 +421,15 @@ else:
 
 # Interface Method Definitions
 
-def get_rgb_screenshot(): #Note: fails if the window is inactive!    
-    # Take a screenshot of the game window with a predetermined crop (note that there's 3 extra pixels on every side of the screenshot by default)
+def get_rgb_screenshot(): #Note: fails if the window is inactive!
     screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
-
-    # Convert the PIL image to a NumPy array
     return np.array(screenshot)
 
-def get_greyscale_screenshot(): #Note: fails if the window is inactive!    
-    # Take a screenshot of the game window with a predetermined crop (note that there's 3 extra pixels on every side of the screenshot by default)
+def get_greyscale_screenshot(): #Note: fails if the window is inactive!
     screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
-
-    # Convert the PIL image to a NumPy array
     rgb_screenshot = np.array(screenshot)
-
-    # Convert the RGB image to a greyscale image
     grey_screenshot = cv2.cvtColor(rgb_screenshot, cv2.COLOR_BGR2GRAY) # can be saved with imwrite
 
-    # Add a channel dimension to the greyscale image    
     return np.expand_dims(grey_screenshot, axis=-1)
 
 def save_screenshot(filename, screenshot): 
@@ -558,7 +546,7 @@ def terminate():
     auto_termination = True
 
 def eval_termination_conditions(need_active):
-    if read_int(game_state, rel=True) == 1:
+    if read_int(pause_state, rel=True) == 1:
         return "Non-run game state detected"
     elif not game_process.is_running():
         return "Game was closed" #bugged, but not worth fixing (edge case)
@@ -594,10 +582,10 @@ def restart_run():
     press_key('z')
 
 def pause_game():
-    if get_focus() and read_int(game_state, rel=True) == 2:
+    if get_focus() and read_int(pause_state, rel=True) == 2:
         press_key('esc')
 
-        while read_int(game_state, rel=True) != 0:
+        while read_int(pause_state, rel=True) != 0:
             pass
 
         #seems to be a hardcoded 8-frame delay between 
@@ -605,10 +593,10 @@ def pause_game():
         wait_global_frame(count=8)
 
 def unpause_game():
-    if get_focus() and read_int(game_state, rel=True) == 0:
+    if get_focus() and read_int(pause_state, rel=True) == 0:
         press_key('esc')
-        
-        while read_int(game_state, rel=True) != 2:
+
+        while read_int(pause_state, rel=True) != 2:
             pass
 
 def get_focus():
@@ -636,6 +624,12 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
         apply_action_str(action)
         wait_game_frame(need_active=True)
     apply_action_int(0)
+
+def print_int(offset, bytes = 4, rel = False, signed = False, name = None):
+    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_int(offset, bytes, rel, signed)}")
+
+def print_float(offset, rel = False, name = None):
+    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_float(offset, rel)}")
 
 
 # Private Method Definitions
@@ -674,7 +668,7 @@ def _random_player():
                     read_int(power, rel=True), 
                     read_int(piv, rel=True), 
                     read_int(graze, rel=True),
-                    read_int(game_state, rel=True),
+                    read_int(pause_state, rel=True),
                     '{:08b}'.format(action),
                     cur_frame+1])))
         apply_action_int(action)

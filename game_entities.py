@@ -11,12 +11,12 @@ import numpy as np
 class Bullet:
     position: Tuple[float, float]
     velocity: Tuple[float, float]
-    is_active: bool
     speed: float
     angle: float
     scale: float
     hitbox_radius: float
     iframes: int
+    is_active: bool
     bullet_type: int
     color: int
 
@@ -56,11 +56,10 @@ class Laser:
     length: float
     width: float
     speed: float
-    id: int
     iframes: int
     sprite: int
     color: int
-    
+
 @dataclass
 class LineLaser(Laser):
     start_pos: Tuple[float, float]
@@ -179,12 +178,22 @@ class P2Side:
 class GameSpecific(ABC):
     pass
 
+# Ten Desires
+@dataclass
+class GameSpecificTD(GameSpecific):
+    life_piece_req: int
+    trance_active: bool
+    trance_meter: int #[0, 600], doubles as remaining frame counter for trances (600 frames = 10s)
+    chain_timer: int #[0, 60] frames
+    chain_counter: int #>9 greys spawn
+    spirit_items: List[SpiritItem]
+
 # Double Dealing Character
 @dataclass
 class GameSpecificDDC(GameSpecific):
     bonus_count: int
     player_scale: float #[1, 3]
-    seija_flip: (float, float) #[-1, 1] for x and y
+    seija_flip: Tuple[float, float] #[-1, 1] for x and y
 
 # Legacy of Lunatic Kingdom
 @dataclass
@@ -243,11 +252,11 @@ class GameState:
     stage_chapter: int
     seq_frame_id: Optional[int]
     seq_real_time: Optional[float]
-    state: int
-    mode: int
+    pause_state: int
+    game_mode: int
     score: int
     lives: int
-    life_pieces: Optional[int] #game-specific: absent in pre-SA & UDoALG
+    life_pieces: int #set to 0 in pre-SA + UDoALG for convenience
     bombs: int
     bomb_pieces: int
     power: int
