@@ -1084,6 +1084,7 @@ offsets = {
         game_specific = {
             'funds': 0xCCD34,
             'card_nicknames': {41: "Gap", 42: "Mallet", 43: "Keystone", 44: "Moon", 45: "Miko", 46: "Fang", 47: "Sun", 48: "Lily", 49: "Drum", 50: "Sumireko", 52: "Bottle", 53: "Rice"},
+            'zBulletManager_cancel_counter': 0x7A41D0,
             'ability_manager_pointer': 0xCF298,
             'zAbilityManager_list': 0x18,
             'zAbilityManager_total_cards': 0x28,

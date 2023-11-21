@@ -278,6 +278,7 @@ elif game_id == 18:
     funds = offsets[_module_name].game_specific['funds']
     card_nicknames = offsets[_module_name].game_specific['card_nicknames']
 
+    zBulletManager_cancel_counter   = offsets[_module_name].game_specific['zBulletManager_cancel_counter']
     ability_manager_pointer         = offsets[_module_name].game_specific['ability_manager_pointer']
     zAbilityManager_list            = offsets[_module_name].game_specific['zAbilityManager_list']
     zAbilityManager_total_cards     = offsets[_module_name].game_specific['zAbilityManager_total_cards']

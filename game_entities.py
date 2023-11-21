@@ -243,8 +243,9 @@ class GameSpecificUM(GameSpecific):
     total_actives: int
     total_equipmt: int
     total_passive: int
-    lily_counter: Optional[int]
-    centipede_multiplier: Optional[float]
+    cancel_counter: int #increments with bullet cancels that spawn items, used by Mallet for item conversion
+    lily_counter: Optional[int] #increments with uses of the Lily card, determines difficulty
+    centipede_multiplier: Optional[float] #[1.0, 1.8]
     active_cards: List[ActiveCard]
 
 # Unfinished Dream of All Living Ghost

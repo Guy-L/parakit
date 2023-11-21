@@ -473,6 +473,7 @@ def extract_game_state(frame_id = None, real_time = None):
             total_actives        = read_int(zAbilityManager + zAbilityManager_total_actives),
             total_equipmt        = read_int(zAbilityManager + zAbilityManager_total_equipmt),
             total_passive        = read_int(zAbilityManager + zAbilityManager_total_passive),
+            cancel_counter       = read_int(zBulletManager + zBulletManager_cancel_counter),
             lily_counter         = lily_counter,
             centipede_multiplier = centipede_multiplier,
             active_cards         = active_cards,
