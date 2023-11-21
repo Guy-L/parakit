@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from abc import ABC
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Optional, Dict, Any, Union
 import numpy as np
 
 # ================================================
@@ -122,7 +122,7 @@ class CircleEcho:
 
 @dataclass
 class TDEnemy(Enemy):
-    kyouko_echo: RectangleEcho | CircleEcho
+    kyouko_echo: Union[RectangleEcho, CircleEcho]
     speedkill_blue_drops: int
     speedkill_time_left_for_amt: int
 
