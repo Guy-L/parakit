@@ -1,5 +1,3 @@
-
-
 # ParaKit - Touhou Data Analysis
 
 ParaKit is a customizable Python tool and scripting framework capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed.
@@ -87,6 +85,9 @@ py state_reader.py infinite
 
 ## Custom Analyzers
 
+**Temporary note:**
+<br>**We higly recommend that you get started by looking at the GameState object specification in `game_entities.py` and simple analyzers in `analysis_examples.py`. This section will be expanded and improved for clarity at a later point. Feel free to ask if you have any questions.**
+
 A template analyzer called `AnalysisTemplate` can be found in `analysis.py`. To make your own analyzer, copy this template, give it a unique class name, and implement the `__init__()`, `step()` and `done()` methods. It'll then instantly be added to the analyzers you can select in `settings.py`.
 
 Initialize in `__init__()` any variables you need to track during the extraction (a common property, for instance, is the "best frame" seen so far). Every time a game state is extracted (i.e. only once for single-state extraction), the `step()` method is called and passed a `GameState` object. `done()` then runs once extraction is complete. 
@@ -108,9 +109,6 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 ### Single State Extraction
 
 <img alt="single state extraction" src="https://cdn.discordapp.com/attachments/522639011295002626/1140864996348280952/image.png" width="600px">
-
-<img alt="single state extraction 2" src="https://cdn.discordapp.com/attachments/522639011295002626/1140866361665531974/image.png" width="600px">
-
 
 ### Sequence Extraction over 50 frames:
 
@@ -135,7 +133,7 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="DDC St4 Final" src="https://github.com/Guy-L/parakit/assets/55163797/f7076cab-4bbb-42d9-be50-48069e103914"> |
 | `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Uses bullets.* | <img alt="UM st5 fireballs enemies" src="https://github.com/Guy-L/parakit/assets/55163797/71c8e758-8c02-4278-9d12-9a42ae3f82e8"> |
 | `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Uses bullets.* | <img alt="Seki Ascii" src="https://github.com/Guy-L/parakit/assets/55163797/fae9f00a-36dd-4576-bac6-04bd9b438050"> |
-| `AnalysisPlotTD` <br>Plots the spirit item positions and Kyouko echo bounds of the last frame. <br>*Uses items & enemies.* | <img alt="Kyouko non 2" src="https://github.com/Guy-L/parakit/assets/55163797/c79dfd28-f4b8-4c29-b08b-8363e0102dde"> |
+| `AnalysisPlotTD` <br>Plots the spirit item positions and Kyouko echo bounds of the last frame. Included in `AnalysisPlotAll`. <br>*Uses items & enemies.* | <img alt="Kyouko non 2" src="https://github.com/Guy-L/parakit/assets/55163797/c79dfd28-f4b8-4c29-b08b-8363e0102dde"> |
 | `AnalysisPlotEnemiesBlueDrops` <br>Plots enemies with color intensity based on time-based blue spirit drops, shows the total number of blue spirit drops and the remaining time to get that amount.<br>*Uses enemies.* | <img alt="TD s4 post midboss" src="https://github.com/Guy-L/parakit/assets/55163797/9f0e0824-2a15-48da-8ce9-1b0d6dee9bb8"> |
 | `AnalysisHookChapterTransition` <br>Example showing how to programatically detect chapter transitions in LoLK. | <img alt="Log of chapter detected transitions" src="https://github.com/Guy-L/parakit/assets/55163797/37900ec6-0961-4f8e-9b96-121be65aa3b0"> |
 | `AnalysisPlotBulletGraze` <br>Plots bullets with color intensity based on graze timer. <br>*Uses bullets.* | <img alt="EX Doremy final" src="https://github.com/Guy-L/parakit/assets/55163797/8727b316-9f84-4201-ade7-9d5e8bbb3f08"> |
