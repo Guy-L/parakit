@@ -1,10 +1,10 @@
 # ParaKit - Touhou Data Analysis
 
-ParaKit is a customizable Python tool and scripting framework capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analysis will be displayed.
+ParaKit is a customizable Python tool and scripting framework capable of extracting nearly all gameplay relevant data from Touhou games for the purpose of helping players gain insight. Extracting game states can either be done frame-by-frame or over a span of time by specifying a duration. Once extraction is complete, the results of the specified analyzer will be displayed.
 
-Many analyses come pre-built to help you get started, such as "graph bullet count over time", "plot all game entities" or "find the biggest bullet cluster of a given size" (see below screenshots). All the Touhou data you could need is given to you, and it's your turn to find the best ways to use it!
+Many analyzers come pre-built to help you get started, such as "graph bullet count over time", "plot all game entities" or "find the biggest bullet cluster of a given size" (see below screenshots). All the Touhou data you could need is given to you, and it's your turn to find the best ways to use it!
 
-If you have feature requests or need help making your own custom analysis, feel free to ask Guy for support. ParaKit is meant to be useful even for those with little to no Python experience.
+If you have feature requests or need help making your own custom analyzer, feel free to ask Guy for support. ParaKit is meant to be useful even for those with little to no Python experience.
 
 ### [Settings Documentation](./settings.md)
 ### Supported games:
@@ -96,7 +96,7 @@ The full specification of the `GameState` object is found in `game_entities.py`.
 
 Getting the information you need should be intuitive even for novice programmers. If you're not sure how to get something done programatically, you can try to give `game_entities.py` and `AnalysisTemplate` to a language model like ChatGPT.
 
-If the result of your analysis includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). The latest recorded frame is stored in `lastframe` (though you can store any frame you want to have plotted there instead).
+If the result of your analyzer includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). The latest recorded frame is stored in `lastframe` (though you can store any frame you want to have plotted there instead).
 
 If you'd like to forcefully terminate sequence extraction when a certain condition is met, you can call `terminate()` in your `step()` method. `done()` will still be ran when this occurs.
 
