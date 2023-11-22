@@ -6,9 +6,13 @@ import numpy as np
 # ================================================
 # All-game entities ==============================
 # ================================================
+# Note: IDs are unique numbers you can use to track
+#  an entity during its lifetime (their address in
+#  memory).
 
 @dataclass
 class Bullet:
+    id: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]
     speed: float
@@ -22,6 +26,7 @@ class Bullet:
 
 @dataclass
 class Enemy:
+    id: int
     position: Tuple[float, float]
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
@@ -42,12 +47,14 @@ class Enemy:
 
 @dataclass
 class Item:
+    id: int
     item_type: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]
 
 @dataclass 
 class Laser:
+    id: int
     state: int
     laser_type: int
     timer: int
@@ -86,6 +93,7 @@ class InfiniteLaser(Laser):
 
 @dataclass
 class CurveNode:
+    id: int
     position: Tuple[float, float]
     velocity: Optional[Tuple[float, float]]
     angle: Optional[float]
@@ -147,6 +155,7 @@ class WeightedEnemy(Enemy):
 # Ten Desires
 @dataclass
 class SpiritItem:
+    id: int
     spirit_type: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]

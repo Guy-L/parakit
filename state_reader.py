@@ -60,6 +60,7 @@ def extract_bullets(bullet_manager = zBulletManager):
         zBullet = current_bullet_list["entry"]
 
         bullet = {
+            'id':           zBullet,
             'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
             'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
             'speed':         read_float(zBullet + zBullet_speed),
@@ -117,6 +118,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
             continue
 
         enemy = {
+            'id':           zEnemy,
             'position':     (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
             'hurtbox':      (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
             'hitbox':       (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
@@ -207,6 +209,7 @@ def extract_items(item_manager = zItemManager):
         item_vel_y = read_float(item + zItem_vel + 0x4)
 
         items.append(Item(
+            id        = item,
             item_type = item_type,
             position  = (item_x, item_y), 
             velocity  = (item_vel_x, item_vel_y),
@@ -230,6 +233,7 @@ def extract_spirit_items():
             spirit_item_timer = read_int(spirit_item + zSpiritItem_timer)
 
             spirit_items.append(SpiritItem(
+                id          = spirit_item,
                 spirit_type = spirit_item_type,
                 position    = (spirit_item_x, spirit_item_y),
                 velocity    = (spirit_item_vel_x, spirit_item_vel_y),
@@ -254,6 +258,7 @@ def extract_lasers(laser_manager = zLaserManager):
         laser_type  = read_int(current_laser_ptr + zLaserBaseClass_type)
 
         laser_base = {
+            'id':         current_laser_ptr,
             'state':      laser_state,
             'laser_type': laser_type,
             'timer':      read_int(current_laser_ptr + zLaserBaseClass_timer),
@@ -365,6 +370,7 @@ def extract_curve_laser(laser_ptr):
                 node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
 
         curve_nodes.append(CurveNode(
+            id = current_node_ptr,
             position = (node_pos_x, node_pos_y),
             velocity = (node_vel_x, node_vel_y),
             angle = node_angle,
