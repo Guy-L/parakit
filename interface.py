@@ -147,6 +147,9 @@ zItem_pos    = offsets[_module_name].items.zItem_pos
 zItem_vel    = offsets[_module_name].items.zItem_vel
 zItem_len    = offsets[_module_name].items.zItem_len
 
+zItemState_autocollect = offsets[_module_name].associations.zItemState_autocollect
+zItemState_attracted   = offsets[_module_name].associations.zItemState_attracted
+
 # Laser (Base)
 laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
 zLaserManager_list      = offsets[_module_name].laser_base.zLaserManager_list

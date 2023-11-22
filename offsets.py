@@ -210,6 +210,8 @@ class Associations:
     zEnemyFlags_intangible: int
     zEnemyFlags_is_rectangle: int
     zEnemyFlags_is_boss: int
+    zItemState_autocollect: int
+    zItemState_attracted: int
     life_piece_req: int
     bomb_piece_req: int
     world_width: int
@@ -483,6 +485,8 @@ offsets = {
             zEnemyFlags_intangible   = 2**5,
             zEnemyFlags_is_rectangle = 2**15,
             zEnemyFlags_is_boss      = 2**24,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
             life_piece_req = None,
             bomb_piece_req = 8,
             world_width    = usual_world_width,
@@ -687,6 +691,8 @@ offsets = {
             zEnemyFlags_intangible   = 2**5,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
             life_piece_req = 3,
             bomb_piece_req = 8,
             world_width    = usual_world_width,
@@ -875,6 +881,8 @@ offsets = {
             zEnemyFlags_intangible   = 2**5,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
             life_piece_req = 3,
             bomb_piece_req = 5,
             world_width    = usual_world_width,
@@ -1076,6 +1084,8 @@ offsets = {
             zEnemyFlags_intangible   = 2**5,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
             life_piece_req = 3,
             bomb_piece_req = 3,
             world_width    = usual_world_width,
@@ -1269,6 +1279,8 @@ offsets = {
             zEnemyFlags_intangible   = 2**5,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**6,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
             life_piece_req = None, #note: not in this game
             bomb_piece_req = 3,
             world_width    = 296,
@@ -1511,6 +1523,8 @@ offsets = {
 #            zEnemyFlags_intangible   = None,
 #            zEnemyFlags_is_rectangle = None,
 #            zEnemyFlags_is_boss      = None,
+#            zItemState_autocollect = None,
+#            zItemState_attracted   = None,
 #            life_piece_req = None,
 #            bomb_piece_req = None,
 #            world_width    = None,

@@ -48,6 +48,7 @@ class Enemy:
 @dataclass
 class Item:
     id: int
+    state: int
     item_type: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]

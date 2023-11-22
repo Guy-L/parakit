@@ -11,28 +11,7 @@ from analysis import *
 # Basic examples ========================================================
 # =======================================================================
 
-# Ex1: "Get the frame with the most bullets (and save the screen if screenshots are on)" [only requires bullets & optionally screenshots]
-class AnalysisMostBulletsFrame(Analysis):
-    def __init__(self):
-        self.frame_with_most_bullets = None
-        self.max_bullets = 0
-
-    def step(self, state: GameState):
-        if state.bullets and len(state.bullets) > self.max_bullets:
-            self.max_bullets = len(state.bullets)
-            self.frame_with_most_bullets = state
-
-    def done(self):
-        if self.frame_with_most_bullets:
-            print(f"Analysis results: frame with most bullet was stage frame #{self.frame_with_most_bullets.frame_stage} at {self.max_bullets} bullets.")
-            
-            if self.frame_with_most_bullets.screen is not None:
-                print("Saved screenshot of frame in most_bullets.png")
-                save_screenshot("most_bullets.png", self.frame_with_most_bullets.screen)
-        else:
-            print("No frame had any bullets.")
-
-# Ex2: "Track the number of bullets across time and plot that as a graph" [only requires bullets]
+# Ex1: "Track the number of bullets across time and plot that as a graph" [only requires bullets]
 class AnalysisBulletsOverTime(Analysis):
     def __init__(self):
         self.bullet_counts = []
@@ -48,7 +27,7 @@ class AnalysisBulletsOverTime(Analysis):
         plt.title('Bullet Count Over Time')
         plt.show()
 
-# Ex3: "Track the number of bullets near the player across time and plot that as a graph" [only requires bullets]
+# Ex2: "Track the number of bullets near the player across time and plot that as a graph" [only requires bullets]
 class AnalysisCloseBulletsOverTime(Analysis):
     radius = 100
 
@@ -70,6 +49,27 @@ class AnalysisCloseBulletsOverTime(Analysis):
         plt.ylabel(f'Bullets in a {self.radius} unit radius around player')
         plt.title('Bullet Count Over Time')
         plt.show()
+
+# Ex3: "Get the frame with the most bullets (and save the screen if screenshots are on)" [only requires bullets & optionally screenshots]
+class AnalysisMostBulletsFrame(Analysis):
+    def __init__(self):
+        self.frame_with_most_bullets = None
+        self.max_bullets = 0
+
+    def step(self, state: GameState):
+        if state.bullets and len(state.bullets) > self.max_bullets:
+            self.max_bullets = len(state.bullets)
+            self.frame_with_most_bullets = state
+
+    def done(self):
+        if self.frame_with_most_bullets:
+            print(f"Analysis results: frame with most bullet was stage frame #{self.frame_with_most_bullets.frame_stage} at {self.max_bullets} bullets.")
+
+            if self.frame_with_most_bullets.screen is not None:
+                print("Saved screenshot of frame in most_bullets.png")
+                save_screenshot("most_bullets.png", self.frame_with_most_bullets.screen)
+        else:
+            print("No frame had any bullets.")
 
 # Ex4: "Find the frame and position of a circle with set radius covering the most bullets" [only requires bullets]
 class AnalysisMostBulletsCircleFrame():
@@ -195,6 +195,49 @@ class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
             self.bullet_counts.append(len(self.state.bullets))
 
         self.bullet_curve.setData(np.arange(len(self.bullet_counts)), self.bullet_counts)
+
+# Dyn2: "Track the number of collected and greyed items over time" [only requires items]
+class AnalysisItemCollectionDynamic(AnalysisDynamic):
+    win_title = 'Item Collection Over Time'
+
+    def __init__(self):
+        super().__init__()
+        self.collected_counts = [0]
+        self.greyed_counts = [0]
+        self.prev_frame_items = None
+
+    def setup_graph(self):
+        self.graph.setLabel('left', 'Items Collected')
+        self.graph.setLabel('bottom', 'Time (frames)')
+        self.collect_curve = self.graph.plot(pen='y', name='Total Collected')
+        self.greyed_curve = self.graph.plot(pen='grey', name='Total Greyed')
+        legend = pg.LegendItem((80, 60), offset=(70, 20))
+        legend.setParentItem(self.graph)
+        legend.addItem(self.collect_curve, 'Total Collected')
+        legend.addItem(self.greyed_curve, 'Total Greyed')
+
+    def update_graph(self):
+        if self.state.items is not None:
+            if self.prev_frame_items is not None:
+                items_collected_this_frame = 0
+                items_greyed_this_frame = 0
+
+                for prev_frame_item in self.prev_frame_items:
+                    if not any(prev_frame_item.id == cur_frame_item.id for cur_frame_item in self.state.items):
+                        if prev_frame_item.state == zItemState_autocollect:
+                            items_collected_this_frame += 1
+
+                        elif prev_frame_item.state == zItemState_attracted:
+                            items_collected_this_frame += 1
+                            items_greyed_this_frame += 1
+
+                self.collected_counts.append(self.collected_counts[-1] + items_collected_this_frame)
+                self.greyed_counts.append(self.greyed_counts[-1] + items_greyed_this_frame)
+
+            self.prev_frame_items = self.state.items
+
+        self.collect_curve.setData(np.arange(len(self.collected_counts)), self.collected_counts)
+        self.greyed_curve.setData(np.arange(len(self.greyed_counts)), self.greyed_counts)
 
 # =======================================================================
 # Game world snapshot plots =============================================

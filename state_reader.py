@@ -193,11 +193,11 @@ def extract_items(item_manager = zItemManager):
     item_array_end   = item_array_start + zItemManager_array_len * zItem_len
 
     for item in range(item_array_start, item_array_end, zItem_len):
-        if read_int(item + zItem_state) == 0:
+        item_state = read_int(item + zItem_state)
+        if item_state == 0:
             continue
 
         item_type = read_int(item + zItem_type)
-
         if not get_item_type(item_type):
             if item_type < 50:
                 print(f"Found and skipped unknown item with type ID {item_type}. If this is a real in-game item, please report it to the developper!")
@@ -210,6 +210,7 @@ def extract_items(item_manager = zItemManager):
 
         items.append(Item(
             id        = item,
+            state     = item_state,
             item_type = item_type,
             position  = (item_x, item_y), 
             velocity  = (item_vel_x, item_vel_y),
@@ -958,7 +959,14 @@ def print_game_state(gs: GameState):
             description = "• "
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
-            description += get_item_type(item.item_type)
+            description += tabulate(get_item_type(item.item_type), 14)
+
+            #not in table since rare
+            if item.state == zItemState_autocollect:
+                description += " (Auto-collecting)"
+            elif item.state == zItemState_attracted:
+                description += " (Attracted)"
+
             print(description)
 
             counter += 1
