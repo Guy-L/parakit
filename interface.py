@@ -31,7 +31,7 @@ _game_main_modules = {
     ('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
     #('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
     #('16.5', 'th16.5', 'th165', 'th165.exe', 'vd', 'violet detector'): 'th165.exe',
-    #('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
+    ('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
     ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
     #('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'): 'th185.exe',
     ('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'): 'th19.exe',
@@ -277,6 +277,35 @@ elif game_id == 15:
     zBullet_graze_timer  = offsets[_module_name].game_specific['zBullet_graze_timer']
     zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
 
+elif game_id == 17:
+    token_types           = offsets[_module_name].game_specific['token_types']
+    held_token_array      = offsets[_module_name].game_specific['held_token_array']
+    token_manager_pointer = offsets[_module_name].game_specific['token_manager_pointer']
+    zTokenManager_list    = offsets[_module_name].game_specific['zTokenManager_list']
+    zToken_type         = offsets[_module_name].game_specific['zToken_type']
+    zToken_pos          = offsets[_module_name].game_specific['zToken_pos']
+    zToken_base_vel     = offsets[_module_name].game_specific['zToken_base_vel']
+    zToken_alive_timer  = offsets[_module_name].game_specific['zToken_alive_timer']
+    zToken_switch_timer = offsets[_module_name].game_specific['zToken_switch_timer']
+    zToken_flags        = offsets[_module_name].game_specific['zToken_flags']
+
+    hyper_types             = offsets[_module_name].game_specific['hyper_types']
+    hyper_token_spawn_delay = offsets[_module_name].game_specific['hyper_token_spawn_delay']
+    hyper_time_remaining    = offsets[_module_name].game_specific['hyper_time_remaining']
+    hyper_duration          = offsets[_module_name].game_specific['hyper_duration']
+    hyper_type              = offsets[_module_name].game_specific['hyper_type']
+    hyper_token_time_bonus  = offsets[_module_name].game_specific['hyper_token_time_bonus']
+    hyper_flags             = offsets[_module_name].game_specific['hyper_flags']
+
+    anm_manager_pointer   = offsets[_module_name].game_specific['anm_manager_pointer']
+    zAnmManager_list_tail = offsets[_module_name].game_specific['zAnmManager_list_tail']
+    zAnmVm_sprite_id      = offsets[_module_name].game_specific['zAnmVm_sprite_id']
+    zAnmVm_rotation       = offsets[_module_name].game_specific['zAnmVm_rotation']
+    otter_anm_id          = offsets[_module_name].game_specific['otter_anm_id']
+
+    zPlayer_youmu_charge              = offsets[_module_name].game_specific['zPlayer_youmu_charge']
+    zBulletManager_recent_graze_gains = offsets[_module_name].game_specific['zBulletManager_recent_graze_gains']
+
 elif game_id == 18:
     funds = offsets[_module_name].game_specific['funds']
     card_nicknames = offsets[_module_name].game_specific['card_nicknames']
@@ -480,7 +509,7 @@ def read_string(offset, length, rel = False):
     return _read_memory(offset, length, rel).decode('utf-8').split('\x00', 1)[0]
 
 def read_zList(offset):
-    return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
+    return {"entry": read_int(offset), "next": read_int(offset + 0x4), "prev": read_int(offset + 0x8)}
 
 def tabulate(x, min_size=10):
     x_str = str(x)

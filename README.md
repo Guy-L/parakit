@@ -11,6 +11,7 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * TD
 * DDC
 * LoLK
+* WBaWC
 * UM
 * UDoALG
 
@@ -24,7 +25,7 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * Cross-run and cross-stage extraction
 * Better UX
 
-## Setup 
+## Setup
 **Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, **I heavily recommend that you get a bit of experience with Git** to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out. All you'll need to know is how to `clone` (download) and `pull` (update) a project.
 
 Once you have the project (and Python) on your machine, **simply open `parakit.py` and the entire setup will be handled for you** before launching the program. Be patient, installing libraries can take a while. Please report to the developer if any issue comes up during this process.
@@ -40,10 +41,10 @@ To install the libraries on your machine:
 ```bash
 pip install -r requirements.txt
 ```
- 
+
 
 ## Running
- 
+
 Edit `settings.py` to select the target game and analyzer. <br>**Documentation explaining every available setting can be found [here](./settings.md).**
 
 **You can simply run the program by opening `parakit.py`.**<br>If you're going to use the program a lot, open a terminal window in the project's folder and run:
@@ -140,6 +141,7 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotEnemiesBlueDrops` <br>Plots enemies with color intensity based on time-based blue spirit drops, shows the total number of blue spirit drops and the remaining time to get that amount.<br>*Uses enemies.* | <img alt="TD s4 post midboss" src="https://github.com/Guy-L/parakit/assets/55163797/9f0e0824-2a15-48da-8ce9-1b0d6dee9bb8"> |
 | `AnalysisHookChapterTransition` <br>Example showing how to programatically detect chapter transitions in LoLK. | <img alt="Log of chapter detected transitions" src="https://github.com/Guy-L/parakit/assets/55163797/37900ec6-0961-4f8e-9b96-121be65aa3b0"> |
 | `AnalysisPlotBulletGraze` <br>Plots bullets with color intensity based on graze timer. <br>*Uses bullets.* | <img alt="EX Doremy final" src="https://github.com/Guy-L/parakit/assets/55163797/8727b316-9f84-4201-ade7-9d5e8bbb3f08"> |
+| `AnalysisPlotWBaWC` <br>Plots the animal token and shield otter positions of the last frame. Included in `AnalysisPlotAll`. <br>*Uses items.* | <img alt="Keiki penult with otter hyper" src="https://github.com/Guy-L/parakit/assets/55163797/b63c14bb-b19b-4a87-8260-3df0fe8297a8"> |
 | `AnalysisBestMallet` <br>Finds the best timing and position to convert bullets to items via the Miracle Mallet in UM, plots Mallet circle and prints relevant data.<br>*Uses bullets.* | <img alt="S4 Casino" src="https://github.com/Guy-L/parakit/assets/55163797/6b4b288c-6417-453c-acc7-f9f3ba0c231c"> |
 
 ## For Contributors

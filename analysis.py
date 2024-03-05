@@ -72,8 +72,9 @@ def enemy_color(anm_page, anm_id):
 
     type_str = enemy_anms[anm_id]
 
-    if mcolors.is_color_like(type_str.split(' ')[0]):
-        return type_str.split(' ')[0]
+    color_word = next((word for word in type_str.split() if mcolors.is_color_like(word)), None)
+    if color_word:
+        return color_word
     elif 'Sunflower Fairy' in type_str:
         return 'gold'
     elif 'Hellflower Fairy' in type_str:

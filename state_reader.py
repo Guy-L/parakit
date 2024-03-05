@@ -28,6 +28,10 @@ if game_id == 13:
 elif game_id == 14:
     ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
+elif game_id == 17:
+    zTokenManager = read_int(token_manager_pointer, rel=True)
+    zAnmManager = read_int(anm_manager_pointer, rel=True)
+
 elif game_id == 19:
     zGaugeManager = read_int(gauge_manager_pointer, rel=True)
 
@@ -140,7 +144,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
         if game_id == 13:
             spirit_time_max  = read_int(zEnemy + zEnemy_spirit_time_max)
-            remaining_frames =  spirit_time_max - read_int(zEnemy + zEnemy_timer)
+            remaining_frames = spirit_time_max - read_int(zEnemy + zEnemy_timer)
 
             if remaining_frames >= 0:
                 interval_size = spirit_time_max // read_int(zEnemy + zEnemy_max_spirit_count)
@@ -226,22 +230,39 @@ def extract_spirit_items():
 
     for spirit_item in range(spirit_array_start, spirit_array_end, zSpiritItem_len):
         if read_int(spirit_item + zSpiritItem_state) != 0:
-            spirit_item_type  = read_int(spirit_item + zSpiritItem_type)
-            spirit_item_x     = read_float(spirit_item + zSpiritItem_pos)
-            spirit_item_y     = read_float(spirit_item + zSpiritItem_pos + 0x4)
-            spirit_item_vel_x = read_float(spirit_item + zSpiritItem_vel)
-            spirit_item_vel_y = read_float(spirit_item + zSpiritItem_vel + 0x4)
-            spirit_item_timer = read_int(spirit_item + zSpiritItem_timer)
-
             spirit_items.append(SpiritItem(
                 id          = spirit_item,
-                spirit_type = spirit_item_type,
-                position    = (spirit_item_x, spirit_item_y),
-                velocity    = (spirit_item_vel_x, spirit_item_vel_y),
-                timer       = spirit_item_timer,
+                spirit_type = read_int(spirit_item + zSpiritItem_type),
+                position    = (read_float(spirit_item + zSpiritItem_pos), read_float(spirit_item + zSpiritItem_pos + 0x4)),
+                velocity    = (read_float(spirit_item + zSpiritItem_vel), read_float(spirit_item + zSpiritItem_vel + 0x4)),
+                timer       = read_int(spirit_item + zSpiritItem_timer),
             ))
 
     return spirit_items
+
+# Wily Beast & Weakest Creature only
+def extract_animal_tokens():
+    animal_tokens = []
+
+    current_token_list = {"entry": 0, "next": read_int(zTokenManager + zTokenManager_list)}
+
+    while current_token_list["next"]:
+        current_token_list = read_zList(current_token_list["next"])
+        zToken = current_token_list["entry"]
+        token_flags = read_int(zToken + zToken_flags)
+
+        animal_tokens.append(AnimalToken(
+            id = zToken,
+            type             = read_int(zToken + zToken_type),
+            position         = (read_float(zToken + zToken_pos), read_float(zToken + zToken_pos + 0x4)),
+            base_velocity    = (read_float(zToken + zToken_base_vel), read_float(zToken + zToken_base_vel + 0x4)),
+            slowed_by_player = token_flags & 2**2 != 0,
+            can_switch       = token_flags & 2**1 != 0,
+            switch_timer     = read_int(zToken + zToken_switch_timer),
+            alive_timer      = read_int(zToken + zToken_alive_timer),
+        ))
+
+    return animal_tokens
 
 def extract_lasers(laser_manager = zLaserManager):
     lasers = []
@@ -435,6 +456,49 @@ def extract_game_state(frame_id = None, real_time = None):
             pointdevice_resets_chapter     = read_int(pointdevice_resets_chapter, rel=True),
         )
 
+    elif game_id == 17:
+        held_tokens = []
+
+        for token_slot in range(held_token_array, held_token_array + 0x14, 0x4):
+            held_token = read_int(token_slot, rel=True)
+            if held_token:
+                held_tokens.append(held_token)
+
+        hyper = None
+        roaring_hyper_flags = read_int(hyper_flags, bytes = 1, rel=True)
+
+        if roaring_hyper_flags & 2**1 != 0:
+            hyper = RoaringHyper(
+                type                  = read_int(hyper_type, rel=True),
+                duration              = read_int(hyper_duration, rel=True),
+                time_remaining        = read_int(hyper_time_remaining, rel=True),
+                reward_mode           = roaring_hyper_flags >> 4,
+                token_grab_time_bonus = read_int(hyper_token_time_bonus, rel=True),
+                currently_breaking    = roaring_hyper_flags & 2**2 != 0,
+            )
+
+        current_anm_vm_list = read_zList(read_int(zAnmManager + zAnmManager_list_tail))
+        otter_angles = []
+
+        while current_anm_vm_list['prev']:
+            zAnmVm = current_anm_vm_list['entry']
+            if read_int(zAnmVm + zAnmVm_sprite_id) == otter_anm_id:
+                otter_angles.append(read_float(zAnmVm + zAnmVm_rotation) + math.pi/2) #zun angles are weird
+                if len(otter_angles) == 3: #this is actually necessary, every otter hyper spawns 3 new vms lol
+                    break
+
+            current_anm_vm_list = read_zList(current_anm_vm_list['prev'])
+
+        game_specific = GameSpecificWBaWC(
+            held_tokens                   = held_tokens,
+            field_tokens                  = extract_animal_tokens() if requires_items else [],
+            roaring_hyper                 = hyper,
+            otter_shield_angles           = otter_angles,
+            extra_token_spawn_delay_timer = read_int(hyper_token_spawn_delay, rel=True),
+            youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge),
+            yacchie_recent_graze          = sum(read_int(zBulletManager + zBulletManager_recent_graze_gains + 0x4 * i) for i in range(20)),
+        )
+
     elif game_id == 18:
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
@@ -444,7 +508,7 @@ def extract_game_state(frame_id = None, real_time = None):
         current_active_list = read_zList(zAbilityManager + zAbilityManager_list)
 
         while current_active_list["next"]:
-            current_active_list = read_zList(current_active_list["next"]) 
+            current_active_list = read_zList(current_active_list["next"])
 
             zCard                  = current_active_list["entry"]
             card_id                = read_int(zCard + zCard_id)
@@ -681,6 +745,65 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.reisen_bomb_shields > 0:
             print(f"| LoLK Reisen Bomb Shields: {gs.game_specific.reisen_bomb_shields}")
+
+    elif game_id == 17: #WBaWC
+        if gs.game_specific.held_tokens:
+            token_stock = ""
+            for held_token in gs.game_specific.held_tokens:
+                if token_stock:
+                    token_stock += ", "
+                token_stock += token_types[held_token-1]
+            print(f"| WBaWC Held Tokens ({len(gs.game_specific.held_tokens)}/5): {token_stock}")
+
+        if gs.game_specific.roaring_hyper:
+            hyper = gs.game_specific.roaring_hyper
+            hyper_extend_desc = f"(+{hyper.token_grab_time_bonus}f for grabbing a token)" if not hyper.currently_breaking else "(broken)"
+            print(f"| WBaWC {hyper_types[hyper.type-1]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
+
+            hyper_rewards_desc = "1 Life Piece, 4 Random Animals"
+            if hyper.reward_mode == 0:
+                hyper_rewards_desc = "2 Random Animals"
+            elif hyper.reward_mode == 2:
+                hyper_rewards_desc = "1 Bomb Piece, 1 Life Piece, 3 Random Animals"
+            elif hyper.reward_mode == 3:
+                hyper_rewards_desc = "2 Bomb Piece, 1 Life Piece, 1 Power Item, 1 Point Item"
+
+            if not hyper.currently_breaking:
+                print(f"| WBaWC {hyper_types[hyper.type-1]} Hyper Token Rewards: {hyper_rewards_desc}")
+
+            if hyper.type == 2:
+                print(f"| WBaWC Otter Hyper Shield Angles: {round(gs.game_specific.otter_shield_angles[0], 3)}, {round(gs.game_specific.otter_shield_angles[1], 3)}, {round(gs.game_specific.otter_shield_angles[2], 3)}")
+
+        if gs.game_specific.youmu_charge_timer:
+            print(f"| WBaWC Youmu Charge Timer: {gs.game_specific.youmu_charge_timer}f / 60f")
+
+        if gs.game_specific.field_tokens:
+            counter = 0
+
+            print("\nList of animal tokens:")
+            print("  Position         Base Velocity    Type        Timer")
+            for token in gs.game_specific.field_tokens:
+                description = "• "
+                description += tabulate(f"({round(token.position[0], 1)}, {round(token.position[1], 1)})", 17)
+                description += tabulate(f"({round(token.base_velocity[0], 1)}, {round(token.base_velocity[1], 1)})", 17)
+                description += tabulate(token_types[token.type-1], 12)
+                description += tabulate(f"{token.alive_timer}", 11)
+
+                if token.alive_timer >= 7800:
+                    description += f" (can leave{' in ' + str(8400 - token.alive_timer) + 'f' if token.alive_timer < 8400 else '!'})"
+
+                if token.can_switch:
+                    description += f" (switches in {token.switch_timer}f)"
+
+                if token.slowed_by_player:
+                    description += " (slowed by player)"
+
+                print(description)
+
+                counter += 1
+                if counter >= singlext_settings['list_print_limit']:
+                    print(f'• ... [{len(gs.game_specific.field_tokens)} animal tokens total]')
+                    break
 
     elif game_id == 18: #UM
         print(f"| UM Funds: {gs.game_specific.funds:,}")

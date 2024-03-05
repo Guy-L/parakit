@@ -526,6 +526,8 @@ class AnalysisPlotAll(AnalysisPlot):
         plottedGameSpecific = DONT_PLOT
         if game_id == 13:
             plottedGameSpecific = AnalysisPlotTD(self.lastframe).plot(ax, side2)
+        elif game_id == 17:
+            plottedGameSpecific = AnalysisPlotWBaWC(self.lastframe).plot(ax, side2)
 
         if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
             return DONT_PLOT
@@ -707,7 +709,7 @@ class AnalysisPlotTD(AnalysisPlot):
     plot_title = 'Spirit Item Scatter Plot'
     face_alpha = 0.65
     edge_alpha = 0.3
-    type_colors = [(1.0, 0.0, 1.0), (0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (0.5, 0.5, 0.5)]
+    type_colors = [(1, 0, 1), (0, 0, 1), (0, 1, 0), (0.5, 0.5, 0.5)]
     type_sizes = [200, 150, 200, 150]
 
     use_visual_sizes = True
@@ -718,10 +720,9 @@ class AnalysisPlotTD(AnalysisPlot):
             return HIDE_P2
 
         spirit_items = self.lastframe.game_specific.spirit_items
-        has_spirits = bool(spirit_items)
         has_echoes = False
 
-        if has_spirits:
+        if spirit_items:
             x_coords = [spirit.position[0] for spirit in spirit_items]
             y_coords = [spirit.position[1] for spirit in spirit_items]
             face_colors = [self.type_colors[spirit.spirit_type] + (self.face_alpha,) for spirit in spirit_items]
@@ -755,7 +756,7 @@ class AnalysisPlotTD(AnalysisPlot):
                             color = (0, 0, 1, 0.2), linewidth=1.5, fill = False
                         ))
 
-        if not has_spirits:
+        if not spirit_items:
             print("No spirit items to plot.")
             if not has_echoes:
                 return DONT_PLOT
@@ -841,6 +842,74 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
 
         else:
             return AnalysisPlotBullets(self.lastframe).plot(ax, side2)
+
+# WBaWC: "Plot field animal tokens and shield otters" [only requires items]
+class AnalysisPlotWBaWC(AnalysisPlot):
+    plot_title = 'Animal Token Scatter Plot'
+    token_size = 180
+    normal_alpha = 0.75
+    leaving_alpha = 0.4
+    type_colors = [(0.75, 0, 0), (0, 0.75, 0), (0.5, 0, 0.75), (0, 1, 0), (1, 0, 1), (1, 0, 0), (0, 0, 1)]
+    alt_edge_color = [(0, 0, 1), (0, 0, 1), (1, 0, 0)]
+    special_color = (1, 1, 0)
+    fish_color = (0.1, 0.5, 1)
+    otter_hitbox = 28
+    otter_distance = 96
+
+    def plot(self, ax, side2):
+        if side2:
+            return HIDE_P2
+
+        field_tokens = self.lastframe.game_specific.field_tokens
+        hyper = self.lastframe.game_specific.roaring_hyper
+
+        if field_tokens:
+            x_coords = [token.position[0] for token in field_tokens]
+            y_coords = [token.position[1] for token in field_tokens]
+            face_colors = []
+            edge_colors = []
+
+            for token in field_tokens:
+                alpha = self.normal_alpha if token.alive_timer < 7800 else self.leaving_alpha
+                face_color = self.type_colors[token.type-1] if token.type < 8 else self.special_color
+                edge_color = face_color
+
+                if token.type < 4:
+                    if not token.can_switch:
+                        edge_color = self.alt_edge_color[token.type-1]
+                    elif token.switch_timer <= 60:
+                        edge_color = self.special_color
+                elif token.type < 8:
+                    edge_color = self.fish_color
+
+                face_colors.append(face_color + (alpha,))
+                edge_colors.append(edge_color + (alpha + 0.1,))
+
+            ax.scatter(x_coords, y_coords, facecolor=face_colors, s=self.token_size, marker='H',
+                       edgecolor=edge_colors, linewidth=2)
+        else:
+            print("No animal tokens to plot.")
+
+        if hyper and hyper.type == 2:
+            otter_angles = self.lastframe.game_specific.otter_shield_angles
+
+            ax.add_patch(plt.Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]),
+                                    self.otter_distance, lw=self.otter_hitbox, zorder=0,
+                                    fill=False, color=self.type_colors[1] + (0.3,)))
+
+            for angle in otter_angles:
+                otter_x = self.lastframe.player_position[0] + self.otter_distance * np.cos(angle)
+                otter_y = self.lastframe.player_position[1] + self.otter_distance * np.sin(angle)
+
+                ax.arrow(otter_x, otter_y, 5 * np.cos(angle + np.pi / 2), 5 * np.sin(angle + np.pi / 2),
+                         head_width=10, head_length=15, color=self.type_colors[1] + (0.8,))
+                ax.arrow(otter_x, otter_y, 15 * np.cos(angle - np.pi / 2), 15 * np.sin(angle - np.pi / 2),
+                         head_width=4, head_length=8, color=self.type_colors[1])
+
+                ax.scatter(otter_x, otter_y, color=self.type_colors[1] + (self.normal_alpha,), s=self.otter_hitbox*2, linewidth=2)
+
+        if not field_tokens and not (hyper and hyper.type == 2):
+            return DONT_PLOT
 
 # UM: "Find and plot the biggest mallet spot" [only requires bullets]
 class AnalysisBestMallet(AnalysisPlot, AnalysisMostBulletsCircleFrame):

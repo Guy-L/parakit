@@ -251,9 +251,10 @@ sprites_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pe
 sprites_post_um = sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)] #UM/HBM(?)/UDoALG
 
 enemy_anms_base = {0: "Blue Fairy", 5: "Red Fairy", 10: "Green Fairy", 15: "Yellow Fairy", 20: "Blue Flower Fairy", 25: "Red Flower Fairy", 30: "Maroon Fairy", 35: "Teal Fairy", 40: "Sunflower Fairy"}
-modern_enemy_anms_pre_ddc = {**enemy_anms_base, 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 65: "Red Yin-Yang", 68: "Green Yin-Yang", 71: "Blue Yin-Yang", 74: "Purple Yin-Yang", 78: "Red Spirit", 79:"Red Spirit", 80: "Green Spirit", 82: "Blue Spirit", 83: "Green Spirit", 87:"Blue Spirit", 91: "Yellow Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"}
+modern_enemy_anms_pre_ddc = {**enemy_anms_base, 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 65: "Red Yin-Yang", 68: "Green Yin-Yang", 71: "Blue Yin-Yang", 74: "Purple Yin-Yang", 78: "Red Spirit", 79:"Red Spirit", 80: "Green Spirit", 82: "Blue Spirit", 83: "Green Spirit", 87: "Blue Spirit", 91: "Yellow Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"}
 modern_enemy_anms_post_ddc = {**modern_enemy_anms_pre_ddc, 80: "Red Inverted Spirit", 84: "Green Inverted Spirit", 88: "Blue Inverted Spirit", 92: "Yellow Inverted Spirit"}
-modern_enemy_anms_post_wbawc = {**modern_enemy_anms_post_ddc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
+modern_enemy_anms_post_wbawc = {**modern_enemy_anms_post_ddc, 172: "Glowing Blue Fairy", 177: "Glowing Red Fairy", 202: "Glowing Maroon Fairy", 212: "Glowing Sunflower Fairy"}
+modern_enemy_anms_post_um = {**modern_enemy_anms_post_wbawc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
 
 item_types_td = {1: "Power", 2: "Point", 3:"Big Power", 4:"Big Point", 5:"Bomb Piece", 6: "Life", 7: "Bomb", 8: "Full Power", 9: "Cancel", 10: "LifeP. Spirit", 11: "Blue Spirit", 12: "BombP. Spirit", 13: "Grey Spirit", 14: "Blue Spirit"} #TD
 item_types_post_ddc = {1: "Power", 2: "Point", 3:"Big Power", 4:"Life Piece", 5:"Life", 6:"Bomb Piece", 7:"Bomb", 8:"Full Power", 9:"Green", 10:"Cancel", 11:"Big Cancel", 12:"Undiff. Piece"} #shared DDC-LoLK
@@ -262,7 +263,6 @@ item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoAL
 
 #to add when supporting these
 #hsifs: item_types    = {**item_types_post_hsifs, 16:"Season"}
-#wbawc: item_types    = {**item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit"}
 
 modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
 modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
@@ -913,7 +913,210 @@ offsets = {
 
     # TOUHOU 17 -- Wily Beast & Weakest Creature =================
     #=============================================================
-    'th17.exe': None,
+    'th17.exe': Offset(
+        statics = StaticsOffsets(
+            score         = 0xb59fc,
+            graze         = 0xb5a0c,
+            piv           = 0xb5a24,
+            power         = 0xb5a30,
+            lives         = 0xb5a40,
+            life_pieces   = 0xb5a44,
+            bombs         = 0xb5a4c,
+            bomb_pieces   = 0xb5a50,
+            stage_chapter = 0xb59e4,
+            rank          = 0xb5a08,
+            input         = 0xb3448,
+            rng           = 0xb7668,
+            pause_state   = 0x124778,
+        ),
+        statics_untracked = UntrackedStaticsOffsets(
+            game_speed      = 0xb5918,
+            visual_rng      = 0xb7660,
+            character       = 0xb59f4,
+            subshot         = 0xb59f8,
+            difficulty      = 0xb5a00,
+            stage           = 0xb59dc,
+            continues       = 0xb5a04,
+        ),
+        player = PlayerOffsets(
+            player_pointer  = 0xb77d0,
+            zPlayer_pos     = 0x610,
+            zPlayer_hit_rad = 0x18ffc,
+            zPlayer_iframes = 0x18e7c,
+            zPlayer_focused = 0x18dd0,
+        ),
+        bomb = BombOffsets(
+            bomb_pointer = 0xb7688,
+            zBomb_state  = 0x30,
+        ),
+        bullets = BulletOffsets(
+            bullet_manager_pointer = 0xb768c,
+            zBulletManager_list    = 0xbc,
+            zBullet_iframes        = 0x24,
+            zBullet_pos            = 0x62c,
+            zBullet_velocity       = 0x638,
+            zBullet_speed          = 0x644,
+            zBullet_angle          = 0x648,
+            zBullet_hitbox_radius  = 0x64c,
+            zBullet_scale          = 0xe20,
+            zBullet_state          = 0xe50,
+            zBullet_type           = 0xe80,
+            zBullet_color          = 0xe82,
+        ),
+        enemies = EnemyOffsets(
+            enemy_manager_pointer = 0xb76a0,
+            zEnemyManager_list    = 0x180,
+            zEnemy_data           = 0x120c,
+            zEnemy_pos            = 0x120c + 0x44,
+            zEnemy_hurtbox        = 0x120c + 0x110,
+            zEnemy_hitbox         = 0x120c + 0x118,
+            zEnemy_rotation       = 0x120c + 0x120,
+            zEnemy_anm_page       = 0x120c + 0x268,
+            zEnemy_anm_id         = 0x120c + 0x26c,
+            zEnemy_score_reward   = 0x120c + 0x3f70,
+            zEnemy_hp             = 0x120c + 0x3f74,
+            zEnemy_hp_max         = 0x120c + 0x3f78,
+            zEnemy_drops          = 0x120c + 0x3f90,
+            zEnemy_iframes        = 0x120c + 0x4044,
+            zEnemy_flags          = 0x120c + 0x4080,
+            zEnemy_subboss_id     = 0x120c + 0x4090,
+        ),
+        items = ItemOffsets(
+            item_manager_pointer   = 0xb76b8,
+            zItemManager_array     = 0x14,
+            zItemManager_array_len = 0x1258,
+            zItem_len   = 0xc78,
+            zItem_state = 0xc58,
+            zItem_type  = 0xc5c,
+            zItem_pos   = 0xc10,
+            zItem_vel   = 0xc1c,
+        ),
+        laser_base = LaserBaseOffsets(
+            laser_manager_pointer   = 0xb76bc,
+            zLaserManager_list      = 0x5e0,
+            zLaserBaseClass_state   = 0x10,
+            zLaserBaseClass_type    = 0x14,
+            zLaserBaseClass_timer   = 0x1c,
+            zLaserBaseClass_offset  = 0x54,
+            zLaserBaseClass_angle   = 0x6c,
+            zLaserBaseClass_length  = 0x70,
+            zLaserBaseClass_width   = 0x74,
+            zLaserBaseClass_speed   = 0x78,
+            zLaserBaseClass_iframes = 0x5c8,
+            zLaserBaseClass_sprite  = 0x5cc,
+            zLaserBaseClass_color   = 0x5d0,
+        ),
+        laser_line = LaserLineOffsets(
+            zLaserLine_start_pos  = 0x5d4,
+            zLaserLine_mgr_angle  = 0x5e0,
+            zLaserLine_max_length = 0x5e4,
+            zLaserLine_mgr_speed  = 0x5f4,
+            zLaserLine_distance   = 0x600,
+        ),
+        laser_infinite = LaserInfiniteOffsets(
+            zLaserInfinite_start_pos    = 0x5d4,
+            zLaserInfinite_velocity     = 0x5e0,
+            zLaserInfinite_mgr_angle    = 0x5ec,
+            zLaserInfinite_angle_vel    = 0x5f0,
+            zLaserInfinite_final_len    = 0x5f4,
+            zLaserInfinite_mgr_len      = 0x5f8,
+            zLaserInfinite_final_width  = 0x5fc,
+            zLaserInfinite_mgr_speed    = 0x600,
+            zLaserInfinite_start_time   = 0x604,
+            zLaserInfinite_expand_time  = 0x608,
+            zLaserInfinite_active_time  = 0x60c,
+            zLaserInfinite_shrink_time  = 0x610,
+            zLaserInfinite_mgr_distance = 0x620,
+        ),
+        laser_curve = LaserCurveOffsets(
+            zLaserCurve_max_length = 0x5f4,
+            zLaserCurve_distance   = 0x5f8,
+            zLaserCurve_array      = 0x152c,
+        ),
+        laser_curve_node = LaserCurveNodeOffsets(
+            zLaserCurveNode_pos   = 0x0,
+            zLaserCurveNode_vel   = 0xc,
+            zLaserCurveNode_angle = 0x18,
+            zLaserCurveNode_speed = 0x1c,
+            zLaserCurveNode_size  = 0x20,
+        ),
+        ascii = AsciiOffsets(
+            ascii_manager_pointer = 0xb7678,
+            global_timer          = 0x19244,
+        ),
+        spell_card = SpellCardOffsets(
+            spellcard_pointer    = 0xb7690,
+            zSpellcard_indicator = 0x1c,
+            zSpellcard_id        = 0x74,
+            zSpellcard_bonus     = 0x7c,
+        ),
+        gui = GUIOffsets(
+            gui_pointer          = 0xb76ac,
+            zGui_bosstimer_s     = 0x1c8,
+            zGui_bosstimer_ms    = 0x1cc,
+            zGui_bosstimer_drawn = 0x1d4,
+        ),
+        game_thread = GameThreadOffsets(
+            game_thread_pointer = 0xb76b0,
+            stage_timer = 0x10,
+        ),
+        supervisor = SupervisorOffsets(
+            supervisor_addr = 0xb5ae0,
+            game_mode       = 0xb5ae0 + 0x6f0,
+            rng_seed        = 0xb5ae0 + 0x734,
+        ),
+        associations = Associations(
+            sprites       = sprites_post_lolk,
+            enemy_anms    = modern_enemy_anms_post_wbawc,
+            item_types    = {**item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit", 33:"Random Spirit"},
+            pause_states  = modern_pause_states,
+            game_modes    = modern_game_modes,
+            characters    = ['Reimu', 'Marisa', 'Youmu'],
+            subshots      = ['Wolf', 'Otter', 'Eagle'],
+            difficulties  = usual_difficulties,
+            zEnemyFlags_no_hurtbox   = 2**0,
+            zEnemyFlags_no_hitbox    = 2**1,
+            zEnemyFlags_invincible   = 2**4,
+            zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_rectangle = 2**12,
+            zEnemyFlags_is_boss      = 2**23,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
+            life_piece_req = 3,
+            bomb_piece_req = 3,
+            world_width    = usual_world_width,
+            world_height   = usual_world_height,
+        ),
+        game_specific = {
+            'token_types': ["Wolf", "Otter", "Eagle", "Bomb Piece", "Life Piece", "Power Item", "Point Item", "Jellyfish", "Cow", "Chick", "Tortoise", "Haniwa", "Horse", "Chick Trio"],
+            'held_token_array': 0xb5a64,
+            'token_manager_pointer': 0xb7684,
+            'zTokenManager_list': 0x18,
+            'zToken_type': 0x14,
+            'zToken_pos': 0x18,
+            'zToken_base_vel': 0x24,
+            'zToken_alive_timer': 0x34,
+            'zToken_switch_timer': 0x5c,
+            'zToken_flags': 0x6c,
+
+            'hyper_types': ["Wolf", "Otter", "Eagle", "Neutral"],
+            'hyper_token_spawn_delay': 0xb5a94,
+            'hyper_time_remaining': 0xb5aa8,
+            'hyper_duration': 0xb5ab8,
+            'hyper_type': 0xb5abc,
+            'hyper_token_time_bonus': 0xb5ac0,
+            'hyper_flags': 0xb5ac4,
+
+            'anm_manager_pointer': 0x109a20,
+            'zAnmManager_list_tail': 0x6e0,
+            'zAnmVm_sprite_id': 0x20,
+            'zAnmVm_rotation': 0x40,
+            'otter_anm_id': 70,
+
+            'zPlayer_youmu_charge': 0x19084,
+            'zBulletManager_recent_graze_gains': 0x58,
+        }
+    ),
 
     # TOUHOU 18 -- Unconnected Marketeers ========================
     #=============================================================
@@ -1071,7 +1274,7 @@ offsets = {
         ),
         associations = Associations(
             sprites       = sprites_post_um,
-            enemy_anms    = {**modern_enemy_anms_post_wbawc, 251: "Jimbo"},
+            enemy_anms    = {**modern_enemy_anms_post_um, 251: "Jimbo"},
             item_types    = {**item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1266,7 +1469,7 @@ offsets = {
         ),
         associations = Associations(
             sprites       = sprites_post_um,
-            enemy_anms    = {**modern_enemy_anms_post_wbawc, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
+            enemy_anms    = {**modern_enemy_anms_post_um, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
             item_types    = {**item_types_post_um, 9: "Spirit Power"}, #technically more changes in HBM/UDoALG with bigger-sized spirit power items, but never used afaik
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1353,7 +1556,7 @@ offsets = {
     ),
 }
 
-# Template as of post-TD support
+# Template as of post-WBaWC support
 # ==============================
 # 
 #    'thXX.exe': Offset(

@@ -157,15 +157,36 @@ class WeightedEnemy(Enemy):
 @dataclass
 class SpiritItem:
     id: int
-    spirit_type: int
+    spirit_type: int #meaning: spirit_types[spirit_type]
     position: Tuple[float, float]
     velocity: Tuple[float, float]
     timer: int #[0, 521] frames alive
 
+# Wily Beast & Weakest Creature
+@dataclass
+class AnimalToken:
+    id: int
+    type: int #meaning: token_types[type]
+    position: Tuple[float, float]
+    base_velocity: Tuple[float, float]
+    slowed_by_player: bool
+    can_switch: bool
+    switch_timer: int #ticks down from 180f, token starts blinking at 60f; when it hits 0, resets to 180f and type = type++ % 3
+    alive_timer: int #ticks up; token becomes transparent after 7800f, can leave field after 8400f
+
+@dataclass
+class RoaringHyper:
+    type: int #meaning: hyper_types[type]
+    duration: int
+    time_remaining: int #extra beasts appear 120f (2s) after timer expires
+    reward_mode: int #0 = regular, 2 = cow, 3 = chick, 1 and >5 = jelly/others
+    token_grab_time_bonus: int #first grab adds 180f, then 120f, 80f, 53f then always 23f
+    currently_breaking: bool #used for ST6 secret token
+
 # Unconnected Marketeers
 @dataclass
 class ActiveCard:
-    id: int
+    id: int #meaning: card_nicknames[id]
     charge: int
     charge_max: int
     internal_name: str
@@ -244,6 +265,17 @@ class GameSpecificLoLK(GameSpecific):
     in_pointdevice: bool
     pointdevice_resets_total: int
     pointdevice_resets_chapter: int
+
+# Wily Beast & Weakest Creature
+@dataclass
+class GameSpecificWBaWC(GameSpecific):
+    held_tokens: List[int] #length [0, 5], meaning: token_types[token]
+    field_tokens: List[AnimalToken]
+    roaring_hyper: Optional[RoaringHyper]
+    otter_shield_angles: List[float] #length 3
+    extra_token_spawn_delay_timer: int #[0, 120], ticks up, only resets when Extra Beasts Appear! delay starts
+    youmu_charge_timer: int #focus shot on release if >60
+    yacchie_recent_graze: int #sum of graze gains over last 20 frames
 
 # Unconnected Marketeers
 @dataclass
