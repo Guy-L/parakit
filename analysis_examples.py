@@ -886,7 +886,7 @@ class AnalysisPlotWBaWC(AnalysisPlot):
                 edge_colors.append(edge_color + (alpha + 0.1,))
 
             ax.scatter(x_coords, y_coords, facecolor=face_colors, s=self.token_size, marker='H',
-                       edgecolor=edge_colors, linewidth=2)
+                       edgecolor=edge_colors, linewidth=2, zorder=0)
         else:
             print("No animal tokens to plot.")
 
@@ -894,7 +894,7 @@ class AnalysisPlotWBaWC(AnalysisPlot):
             otter_angles = self.lastframe.game_specific.otter_shield_angles
 
             ax.add_patch(plt.Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]),
-                                    self.otter_distance, lw=self.otter_hitbox, zorder=0,
+                                    self.otter_distance, lw=self.otter_hitbox, zorder=-1,
                                     fill=False, color=self.type_colors[1] + (0.3,)))
 
             for angle in otter_angles:
