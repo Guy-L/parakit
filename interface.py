@@ -383,7 +383,7 @@ elif game_id == 19:
     rank_max        = offsets[_module_name].game_specific['rank_max']
 
 # Associations
-sprites        = offsets[_module_name].associations.sprites
+bullet_types   = offsets[_module_name].associations.bullet_types
 enemy_anms     = offsets[_module_name].associations.enemy_anms
 item_types     = offsets[_module_name].associations.item_types
 pause_states   = offsets[_module_name].associations.pause_states
@@ -524,8 +524,8 @@ def get_item_type(item_type):
         #return "Unknown " + str(item_type) #(all item types should be known for supported games)
 
 def get_color(sprite, color):
-    if sprites[sprite][1] == 0:
-        sprite_str = sprites[sprite][0]
+    if bullet_types[sprite][1] == 0:
+        sprite_str = bullet_types[sprite][0]
 
         if 'Red' in sprite_str:
             return _red
@@ -540,16 +540,16 @@ def get_color(sprite, color):
         elif 'Orange' in sprite_str:
             return _orange
 
-    elif sprites[sprite][1] == 3:
+    elif bullet_types[sprite][1] == 3:
         return color_coin[color]
 
-    elif sprites[sprite][1] == 4:
+    elif bullet_types[sprite][1] == 4:
         return color4[color]
 
-    elif sprites[sprite][1] == 8:
+    elif bullet_types[sprite][1] == 8:
         return color8[color]
 
-    elif sprites[sprite][1] == 16:
+    elif bullet_types[sprite][1] == 16:
         return color16[color]
 
 def get_curve_color(sprite, color):

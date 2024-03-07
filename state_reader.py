@@ -884,8 +884,8 @@ def print_game_state(gs: GameState):
             description += tabulate(get_color(bullet.bullet_type, bullet.color)[0], 13)
 
             #account for mono-color sprites
-            bullet_type = sprites[bullet.bullet_type][0]
-            if sprites[bullet.bullet_type][1] == 0:
+            bullet_type = bullet_types[bullet.bullet_type][0]
+            if bullet_types[bullet.bullet_type][1] == 0:
                 bullet_type = bullet_type.split(' ')[1]
 
             description += tabulate(bullet_type, 15)
@@ -930,7 +930,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.max_length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
-                description += tabulate(sprites[laser.sprite][0], 8)
+                description += tabulate(bullet_types[laser.sprite][0], 8)
                 print(description)
 
                 counter += 1
@@ -1008,7 +1008,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.length, 1), 8)
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
-                description += tabulate(sprites[laser.sprite][0], 8)
+                description += tabulate(bullet_types[laser.sprite][0], 8)
                 print(description)
 
                 counter += 1

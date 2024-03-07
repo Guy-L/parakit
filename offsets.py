@@ -42,7 +42,7 @@ class StaticsOffsets:
     rng: int
     pause_state: int
 
-@dataclass 
+@dataclass
 class UntrackedStaticsOffsets:
     game_speed: int
     visual_rng: int
@@ -65,7 +65,7 @@ class BombOffsets:
     bomb_pointer: int
     zBomb_state: int
 
-@dataclass 
+@dataclass
 class BulletOffsets:
     bullet_manager_pointer: int
     zBulletManager_list: int
@@ -125,7 +125,7 @@ class LaserBaseOffsets:
     zLaserBaseClass_iframes: int
     zLaserBaseClass_sprite: int
     zLaserBaseClass_color: int
-    
+
 @dataclass
 class LaserLineOffsets:
     zLaserLine_start_pos: int
@@ -191,12 +191,12 @@ class GameThreadOffsets:
 @dataclass
 class SupervisorOffsets:
     supervisor_addr: int
-    game_mode: int #to relate to the game modes dict in Associations 
+    game_mode: int #to relate to the game modes dict in Associations
     rng_seed: int #based on time when game was launched; never changes
 
 @dataclass
 class Associations:
-    sprites: List[Tuple[str, int]]
+    bullet_types: List[Tuple[str, int]]
     enemy_anms: Dict[int, str]
     item_types: Dict[int, str]
     pause_states: List[str]
@@ -246,23 +246,20 @@ class Offset:
 
 ## Maps & properties shared between games
 # Always re-evaluate when adding new games
-sprites_post_td = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16)] #TD-DDC
-sprites_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star CW', 8), ('Big Star CCW', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #LoLK-WBaWC
-sprites_post_um = sprites_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)] #UM/HBM(?)/UDoALG
+bullet_types_post_td = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16)] #TD-DDC
+bullet_types_post_lolk = [('Pellet', 16), ('Pellet', 16), ('Popcorn', 16), ('Small Pellet', 16), ('Ball', 16), ('Ball', 16), ('Outline', 16), ('Outline', 16), ('Rice', 16), ('Kunai', 16), ('Shard', 16), ('Amulet', 16), ('Arrowhead', 16), ('Bullet', 16), ('Laser Head', 16), ('Bacteria', 16), ('Small Star CW', 16), ('Coin', 3), ('Mentos', 8), ('Mentos', 8), ('Jellybean', 8), ('Knife', 8), ('Butterfly', 8), ('Big Star CW', 8), ('Big Star CCW', 8), ('Red Fireball', 0), ('Purple Fireball', 0), ('Violet Fireball', 0), ('Orange Fireball', 0), ('Heart', 8), ('Pulsing Mentos', 8), ('Arrow', 8), ('Bubble', 4), ('Orb', 8), ('Droplet', 16), ('Spinning Rice', 16), ('Spinning Shard', 16), ('Small Star CCW', 16), ('Laser', 16), ('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)] #LoLK-WBaWC
+bullet_types_post_um = bullet_types_post_lolk + [('Yin-Yang CW', 8), ('Yin-Yang CCW', 8), ('Big Yin-Yang CW', 4), ('Big Yin-Yang CCW', 4)] #UM/HBM(?)/UDoALG
 
 enemy_anms_base = {0: "Blue Fairy", 5: "Red Fairy", 10: "Green Fairy", 15: "Yellow Fairy", 20: "Blue Flower Fairy", 25: "Red Flower Fairy", 30: "Maroon Fairy", 35: "Teal Fairy", 40: "Sunflower Fairy"}
-modern_enemy_anms_pre_ddc = {**enemy_anms_base, 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 65: "Red Yin-Yang", 68: "Green Yin-Yang", 71: "Blue Yin-Yang", 74: "Purple Yin-Yang", 78: "Red Spirit", 79:"Red Spirit", 80: "Green Spirit", 82: "Blue Spirit", 83: "Green Spirit", 87: "Blue Spirit", 91: "Yellow Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"}
-modern_enemy_anms_post_ddc = {**modern_enemy_anms_pre_ddc, 80: "Red Inverted Spirit", 84: "Green Inverted Spirit", 88: "Blue Inverted Spirit", 92: "Yellow Inverted Spirit"}
-modern_enemy_anms_post_wbawc = {**modern_enemy_anms_post_ddc, 172: "Glowing Blue Fairy", 177: "Glowing Red Fairy", 202: "Glowing Maroon Fairy", 212: "Glowing Sunflower Fairy"}
-modern_enemy_anms_post_um = {**modern_enemy_anms_post_wbawc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
+enemy_anms_pre_ddc = {**enemy_anms_base, 53: "Red Yin-Yang", 56: "Green Yin-Yang", 59: "Blue Yin-Yang", 62: "Purple Yin-Yang", 65: "Red Yin-Yang", 68: "Green Yin-Yang", 71: "Blue Yin-Yang", 74: "Purple Yin-Yang", 78: "Red Spirit", 79:"Red Spirit", 80: "Green Spirit", 82: "Blue Spirit", 83: "Green Spirit", 87: "Blue Spirit", 91: "Yellow Spirit", 106: "Yellow Spirit", 147: "Blue Hell Fairy", 152: "Red Hell Fairy", 157: "Yellow Hell Fairy", 162: "Purple Fairy", 167: "Hellflower Fairy"}
+enemy_anms_post_ddc = {**enemy_anms_pre_ddc, 80: "Red Inverted Spirit", 84: "Green Inverted Spirit", 88: "Blue Inverted Spirit", 92: "Yellow Inverted Spirit"}
+enemy_anms_post_wbawc = {**enemy_anms_post_ddc, 172: "Glowing Blue Fairy", 177: "Glowing Red Fairy", 202: "Glowing Maroon Fairy", 212: "Glowing Sunflower Fairy"}
+enemy_anms_post_um = {**enemy_anms_post_wbawc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
 
 item_types_td = {1: "Power", 2: "Point", 3:"Big Power", 4:"Big Point", 5:"Bomb Piece", 6: "Life", 7: "Bomb", 8: "Full Power", 9: "Cancel", 10: "LifeP. Spirit", 11: "Blue Spirit", 12: "BombP. Spirit", 13: "Grey Spirit", 14: "Blue Spirit"} #TD
 item_types_post_ddc = {1: "Power", 2: "Point", 3:"Big Power", 4:"Life Piece", 5:"Life", 6:"Bomb Piece", 7:"Bomb", 8:"Full Power", 9:"Green", 10:"Cancel", 11:"Big Cancel", 12:"Undiff. Piece"} #shared DDC-LoLK
 item_types_post_hsifs = {**item_types_post_ddc, 10:"Green++", 11:"Cancel", 12:"Cancel++", 13:"Big Cancel", 14:"Big Cancel++", 15:"Bomb Piece"} #shared HSiFS-WBaWC
 item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
-
-#to add when supporting these
-#hsifs: item_types    = {**item_types_post_hsifs, 16:"Season"}
 
 modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
 modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
@@ -471,8 +468,8 @@ offsets = {
             rng_seed        = 0xdc6a0 + 0x5c0,
         ),
         associations = Associations(
-            sprites       = sprites_post_td,
-            enemy_anms    = modern_enemy_anms_pre_ddc,
+            bullet_types  = bullet_types_post_td,
+            enemy_anms    = enemy_anms_pre_ddc,
             item_types    = item_types_td,
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -524,7 +521,7 @@ offsets = {
 
     # TOUHOU 14 -- Double Dealing Character ======================
     #=============================================================
-    'th14.exe': Offset( 
+    'th14.exe': Offset(
         statics = StaticsOffsets(
             score         = 0xf5830,
             graze         = 0xf5840,
@@ -677,8 +674,8 @@ offsets = {
             rng_seed        = 0xd8f60 + 0x728,
         ),
         associations = Associations(
-            sprites       = sprites_post_td + [('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)],
-            enemy_anms    = modern_enemy_anms_post_ddc,
+            bullet_types  = bullet_types_post_td + [('Red Note', 0), ('Blue Note', 0), ('Yellow Note', 0), ('Purple Note', 0), ('Rest', 8)],
+            enemy_anms    = enemy_anms_post_ddc,
             item_types    = item_types_post_ddc,
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -867,8 +864,8 @@ offsets = {
             rng_seed        = 0xe77d0 + 0x73c,
         ),
         associations = Associations(
-            sprites       = sprites_post_lolk,
-            enemy_anms    = modern_enemy_anms_post_ddc,
+            bullet_types  = bullet_types_post_lolk,
+            enemy_anms    = enemy_anms_post_ddc,
             item_types    = {**item_types_post_ddc, 13:"Graze"},
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1066,8 +1063,8 @@ offsets = {
             rng_seed        = 0xb5ae0 + 0x734,
         ),
         associations = Associations(
-            sprites       = sprites_post_lolk,
-            enemy_anms    = modern_enemy_anms_post_wbawc,
+            bullet_types  = bullet_types_post_lolk,
+            enemy_anms    = enemy_anms_post_wbawc,
             item_types    = {**item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit", 33:"Random Spirit"},
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1120,7 +1117,7 @@ offsets = {
 
     # TOUHOU 18 -- Unconnected Marketeers ========================
     #=============================================================
-    'th18.exe': Offset( 
+    'th18.exe': Offset(
         statics = StaticsOffsets(
             score         = 0xCCCFC,
             graze         = 0xCCD0C,
@@ -1273,8 +1270,8 @@ offsets = {
             rng_seed        = 0xCCDF0 + 0x838,
         ),
         associations = Associations(
-            sprites       = sprites_post_um,
-            enemy_anms    = {**modern_enemy_anms_post_um, 251: "Jimbo"},
+            bullet_types  = bullet_types_post_um,
+            enemy_anms    = {**enemy_anms_post_um, 251: "Jimbo"},
             item_types    = {**item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1315,7 +1312,7 @@ offsets = {
 
     # TOUHOU 19 -- Unfinished Dream of All Living Ghost ==========
     #=============================================================
-    'th19.exe': Offset( 
+    'th19.exe': Offset(
         statics = StaticsOffsets(
             score         = 0x207910,
             graze         = 0x20798c,
@@ -1468,8 +1465,8 @@ offsets = {
             rng_seed        = 0x208380 + 0x950,
         ),
         associations = Associations(
-            sprites       = sprites_post_um,
-            enemy_anms    = {**modern_enemy_anms_post_um, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
+            bullet_types  = bullet_types_post_um,
+            enemy_anms    = {**enemy_anms_post_um, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
             item_types    = {**item_types_post_um, 9: "Spirit Power"}, #technically more changes in HBM/UDoALG with bigger-sized spirit power items, but never used afaik
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,
@@ -1558,7 +1555,7 @@ offsets = {
 
 # Template as of post-WBaWC support
 # ==============================
-# 
+#
 #    'thXX.exe': Offset(
 #        statics = StaticsOffsets(
 #            score         = None,
@@ -1712,7 +1709,7 @@ offsets = {
 #            rng_seed        = None,
 #        ),
 #        associations = Associations(
-#            sprites       = None,
+#            bullet_types  = None,
 #            enemy_anms    = None,
 #            item_types    = None,
 #            pause_states  = None,
