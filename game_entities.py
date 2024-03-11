@@ -131,7 +131,6 @@ class CircleEcho:
 
 @dataclass
 class TDEnemy(Enemy):
-    kyouko_echo: Union[RectangleEcho, CircleEcho]
     speedkill_blue_drops: int
     speedkill_time_left_for_amt: int
 
@@ -245,13 +244,16 @@ class GameSpecificTD(GameSpecific):
     chain_timer: int #[0, 60] frames
     chain_counter: int #>9 greys spawn
     spirit_items: List[SpiritItem]
+    kyouko_echo: Union[RectangleEcho, CircleEcho]
+    miko_final_logic_active: bool
 
 # Double Dealing Character
 @dataclass
 class GameSpecificDDC(GameSpecific):
-    bonus_count: int
+    bonus_count: int #increases with non-2.0 bonuses, life piece at every multiple of 5
     player_scale: float #[1, 3]
     seija_flip: Tuple[float, float] #[-1, 1] for x and y
+    sukuna_penult_logic_active: bool
 
 # Legacy of Lunatic Kingdom
 @dataclass
@@ -265,6 +267,7 @@ class GameSpecificLoLK(GameSpecific):
     in_pointdevice: bool
     pointdevice_resets_total: int
     pointdevice_resets_chapter: int
+    graze_inferno_logic_active: bool
 
 # Wily Beast & Weakest Creature
 @dataclass
@@ -289,6 +292,7 @@ class GameSpecificUM(GameSpecific):
     lily_counter: Optional[int] #increments with uses of the Lily card, determines difficulty
     centipede_multiplier: Optional[float] #[1.0, 1.8]
     active_cards: List[ActiveCard]
+    asylum_logic_active: bool
 
 # Unfinished Dream of All Living Ghost
 @dataclass

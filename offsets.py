@@ -98,6 +98,7 @@ class EnemyOffsets:
     zEnemy_iframes: int
     zEnemy_flags: int #"flags_low"
     zEnemy_subboss_id: int
+    zEnemy_special_func: int
 
 @dataclass
 class ItemOffsets:
@@ -382,6 +383,7 @@ offsets = {
             zEnemy_iframes        = 0x11ec + 0x3fd0,
             zEnemy_flags          = 0x11ec + 0x4030,
             zEnemy_subboss_id     = 0x11ec + 0x4040,
+            zEnemy_special_func   = 0x11ec + 0x40e8,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xc229c,
@@ -505,10 +507,10 @@ offsets = {
             'zSpiritItem_vel': 0x48,
             'zSpiritItem_timer': 0x60,
             'zSpiritItem_len': 0x88,
-            'zEnemy_special_func': 0x11ec + 0x40e8, #if useful in multiple games, add to Enemy offset spec
             'square_echo_func': 0x422150,
             'inv_square_echo_func': 0x4224b0,
             'circle_echo_func': 0x4228b0,
+            'miko_final_func': 0x422d60,
             'zEnemy_f0_echo_x1': 0x11ec + 0x298, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f1_echo_x2': 0x11ec + 0x29c, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f2_echo_y1': 0x11ec + 0x2a0, #if useful in multiple games, add to Enemy offset spec
@@ -588,6 +590,7 @@ offsets = {
             zEnemy_iframes        = 0x11f0 + 0x3ff0,
             zEnemy_flags          = 0x11f0 + 0x4054,
             zEnemy_subboss_id     = 0x11f0 + 0x4064,
+            zEnemy_special_func   = 0x11f0 + 0x410c,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xdb660,
@@ -702,6 +705,7 @@ offsets = {
             'seija_flip_y': 0x64,
             'zPlayer_scale': 0x18308,
             'bonus_count': 0xf5894,
+            'sukuna_penult_func': 0x42cb00,
         }
     ),
 
@@ -778,6 +782,7 @@ offsets = {
             zEnemy_iframes        = 0x120c + 0x3ffc,
             zEnemy_flags          = 0x120c + 0x4060,
             zEnemy_subboss_id     = 0x120c + 0x4070,
+            zEnemy_special_func   = 0x120c + 0x4518,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xe9a9c,
@@ -897,6 +902,7 @@ offsets = {
             'zEnemy_weight': 0x5738,
             'zBullet_graze_timer': 0x1454,
             'zItemManager_graze_slowdown_factor': 0xe5def0,
+            'graze_inferno_func': 0x4318a0,
         }
     ),
 
@@ -969,6 +975,7 @@ offsets = {
             zEnemy_iframes        = 0x120c + 0x4000,
             zEnemy_flags          = 0x120c + 0x4060,
             zEnemy_subboss_id     = 0x120c + 0x4070,
+            zEnemy_special_func   = 0x120c + 0x4518,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xa6ddc,
@@ -1156,6 +1163,7 @@ offsets = {
             zEnemy_iframes        = 0x120c + 0x4044,
             zEnemy_flags          = 0x120c + 0x4080,
             zEnemy_subboss_id     = 0x120c + 0x4090,
+            zEnemy_special_func   = 0x120c + 0x4538,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xb76b8,
@@ -1363,6 +1371,7 @@ offsets = {
             zEnemy_iframes        = 0x122C + 0x50F4,
             zEnemy_flags          = 0x122C + 0x5130,
             zEnemy_subboss_id     = 0x122C + 0x5140,
+            zEnemy_special_func   = 0x122C + 0x55e8,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xCF2EC,
@@ -1486,6 +1495,7 @@ offsets = {
             'zCard_charge_max': 0x48,
             'zCard_name_pointer_pointer': 0x4C,
             'zCard_counter': 0x54, #used by Centipede & Lily
+            'asylum_func': 0x438d90,
         }
     ),
 
@@ -1558,6 +1568,7 @@ offsets = {
             zEnemy_iframes        = 0x1230 + 0x512c,
             zEnemy_flags          = 0x1230 + 0x516c,
             zEnemy_subboss_id     = 0x1230 + 0x5180,
+            zEnemy_special_func   = 0x1230 + 0x5648,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0x1ae47c,

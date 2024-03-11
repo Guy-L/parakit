@@ -129,6 +129,7 @@ zEnemy_drops          = offsets[_module_name].enemies.zEnemy_drops
 zEnemy_iframes        = offsets[_module_name].enemies.zEnemy_iframes
 zEnemy_flags          = offsets[_module_name].enemies.zEnemy_flags
 zEnemy_subboss_id     = offsets[_module_name].enemies.zEnemy_subboss_id
+zEnemy_special_func   = offsets[_module_name].enemies.zEnemy_special_func
 
 zEnemyFlags_no_hurtbox   = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
 zEnemyFlags_no_hitbox    = offsets[_module_name].associations.zEnemyFlags_no_hitbox
@@ -245,10 +246,10 @@ if game_id == 13:
     zSpiritItem_vel   = offsets[_module_name].game_specific['zSpiritItem_vel']
     zSpiritItem_timer = offsets[_module_name].game_specific['zSpiritItem_timer']
     zSpiritItem_len   = offsets[_module_name].game_specific['zSpiritItem_len']
-    zEnemy_special_func  = offsets[_module_name].game_specific['zEnemy_special_func']
     square_echo_func     = offsets[_module_name].game_specific['square_echo_func']
     inv_square_echo_func = offsets[_module_name].game_specific['inv_square_echo_func']
     circle_echo_func     = offsets[_module_name].game_specific['circle_echo_func']
+    miko_final_func      = offsets[_module_name].game_specific['miko_final_func']
     zEnemy_f0_echo_x1    = offsets[_module_name].game_specific['zEnemy_f0_echo_x1']
     zEnemy_f1_echo_x2    = offsets[_module_name].game_specific['zEnemy_f1_echo_x2']
     zEnemy_f2_echo_y1    = offsets[_module_name].game_specific['zEnemy_f2_echo_y1']
@@ -258,11 +259,12 @@ if game_id == 13:
     zEnemy_max_spirit_count = offsets[_module_name].game_specific['zEnemy_max_spirit_count']
 
 elif game_id == 14:
-    bonus_count       = offsets[_module_name].game_specific['bonus_count']
-    seija_anm_pointer = offsets[_module_name].game_specific['seija_anm_pointer']
-    seija_flip_x      = offsets[_module_name].game_specific['seija_flip_x']
-    seija_flip_y      = offsets[_module_name].game_specific['seija_flip_y']
-    zPlayer_scale     = offsets[_module_name].game_specific['zPlayer_scale']
+    bonus_count        = offsets[_module_name].game_specific['bonus_count']
+    seija_anm_pointer  = offsets[_module_name].game_specific['seija_anm_pointer']
+    seija_flip_x       = offsets[_module_name].game_specific['seija_flip_x']
+    seija_flip_y       = offsets[_module_name].game_specific['seija_flip_y']
+    zPlayer_scale      = offsets[_module_name].game_specific['zPlayer_scale']
+    sukuna_penult_func = offsets[_module_name].game_specific['sukuna_penult_func']
 
 elif game_id == 15:
     time_in_chapter = offsets[_module_name].game_specific['time_in_chapter']
@@ -276,6 +278,7 @@ elif game_id == 15:
     zEnemy_weight        = offsets[_module_name].game_specific['zEnemy_weight']
     zBullet_graze_timer  = offsets[_module_name].game_specific['zBullet_graze_timer']
     zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
+    graze_inferno_func = offsets[_module_name].game_specific['graze_inferno_func']
 
 elif game_id == 17:
     token_types           = offsets[_module_name].game_specific['token_types']
@@ -323,6 +326,7 @@ elif game_id == 18:
     zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
     zCard_name        = offsets[_module_name].game_specific['zCard_name_pointer_pointer']
     zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
+    asylum_func = offsets[_module_name].game_specific['asylum_func']
 
 elif game_id == 19:
     zPlayer_hitstun_status      = offsets[_module_name].game_specific['zPlayer_hitstun_status']
@@ -687,8 +691,8 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
         wait_game_frame(need_active=True)
     apply_action_int(0)
 
-def print_int(offset, bytes = 4, rel = False, signed = False, name = None):
-    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_int(offset, bytes, rel, signed)}")
+def print_int(offset, bytes = 4, rel = False, signed = False, name = None, hexa = False):
+    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {hex(read_int(offset, bytes, rel, signed)) if hexa else read_int(offset, bytes, rel, signed)}")
 
 def print_float(offset, rel = False, name = None):
     print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_float(offset, rel)}")

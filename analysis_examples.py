@@ -304,10 +304,6 @@ class AnalysisPlot(Analysis, ABC):
                 if self.lastframe.game_specific.seija_flip[1] == -1:
                     axarr[0].invert_yaxis()
 
-            elif game_id == 18:
-                if self.lastframe.spellcard and self.lastframe.spellcard.spell_id == 83:
-                    axarr[0].add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 130, color=(0.5, 0, 0.5, 0.5), fill=False))
-
             plt.title(self.plot_title)
             if self.plot(axarr[0], False) != DONT_PLOT:
                 axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_scale, marker='X')
@@ -529,6 +525,20 @@ class AnalysisPlotAll(AnalysisPlot):
         elif game_id == 17:
             plottedGameSpecific = AnalysisPlotWBaWC(self.lastframe).plot(ax, side2)
 
+        if plottedBullets != DONT_PLOT:
+            if game_id == 13 and self.lastframe.game_specific.miko_final_logic_active:
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
+
+            elif game_id == 14 and self.lastframe.game_specific.sukuna_penult_logic_active:
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False, zorder=0))
+
+            elif game_id == 15 and self.lastframe.game_specific.graze_inferno_logic_active:
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
+
+            elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False, zorder=0))
+
         if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
             return DONT_PLOT
 
@@ -736,29 +746,26 @@ class AnalysisPlotTD(AnalysisPlot):
             ax.scatter(x_coords, y_coords, facecolor=face_colors, s=sizes, marker='p',
                        edgecolor = edge_colors, linewidth=2)
 
-        #if any enemy has it, we're in TD, so they all have it
-        if self.lastframe.enemies and any(hasattr(enemy, 'kyouko_echo') for enemy in self.lastframe.enemies):
-            for enemy in self.lastframe.enemies:
-                if enemy.kyouko_echo != None:
-                    has_echoes = True
+        if self.lastframe.game_specific.kyouko_echo:
+            echo = self.lastframe.game_specific.kyouko_echo
 
-                    if hasattr(enemy.kyouko_echo, 'radius'):
-                        ax.add_patch(Circle(
-                            (enemy.kyouko_echo.position[0], enemy.kyouko_echo.position[1]),
-                            enemy.kyouko_echo.radius, color = (0, 0, 1, 0.2),
-                            linewidth=1.5, fill = False))
+            if hasattr(echo, 'radius'):
+                ax.add_patch(Circle(
+                    (echo.position[0], echo.position[1]),
+                    echo.radius, color = (0, 0, 1, 0.2),
+                    linewidth=1.5, fill = False))
 
-                    else:
-                        ax.add_patch(Rectangle(
-                            (enemy.kyouko_echo.left_x, enemy.kyouko_echo.top_y),
-                            width = enemy.kyouko_echo.right_x - enemy.kyouko_echo.left_x,
-                            height = enemy.kyouko_echo.bottom_y - enemy.kyouko_echo.top_y,
-                            color = (0, 0, 1, 0.2), linewidth=1.5, fill = False
-                        ))
+            else:
+                ax.add_patch(Rectangle(
+                    (echo.left_x, echo.top_y),
+                    width = echo.right_x - echo.left_x,
+                    height = echo.bottom_y - echo.top_y,
+                    color = (0, 0, 1, 0.2), linewidth=1.5, fill = False
+                ))
 
         if not spirit_items:
             print("No spirit items to plot.")
-            if not has_echoes:
+            if not self.lastframe.game_specific.kyouko_echo:
                 return DONT_PLOT
 
 # TD: "Plot enemy with color intensity based on blue drop count" [only requires enemies]

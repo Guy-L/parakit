@@ -64,7 +64,7 @@ def extract_bullets(bullet_manager = zBulletManager):
         zBullet = current_bullet_list["entry"]
 
         bullet = {
-            'id':           zBullet,
+            'id':            zBullet,
             'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
             'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
             'speed':         read_float(zBullet + zBullet_speed),
@@ -155,31 +155,6 @@ def extract_enemies(enemy_manager = zEnemyManager):
                 enemy['speedkill_blue_drops'] = 0
                 enemy['speedkill_time_left_for_amt'] = 0
 
-            kyouko_echo = None
-            special_func = read_int(zEnemy + zEnemy_special_func)
-            if special_func == square_echo_func:
-                kyouko_echo = RectangleEcho(
-                    left_x   = enemy['position'][0] + read_float(zEnemy + zEnemy_f0_echo_x1),
-                    right_x  = enemy['position'][0] + read_float(zEnemy + zEnemy_f1_echo_x2),
-                    top_y    = enemy['position'][1] + read_float(zEnemy + zEnemy_f2_echo_y1),
-                    bottom_y = enemy['position'][1] + read_float(zEnemy + zEnemy_f3_echo_y2),
-                )
-
-            elif special_func == inv_square_echo_func:
-                kyouko_echo = RectangleEcho(
-                    left_x   = read_float(zEnemy + zEnemy_f0_echo_x1),
-                    right_x  = read_float(zEnemy + zEnemy_f1_echo_x2),
-                    top_y    = read_float(zEnemy + zEnemy_f2_echo_y1),
-                    bottom_y = read_float(zEnemy + zEnemy_f3_echo_y2),
-                )
-
-            elif special_func == circle_echo_func:
-                kyouko_echo = CircleEcho(
-                    position = (read_float(zEnemy + zEnemy_f1_echo_x2), read_float(zEnemy + zEnemy_f2_echo_y1)),
-                    radius   = read_float(zEnemy + zEnemy_f0_echo_x1),
-                )
-
-            enemy['kyouko_echo'] = kyouko_echo
             enemies.append(TDEnemy(**enemy))
 
         elif game_id == 15:
@@ -190,6 +165,18 @@ def extract_enemies(enemy_manager = zEnemyManager):
             enemies.append(Enemy(**enemy))
 
     return enemies
+
+#used to get special state info contained by the boss, like kyouko echo, okina power disable...
+def find_special_enemy_addr(special_func, enemy_manager = zEnemyManager):
+    enemies = []
+    current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
+
+    while current_enemy_list["next"]:
+        current_enemy_list = read_zList(current_enemy_list["next"])
+
+        zEnemy = current_enemy_list["entry"]
+        if read_int(zEnemy + zEnemy_special_func) == special_func:
+            return zEnemy
 
 def extract_items(item_manager = zItemManager):
     items = []
@@ -427,6 +414,38 @@ def extract_game_state(frame_id = None, real_time = None):
         life_piece_reqs = [8, 10, 12, 15, 18, 20, 25]
         life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
 
+        kyouko = None
+        echo_func = 0x0
+        for kyouko_echo_func in (square_echo_func, inv_square_echo_func, circle_echo_func):
+            kyouko = find_special_enemy_addr(kyouko_echo_func)
+            if kyouko:
+                echo_func = kyouko_echo_func
+                break
+
+        kyouko_echo = None
+        if kyouko:
+            if echo_func == square_echo_func:
+                kyouko_echo = RectangleEcho(
+                    left_x   = read_float(kyouko + zEnemy_pos)       + read_float(kyouko + zEnemy_f0_echo_x1),
+                    right_x  = read_float(kyouko + zEnemy_pos)       + read_float(kyouko + zEnemy_f1_echo_x2),
+                    top_y    = read_float(kyouko + zEnemy_pos + 0x4) + read_float(kyouko + zEnemy_f2_echo_y1),
+                    bottom_y = read_float(kyouko + zEnemy_pos + 0x4) + read_float(kyouko + zEnemy_f3_echo_y2),
+                )
+
+            elif echo_func == inv_square_echo_func:
+                kyouko_echo = RectangleEcho(
+                    left_x   = read_float(kyouko + zEnemy_f0_echo_x1),
+                    right_x  = read_float(kyouko + zEnemy_f1_echo_x2),
+                    top_y    = read_float(kyouko + zEnemy_f2_echo_y1),
+                    bottom_y = read_float(kyouko + zEnemy_f3_echo_y2),
+                )
+
+            elif echo_func == circle_echo_func:
+                kyouko_echo = CircleEcho(
+                    position = (read_float(kyouko + zEnemy_f1_echo_x2), read_float(kyouko + zEnemy_f2_echo_y1)),
+                    radius   = read_float(kyouko + zEnemy_f0_echo_x1),
+                )
+
         game_specific = GameSpecificTD(
             life_piece_req = life_piece_req,
             trance_active  = read_int(trance_state, rel=True) != 0,
@@ -434,6 +453,8 @@ def extract_game_state(frame_id = None, real_time = None):
             chain_timer    = read_int(zSpiritManager + zSpiritManager_chain_timer),
             chain_counter  = read_int(zSpiritManager + zSpiritManager_chain_counter),
             spirit_items   = extract_spirit_items() if requires_items else [],
+            kyouko_echo    = kyouko_echo,
+            miko_final_logic_active = bool(find_special_enemy_addr(miko_final_func))
         )
 
     elif game_id == 14:
@@ -441,6 +462,7 @@ def extract_game_state(frame_id = None, real_time = None):
             bonus_count  = read_int(bonus_count, rel=True),
             player_scale = read_float(zPlayer + zPlayer_scale),
             seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
+            sukuna_penult_logic_active = bool(find_special_enemy_addr(sukuna_penult_func)),
         )
 
     elif game_id == 15:
@@ -454,6 +476,7 @@ def extract_game_state(frame_id = None, real_time = None):
             in_pointdevice                 = read_int(modeflags, rel=True) & 2**8 != 0,
             pointdevice_resets_total       = read_int(pointdevice_resets_total, rel=True),
             pointdevice_resets_chapter     = read_int(pointdevice_resets_chapter, rel=True),
+            graze_inferno_logic_active     = bool(find_special_enemy_addr(graze_inferno_func))
         )
 
     elif game_id == 17:
@@ -548,6 +571,7 @@ def extract_game_state(frame_id = None, real_time = None):
             lily_counter         = lily_counter,
             centipede_multiplier = centipede_multiplier,
             active_cards         = active_cards,
+            asylum_logic_active  = bool(find_special_enemy_addr(asylum_func)),
         )
 
     elif game_id == 19:
@@ -695,6 +719,9 @@ def print_game_state(gs: GameState):
         if gs.game_specific.chain_counter:
             print(f"| TD Chain {'Active' if gs.game_specific.chain_counter > 9 else 'Starting (no greys)'}: {gs.game_specific.chain_counter} blues spawned; {gs.game_specific.chain_timer}f left")
 
+        if gs.game_specific.miko_final_logic_active:
+            print("| TD Miko Final: Orbs will stop and aim towards player if player distance <= 48")
+
         if gs.game_specific.spirit_items:
             counter = 0
 
@@ -714,7 +741,12 @@ def print_game_state(gs: GameState):
                     break
 
     elif game_id == 14: #DDC
-        print(f"| DDC Bonus Count: {gs.game_specific.bonus_count}")
+        bonus_cycle_desc = ""
+        if gs.game_specific.bonus_count % 5 == 4:
+            bonus_cycle_desc = " (life piece next bonus < 2.0)"
+        else:
+            bonus_cycle_desc = " (bomb piece next bonus < 2.0)"
+        print(f"| DDC Bonus Cycle: {gs.game_specific.bonus_count%5}{bonus_cycle_desc}")
 
         if gs.game_specific.seija_flip[0] != 1:
             print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific.seija_flip[0]+1)/2, 2)}%")
@@ -724,6 +756,9 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.player_scale > 1:
             print(f"| DDC Player Scale: grew {round(gs.game_specific.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific.player_scale, 2)})")
+
+        if gs.game_specific.sukuna_penult_logic_active:
+            print("| DDC Sukuna Penult: Orbs will start homing if player distance < 64, will stop when player distance >= 128")
 
     elif game_id == 15: #LoLK
         chapter = "Chapter"
@@ -745,6 +780,9 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.reisen_bomb_shields > 0:
             print(f"| LoLK Reisen Bomb Shields: {gs.game_specific.reisen_bomb_shields}")
+
+        if gs.game_specific.graze_inferno_logic_active:
+            print(f"| LoLK Graze Inferno: Fireballs will slow down when player distance <= {math.sqrt(1800):.3f}")
 
     elif game_id == 17: #WBaWC
         if gs.game_specific.held_tokens:
@@ -830,6 +868,9 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.lily_counter != None:
             print(f"| UM Lily Use Count: {gs.game_specific.lily_counter} (" + ('next Lily drops Life Piece' if gs.game_specific.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
+
+        if gs.game_specific.asylum_logic_active:
+            print("| UM Asylum of Danmaku: Droplets will transform if player distance <= 128")
 
         if gs.game_specific.active_cards:
             print("\nList of active cards:")
