@@ -45,6 +45,7 @@ elif game_id == 19:
         zSpellCardP2      = read_int(p2_spellcard_pointer, rel=True)
         zGaugeManagerP2   = read_int(p2_gauge_manager_pointer, rel=True)
         zAbilityManagerP2 = read_int(p2_ability_manager_pointer, rel=True)
+        zAiP2             = read_int(p2_ai_pointer, rel=True)
 
 if game_id in has_ability_cards:
     zAbilityManager = read_int(ability_manager_pointer, rel=True)
@@ -577,6 +578,14 @@ def extract_game_state(frame_id = None, real_time = None):
     elif game_id == 19:
         side2 = None
 
+        #technically side2, but important singleplayer info so stored at the root of game_specific
+        story_fight_phase, story_progress_meter = None, None
+        if zAiP2:
+            zStoryAi = read_int(zAiP2 + zAi_story_mode_pointer)
+            if zStoryAi:
+                story_fight_phase = read_int(zStoryAi + zStoryAi_fight_phase)
+                story_progress_meter = read_int(zStoryAi + zStoryAi_progress_meter)
+
         if requires_side2_pvp:
             side2 = P2Side(
                 lives               = read_int(p2_lives, rel=True),
@@ -613,23 +622,25 @@ def extract_game_state(frame_id = None, real_time = None):
             )
 
         game_specific = GameSpecificUDoALG(
-            lives_max =           read_int(lives_max, rel=True),
-            hitstun_status =      read_int(zPlayer + zPlayer_hitstun_status),
-            shield_status =       read_int(zPlayer + zPlayer_shield_status),
-            last_combo_hits =     read_int(zPlayer + zPlayer_last_combo_hits),
-            current_combo_hits =  read_int(zPlayer + zPlayer_current_combo_hits),
-            current_combo_chain = read_int(zPlayer + zPlayer_current_combo_chain),
-            enemy_pattern_count = read_int(zEnemyManager + zEnemyManager_pattern_count),
-            item_spawn_total =    read_int(zItemManager + zItemManager_spawn_total),
-            gauge_charging =      read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
-            gauge_charge =        read_int(zGaugeManager + zGaugeManager_gauge_charge),
-            gauge_fill =          read_int(zGaugeManager + zGaugeManager_gauge_fill),
-            ex_attack_level =     read_int(ex_attack_level, rel=True),
-            boss_attack_level =   read_int(boss_attack_level, rel=True),
-            pvp_wins =            read_int(pvp_wins, rel=True),
-            side2 =               side2,
-            pvp_timer_start =     read_int(pvp_timer_start, rel=True),
-            pvp_timer =           read_int(pvp_timer, rel=True),
+            lives_max            = read_int(lives_max, rel=True),
+            hitstun_status       = read_int(zPlayer + zPlayer_hitstun_status),
+            shield_status        = read_int(zPlayer + zPlayer_shield_status),
+            last_combo_hits      = read_int(zPlayer + zPlayer_last_combo_hits),
+            current_combo_hits   = read_int(zPlayer + zPlayer_current_combo_hits),
+            current_combo_chain  = read_int(zPlayer + zPlayer_current_combo_chain),
+            enemy_pattern_count  = read_int(zEnemyManager + zEnemyManager_pattern_count),
+            item_spawn_total     = read_int(zItemManager + zItemManager_spawn_total),
+            gauge_charging       = read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
+            gauge_charge         = read_int(zGaugeManager + zGaugeManager_gauge_charge),
+            gauge_fill           = read_int(zGaugeManager + zGaugeManager_gauge_fill),
+            ex_attack_level      = read_int(ex_attack_level, rel=True),
+            boss_attack_level    = read_int(boss_attack_level, rel=True),
+            pvp_wins             = read_int(pvp_wins, rel=True),
+            side2                = side2,
+            story_fight_phase    = story_fight_phase,
+            story_progress_meter = story_progress_meter,
+            pvp_timer_start      = read_int(pvp_timer_start, rel=True),
+            pvp_timer            = read_int(pvp_timer, rel=True),
         )
 
     boss_timer = -1
@@ -901,6 +912,9 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.pvp_timer_start:
             print(f"| UDoALG PvP Timer: {round(gs.game_specific.pvp_timer/60)} / {round(gs.game_specific.pvp_timer_start/60)}")
+
+        if gs.game_specific.story_fight_phase != None and gs.game_specific.story_progress_meter != None:
+            print(f"| UDoALG Story Mode Fight Phase {gs.game_specific.story_fight_phase} Progress: {gs.game_specific.story_progress_meter}")
 
         if gs.game_specific.side2:
             print("| UDoALG P2 side data included in state.")

@@ -1692,6 +1692,9 @@ offsets = {
             'zGui_p2_bosstimer_s': 0xd4,
             'zGui_p2_bosstimer_ms': 0xd8,
             'zGui_p2_bosstimer_drawn': 0xcc,
+            'zAi_story_mode_pointer': 0x34,
+            'zStoryAi_fight_phase': 0x4,
+            'zStoryAi_progress_meter': 0x8,
 
             #P1 Struct Pointers
             'gauge_manager_pointer': 0x1ae488,
@@ -1707,6 +1710,7 @@ offsets = {
             'p2_laser_manager_pointer': 0x1ae4c0,
             'p2_gauge_manager_pointer': 0x1ae4c4,
             'p2_ability_manager_pointer': 0x1ae4cc,
+            'p2_ai_pointer': 0x1ae4e0,
 
             #P1 (Remaining) Globals
             'charge_attack_threshold': 0x207934, #untracked

@@ -305,13 +305,15 @@ class GameSpecificUDoALG(GameSpecific):
     current_combo_chain: int
     enemy_pattern_count: int
     item_spawn_total: int
-    gauge_charging: int
+    gauge_charging: bool
     gauge_charge: int
     gauge_fill: int
     ex_attack_level: int
     boss_attack_level: int
     pvp_wins: int
     side2: Optional[P2Side]
+    story_fight_phase: int | None
+    story_progress_meter: int | None
     pvp_timer_start: int
     pvp_timer: int
 

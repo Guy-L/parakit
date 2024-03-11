@@ -343,6 +343,9 @@ elif game_id == 19:
     zGui_p2_bosstimer_s         = offsets[_module_name].game_specific['zGui_p2_bosstimer_s']
     zGui_p2_bosstimer_ms        = offsets[_module_name].game_specific['zGui_p2_bosstimer_ms']
     zGui_p2_bosstimer_drawn     = offsets[_module_name].game_specific['zGui_p2_bosstimer_drawn']
+    zAi_story_mode_pointer      = offsets[_module_name].game_specific['zAi_story_mode_pointer']
+    zStoryAi_fight_phase        = offsets[_module_name].game_specific['zStoryAi_fight_phase']
+    zStoryAi_progress_meter     = offsets[_module_name].game_specific['zStoryAi_progress_meter']
 
     gauge_manager_pointer   = offsets[_module_name].game_specific['gauge_manager_pointer']
     ability_manager_pointer = offsets[_module_name].game_specific['ability_manager_pointer']
@@ -356,6 +359,7 @@ elif game_id == 19:
     p2_laser_manager_pointer   = offsets[_module_name].game_specific['p2_laser_manager_pointer']
     p2_gauge_manager_pointer   = offsets[_module_name].game_specific['p2_gauge_manager_pointer']
     p2_ability_manager_pointer = offsets[_module_name].game_specific['p2_ability_manager_pointer']
+    p2_ai_pointer              = offsets[_module_name].game_specific['p2_ai_pointer']
 
     charge_attack_threshold = offsets[_module_name].game_specific['charge_attack_threshold']
     skill_attack_threshold  = offsets[_module_name].game_specific['skill_attack_threshold']
