@@ -39,6 +39,7 @@ class Enemy:
     rotation: float
     anm_page: int
     anm_id: int
+    alive_timer: int
     score_reward: int
     hp: int
     hp_max: int
@@ -130,8 +131,8 @@ class CircleEcho:
     radius: float
 
 @dataclass
-class TDEnemy(Enemy):
-    speedkill_blue_drops: int
+class SpiritDroppingEnemy(Enemy):
+    speedkill_cur_drop_amt: int
     speedkill_time_left_for_amt: int
 
 # DDC / ISC / HBM
@@ -147,6 +148,17 @@ class GrazeTimerBullet(Bullet):
 @dataclass
 class WeightedEnemy(Enemy):
     shootdown_weight: int
+
+# Hidden Star in Four Seasons
+@dataclass
+class SeasonDroppingEnemy(Enemy):
+    speedkill_cur_drop_amt: int
+    speedkill_time_left_for_amt: int
+    season_drop_timer: int
+    season_drop_max_time: int
+    season_drop_min_count: int
+    damage_per_season_drop: int
+    damage_taken_for_season_drops: int
 
 # ================================================
 # Game specific objects ==========================
@@ -268,6 +280,18 @@ class GameSpecificLoLK(GameSpecific):
     pointdevice_resets_total: int
     pointdevice_resets_chapter: int
     graze_inferno_logic_active: bool
+
+# Hidden Star in Four Seasons
+@dataclass
+class GameSpecificHSiFS(GameSpecific):
+    next_extend_score: int
+    season_level: int
+    season_power: int #increments with each season item grabbed
+    next_level_season_power: int #season power required for next level
+    season_delay_post_use: int #[0, 45], ticks down from 45 after release deactivates
+    release_active: bool
+    season_disabled: bool
+    snowman_logic_active: bool
 
 # Wily Beast & Weakest Creature
 @dataclass

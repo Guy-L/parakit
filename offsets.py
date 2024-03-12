@@ -91,6 +91,7 @@ class EnemyOffsets:
     zEnemy_rotation: int
     zEnemy_anm_page: int #"anm_slot_0_index"
     zEnemy_anm_id: int #"anm_slot_0_script"
+    zEnemy_timer: int
     zEnemy_score_reward: int
     zEnemy_hp: int
     zEnemy_hp_max: int
@@ -376,6 +377,7 @@ offsets = {
             zEnemy_rotation       = 0x11ec + 0x20, #unsure if in game (seems to be set to 0 every frame?)
             zEnemy_anm_page       = 0x11ec + 0x264,
             zEnemy_anm_id         = 0x11ec + 0x268,
+            zEnemy_timer          = 0x11ec + 0x2bc,
             zEnemy_score_reward   = 0x11ec + 0x3f48,
             zEnemy_hp             = 0x11ec + 0x3f4c,
             zEnemy_hp_max         = 0x11ec + 0x3f50,
@@ -515,7 +517,6 @@ offsets = {
             'zEnemy_f1_echo_x2': 0x11ec + 0x29c, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f2_echo_y1': 0x11ec + 0x2a0, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f3_echo_y2': 0x11ec + 0x2a4, #if useful in multiple games, add to Enemy offset spec
-            'zEnemy_timer': 0x11ec + 0x2bc,      #if useful in multiple games, add to Enemy offset spec
             'zEnemy_spirit_time_max': 0x11ec + 0x3ff4,
             'zEnemy_max_spirit_count': 0x11ec + 0x3ff8,
         }
@@ -583,6 +584,7 @@ offsets = {
             zEnemy_rotation       = 0x11f0 + 0x120,
             zEnemy_anm_page       = 0x11f0 + 0x268,
             zEnemy_anm_id         = 0x11f0 + 0x26c,
+            zEnemy_timer          = 0x11f0 + 0x2c0,
             zEnemy_score_reward   = 0x11f0 + 0x3f70,
             zEnemy_hp             = 0x11f0 + 0x3f74,
             zEnemy_hp_max         = 0x11f0 + 0x3f78,
@@ -775,6 +777,7 @@ offsets = {
             zEnemy_rotation       = 0x120c + 0x120,
             zEnemy_anm_page       = 0x120c + 0x268,
             zEnemy_anm_id         = 0x120c + 0x26c,
+            zEnemy_timer          = 0x120c + 0x2c0,
             zEnemy_score_reward   = 0x120c + 0x3f70,
             zEnemy_hp             = 0x120c + 0x3f74,
             zEnemy_hp_max         = 0x120c + 0x3f78,
@@ -968,6 +971,7 @@ offsets = {
             zEnemy_rotation       = 0x120c + 0x120,
             zEnemy_anm_page       = 0x120c + 0x268,
             zEnemy_anm_id         = 0x120c + 0x26c,
+            zEnemy_timer          = 0x120c + 0x2d4,
             zEnemy_score_reward   = 0x120c + 0x3f70,
             zEnemy_hp             = 0x120c + 0x3f74,
             zEnemy_hp_max         = 0x120c + 0x3f78,
@@ -1084,10 +1088,23 @@ offsets = {
             world_height   = usual_world_height,
         ),
         game_specific = {
-        #0x4a57fc = next score extend index
-        #get enemy speedkill data
-        #get season gauge data
-        } #remember to add winter dps boost
+            'next_extend_score_index': 0xa57fc,
+            'extend_scores_maingame': 0x91880,
+            'extend_scores_extra': 0x917c4,
+            'zEnemy_season_drop': 0x403c,
+            'zSeasonDrop_timer': 0x4,
+            'zSeasonDrop_max_time': 0x14,
+            'zSeasonDrop_min_count': 0x18,
+            'zSeasonDrop_damage_for_drop': 0x1c,
+            'zSeasonDrop_total_damage': 0x20,
+            'snowman_func': 0x4252d0,
+            'zPlayer_season_level': 0x1669c,
+            'season_power': 0xa5808,
+            'season_power_thresholds': 0xa583c,
+            'season_disable_func': 0x4253b0,
+            'season_bomb_ptr': 0xa6da4,
+            'zBomb_timer': 0x38,
+        }
     ),
 
     # TOUHOU 16.5 -- Violet Detector =============================
@@ -1156,6 +1173,7 @@ offsets = {
             zEnemy_rotation       = 0x120c + 0x120,
             zEnemy_anm_page       = 0x120c + 0x268,
             zEnemy_anm_id         = 0x120c + 0x26c,
+            zEnemy_timer          = 0x120c + 0x2d4,
             zEnemy_score_reward   = 0x120c + 0x3f70,
             zEnemy_hp             = 0x120c + 0x3f74,
             zEnemy_hp_max         = 0x120c + 0x3f78,
@@ -1364,6 +1382,7 @@ offsets = {
             zEnemy_rotation       = 0x122C + 0x120,
             zEnemy_anm_page       = 0x122C + 0x268,
             zEnemy_anm_id         = 0x122C + 0x26C,
+            zEnemy_timer          = 0x122C + 0x2D4,
             zEnemy_score_reward   = 0x122C + 0x4FF0,
             zEnemy_hp             = 0x122C + 0x4FF4,
             zEnemy_hp_max         = 0x122C + 0x4FF8,
@@ -1561,6 +1580,7 @@ offsets = {
             zEnemy_rotation       = 0x1230 + 0x130,
             zEnemy_anm_page       = 0x1230 + 0x278,
             zEnemy_anm_id         = 0x1230 + 0x27c,
+            zEnemy_timer          = 0x1230 + 0x2e4,
             zEnemy_score_reward   = 0x1230 + 0x5004,
             zEnemy_hp             = 0x1230 + 0x5008,
             zEnemy_hp_max         = 0x1230 + 0x500c,
@@ -1810,6 +1830,7 @@ offsets = {
 #            zEnemy_rotation       = None,
 #            zEnemy_anm_page       = None,
 #            zEnemy_anm_id         = None,
+#            zEnemy_timer          = None,
 #            zEnemy_score_reward   = None,
 #            zEnemy_hp             = None,
 #            zEnemy_hp_max         = None,

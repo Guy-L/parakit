@@ -28,6 +28,9 @@ if game_id == 13:
 elif game_id == 14:
     ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
+elif game_id == 16:
+    zSeasomBomb = read_int(season_bomb_ptr, rel=True)
+
 elif game_id == 17:
     zTokenManager = read_int(token_manager_pointer, rel=True)
     zAnmManager = read_int(anm_manager_pointer, rel=True)
@@ -136,6 +139,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'rotation':     read_float(zEnemy + zEnemy_rotation),
             'anm_page':     read_int(zEnemy + zEnemy_anm_page),
             'anm_id':       read_int(zEnemy + zEnemy_anm_id),
+            'alive_timer':  read_int(zEnemy + zEnemy_timer),
             'score_reward': read_int(zEnemy + zEnemy_score_reward),
             'hp':           read_int(zEnemy + zEnemy_hp),
             'hp_max':       read_int(zEnemy + zEnemy_hp_max),
@@ -145,22 +149,49 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
         if game_id == 13:
             spirit_time_max  = read_int(zEnemy + zEnemy_spirit_time_max)
-            remaining_frames = spirit_time_max - read_int(zEnemy + zEnemy_timer)
+            remaining_frames = spirit_time_max - enemy['alive_timer']
 
             if remaining_frames >= 0:
                 interval_size = spirit_time_max // read_int(zEnemy + zEnemy_max_spirit_count)
-                enemy['speedkill_blue_drops'] = (remaining_frames // interval_size) + (2 if difficulty >= 2 else 1)
+                enemy['speedkill_cur_drop_amt'] = (remaining_frames // interval_size) + (2 if difficulty >= 2 else 1)
                 enemy['speedkill_time_left_for_amt'] = remaining_frames - (remaining_frames // interval_size) * interval_size + 1
 
             else:
-                enemy['speedkill_blue_drops'] = 0
+                enemy['speedkill_cur_drop_amt'] = 0
                 enemy['speedkill_time_left_for_amt'] = 0
 
-            enemies.append(TDEnemy(**enemy))
+            enemies.append(SpiritDroppingEnemy(**enemy))
 
         elif game_id == 15:
             enemy['shootdown_weight'] = read_int(zEnemy + zEnemy_weight, signed=True)
             enemies.append(WeightedEnemy(**enemy))
+
+        elif game_id == 16:
+            bonus_timer = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_timer)
+            max_time = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_max_time)
+            min_count = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_min_count)
+
+            if enemy['drops'] and not enemy['no_hurtbox']:
+                base_season_drop_count = enemy['drops'][16]
+                enemy['speedkill_cur_drop_amt'] = min_count + ((base_season_drop_count - min_count) * bonus_timer) // max_time
+
+                frames_left = 1 #bruteforce because interval size for above formula is NOT regular, too hard
+                while min_count + ((base_season_drop_count - min_count) * (bonus_timer-frames_left)) // max_time == enemy['speedkill_cur_drop_amt']:
+                    frames_left += 1
+
+                enemy['speedkill_time_left_for_amt'] = frames_left
+
+            else:
+                enemy['speedkill_cur_drop_amt'] = 0
+                enemy['speedkill_time_left_for_amt'] = 0
+
+            enemy['season_drop_timer'] = bonus_timer
+            enemy['season_drop_max_time'] = max_time
+            enemy['season_drop_min_count'] = min_count
+            enemy['damage_per_season_drop'] = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_damage_for_drop)
+            enemy['damage_taken_for_season_drops'] = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_total_damage)
+
+            enemies.append(SeasonDroppingEnemy(**enemy))
 
         else:
             enemies.append(Enemy(**enemy))
@@ -480,6 +511,21 @@ def extract_game_state(frame_id = None, real_time = None):
             graze_inferno_logic_active     = bool(find_special_enemy_addr(graze_inferno_func))
         )
 
+    elif game_id == 16:
+        player_season_level = read_int(zPlayer + zPlayer_season_level)
+        season_bomb_timer = read_int(zSeasomBomb + zBomb_timer, signed=True)
+
+        game_specific = GameSpecificHSiFS(
+            next_extend_score = 10 * read_int((extend_scores_extra if difficulty == 4 else extend_scores_maingame) + read_int(next_extend_score_index, rel=True) * 0x4, rel=True),
+            season_level = player_season_level,
+            season_power = read_int(season_power, rel=True),
+            next_level_season_power = read_int(season_power_thresholds + player_season_level * 0x4, rel=True),
+            season_delay_post_use = -season_bomb_timer if season_bomb_timer < 0 else 0,
+            release_active = read_int(zSeasomBomb + zBomb_state),
+            season_disabled = bool(find_special_enemy_addr(season_disable_func)),
+            snowman_logic_active = bool(find_special_enemy_addr(snowman_func)),
+        )
+
     elif game_id == 17:
         held_tokens = []
 
@@ -754,9 +800,9 @@ def print_game_state(gs: GameState):
     elif game_id == 14: #DDC
         bonus_cycle_desc = ""
         if gs.game_specific.bonus_count % 5 == 4:
-            bonus_cycle_desc = " (life piece next bonus < 2.0)"
+            bonus_cycle_desc = " (life piece for next bonus < 2.0)"
         else:
-            bonus_cycle_desc = " (bomb piece next bonus < 2.0)"
+            bonus_cycle_desc = " (bomb piece for next bonus < 2.0)"
         print(f"| DDC Bonus Cycle: {gs.game_specific.bonus_count%5}{bonus_cycle_desc}")
 
         if gs.game_specific.seija_flip[0] != 1:
@@ -794,6 +840,26 @@ def print_game_state(gs: GameState):
 
         if gs.game_specific.graze_inferno_logic_active:
             print(f"| LoLK Graze Inferno: Fireballs will slow down when player distance <= {math.sqrt(1800):.3f}")
+
+    elif game_id == 16: #HSiFS
+        print(f"| HSiFS Next Score Extend Threshold: {gs.game_specific.next_extend_score:,}")
+
+        if gs.game_specific.season_disabled:
+            print(f"| HSiFS Season Gauge: Disabled by Okina final")
+
+        else:
+            remaining_charge_desc = ""
+            if gs.game_specific.next_level_season_power - gs.game_specific.season_power:
+                remaining_charge_desc = f" (need {gs.game_specific.next_level_season_power - gs.game_specific.season_power} more season items)"
+
+            releasability_desc = " (can't release)"
+            if gs.game_specific.season_level and not gs.bomb_state and not gs.game_specific.release_active:
+                if gs.game_specific.season_delay_post_use:
+                    releasability_desc = f" (can release in {gs.game_specific.season_delay_post_use}f)"
+                else:
+                    releasability_desc = " (can release)"
+
+            print(f"| HSiFS Season Gauge: level {gs.game_specific.season_level}, charge {gs.game_specific.season_power}/{gs.game_specific.next_level_season_power}{remaining_charge_desc}{releasability_desc}")
 
     elif game_id == 17: #WBaWC
         if gs.game_specific.held_tokens:
@@ -1075,13 +1141,13 @@ def print_game_state(gs: GameState):
         counter = 0
 
         print("\nList of enemies:")
-        print("  Position        Hurtbox         Hitbox          Rotation  IFrames  HP / Max HP     Type")
+        print("  Position        Hurtbox         Hitbox          Timer    IFrames  HP / Max HP     Type")
         for enemy in gs.enemies:
             description = "• "
             description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
-            description += tabulate(round(enemy.rotation, 2), 10)
+            description += tabulate(enemy.alive_timer, 9)
             description += tabulate(enemy.iframes, 9)
             description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
 
@@ -1118,8 +1184,11 @@ def print_game_state(gs: GameState):
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
                 description += "\n  • Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
-                if game_id == 13 and enemy.speedkill_blue_drops:
-                    description += f" (+ {enemy.speedkill_blue_drops} Blue Spirit; will be {enemy.speedkill_blue_drops-1} in {enemy.speedkill_time_left_for_amt}f)"
+                if game_id == 13 and enemy.speedkill_cur_drop_amt:
+                    description += f" (+ {enemy.speedkill_cur_drop_amt} Blue Spirit; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
+
+                elif game_id == 16 and enemy.speedkill_cur_drop_amt:
+                    description += f" (reduced to {enemy.speedkill_cur_drop_amt} Season; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
 
             print(description)
 

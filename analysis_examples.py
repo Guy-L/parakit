@@ -536,6 +536,9 @@ class AnalysisPlotAll(AnalysisPlot):
             elif game_id == 15 and self.lastframe.game_specific.graze_inferno_logic_active:
                 ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
 
+            elif game_id == 16 and self.lastframe.game_specific.snowman_logic_active:
+                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
+
             elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
                 ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False, zorder=0))
 
@@ -768,19 +771,27 @@ class AnalysisPlotTD(AnalysisPlot):
             if not self.lastframe.game_specific.kyouko_echo:
                 return DONT_PLOT
 
-# TD: "Plot enemy with color intensity based on blue drop count" [only requires enemies]
-class AnalysisPlotEnemiesBlueDrops(AnalysisPlot):
-    plot_title = 'Scatter Plot of Enemies w/ Blue Drop Counts'
+# TD/HSiFS: "Plot enemy with color intensity based on speedkill drop count" [only requires enemies]
+class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
+
+    @property
+    def plot_title(self):
+        if game_id == 13:
+            return 'Scatter Plot of Enemies w/ Blue Drop Counts'
+
+        if game_id == 16:
+            return 'Scatter Plot of Enemies w/ Season Drop Counts'
+
+        return f"Scatter Plot of Enemies w/ Speedkill Drop Counts"
 
     def plot(self, ax, side2):
         enemies = self.lastframe.enemies
 
-        #if any enemy has it, we're in TD, so they all have it
-        if enemies and any(hasattr(enemy, 'speedkill_blue_drops') for enemy in enemies):
-            max_blue_drops = 0
+        if enemies and any(hasattr(enemy, 'speedkill_cur_drop_amt') for enemy in enemies):
+            max_speedkill_drops = 0
             for enemy in enemies:
-                if enemy.speedkill_blue_drops > max_blue_drops:
-                    max_blue_drops = enemy.speedkill_blue_drops
+                if enemy.speedkill_cur_drop_amt > max_speedkill_drops:
+                    max_speedkill_drops = enemy.speedkill_cur_drop_amt
 
             for enemy in enemies:
                 ax.add_patch(Ellipse(
@@ -788,13 +799,17 @@ class AnalysisPlotEnemiesBlueDrops(AnalysisPlot):
                             width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
                             height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
                             angle = np.degrees(enemy.rotation),
-                            facecolor = (0.5, 0, enemy.speedkill_blue_drops/max_blue_drops if max_blue_drops > 0 else 1, 0.5 if enemy.no_hitbox else 1),
+                            facecolor = (0.5, 0, enemy.speedkill_cur_drop_amt/max_speedkill_drops if max_speedkill_drops > 0 else 1, 0.5 if enemy.no_hitbox else 1),
                             edgecolor = (0, 0, 0, 0.3), linewidth=3
                         ))
 
-                #fixed blue drops are added to text only, not counted for coloring calculation
+                #fixed drops are added to text only, not counted for coloring calculation
+                fixed_drops = 0
+                if game_id == 13:
+                    fixed_drops = enemy.drops.get(11, 0) + enemy.drops.get(14, 0)
+
                 ax.text(enemy.position[0], enemy.position[1],
-                    str(enemy.speedkill_blue_drops + enemy.drops.get(11, 0) + enemy.drops.get(14, 0)),
+                    str(enemy.speedkill_cur_drop_amt + fixed_drops),
                     color='white', ha='center', va='center')
 
                 if enemy.speedkill_time_left_for_amt:

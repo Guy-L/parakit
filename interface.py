@@ -122,6 +122,7 @@ zEnemy_hitbox         = offsets[_module_name].enemies.zEnemy_hitbox
 zEnemy_rotation       = offsets[_module_name].enemies.zEnemy_rotation
 zEnemy_anm_page       = offsets[_module_name].enemies.zEnemy_anm_page
 zEnemy_anm_id         = offsets[_module_name].enemies.zEnemy_anm_id
+zEnemy_timer          = offsets[_module_name].enemies.zEnemy_timer
 zEnemy_score_reward   = offsets[_module_name].enemies.zEnemy_score_reward
 zEnemy_hp             = offsets[_module_name].enemies.zEnemy_hp
 zEnemy_hp_max         = offsets[_module_name].enemies.zEnemy_hp_max
@@ -254,7 +255,6 @@ if game_id == 13:
     zEnemy_f1_echo_x2    = offsets[_module_name].game_specific['zEnemy_f1_echo_x2']
     zEnemy_f2_echo_y1    = offsets[_module_name].game_specific['zEnemy_f2_echo_y1']
     zEnemy_f3_echo_y2    = offsets[_module_name].game_specific['zEnemy_f3_echo_y2']
-    zEnemy_timer         = offsets[_module_name].game_specific['zEnemy_timer']
     zEnemy_spirit_time_max  = offsets[_module_name].game_specific['zEnemy_spirit_time_max']
     zEnemy_max_spirit_count = offsets[_module_name].game_specific['zEnemy_max_spirit_count']
 
@@ -279,6 +279,26 @@ elif game_id == 15:
     zBullet_graze_timer  = offsets[_module_name].game_specific['zBullet_graze_timer']
     zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
     graze_inferno_func = offsets[_module_name].game_specific['graze_inferno_func']
+
+elif game_id == 16:
+    next_extend_score_index = offsets[_module_name].game_specific['next_extend_score_index']
+    extend_scores_maingame  = offsets[_module_name].game_specific['extend_scores_maingame']
+    extend_scores_extra     = offsets[_module_name].game_specific['extend_scores_extra']
+    zEnemy_season_drop      = offsets[_module_name].game_specific['zEnemy_season_drop']
+    zSeasonDrop_timer       = offsets[_module_name].game_specific['zSeasonDrop_timer']
+    zSeasonDrop_max_time    = offsets[_module_name].game_specific['zSeasonDrop_max_time']
+    zSeasonDrop_min_count   = offsets[_module_name].game_specific['zSeasonDrop_min_count']
+    zSeasonDrop_damage_for_drop = offsets[_module_name].game_specific['zSeasonDrop_damage_for_drop']
+    zSeasonDrop_total_damage    = offsets[_module_name].game_specific['zSeasonDrop_total_damage']
+    snowman_func = offsets[_module_name].game_specific['snowman_func']
+
+    zPlayer_season_level    = offsets[_module_name].game_specific['zPlayer_season_level']
+    season_power            = offsets[_module_name].game_specific['season_power']
+    season_power_thresholds = offsets[_module_name].game_specific['season_power_thresholds']
+    season_disable_func     = offsets[_module_name].game_specific['season_disable_func']
+
+    season_bomb_ptr = offsets[_module_name].game_specific['season_bomb_ptr']
+    zBomb_timer     = offsets[_module_name].game_specific['zBomb_timer']
 
 elif game_id == 17:
     token_types           = offsets[_module_name].game_specific['token_types']

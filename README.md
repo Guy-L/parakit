@@ -11,6 +11,7 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * TD
 * DDC
 * LoLK
+* HSiFS
 * WBaWC
 * UM
 * UDoALG
@@ -138,7 +139,7 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Uses bullets.* | <img alt="UM st5 fireballs enemies" src="https://github.com/Guy-L/parakit/assets/55163797/71c8e758-8c02-4278-9d12-9a42ae3f82e8"> |
 | `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Uses bullets.* | <img alt="Seki Ascii" src="https://github.com/Guy-L/parakit/assets/55163797/fae9f00a-36dd-4576-bac6-04bd9b438050"> |
 | `AnalysisPlotTD` <br>Plots the spirit item positions and Kyouko echo bounds of the last frame. Included in `AnalysisPlotAll`. <br>*Uses items & enemies.* | <img alt="Kyouko non 2" src="https://github.com/Guy-L/parakit/assets/55163797/c79dfd28-f4b8-4c29-b08b-8363e0102dde"> |
-| `AnalysisPlotEnemiesBlueDrops` <br>Plots enemies with color intensity based on time-based blue spirit drops, shows the total number of blue spirit drops and the remaining time to get that amount.<br>*Uses enemies.* | <img alt="TD s4 post midboss" src="https://github.com/Guy-L/parakit/assets/55163797/9f0e0824-2a15-48da-8ce9-1b0d6dee9bb8"> |
+| `AnalysisPlotEnemiesSpeedkillDrops` <br>Plots enemies with color intensity based on time-based item drops, shows the current amount of speedkill drops and the remaining time to get that amount. Works with blue spirits in TD and season items in HSiFS. <br>*Uses enemies.* | <img alt="TD s4 post midboss" src="https://github.com/Guy-L/parakit/assets/55163797/9f0e0824-2a15-48da-8ce9-1b0d6dee9bb8"> |
 | `AnalysisHookChapterTransition` <br>Example showing how to programatically detect chapter transitions in LoLK. | <img alt="Log of chapter detected transitions" src="https://github.com/Guy-L/parakit/assets/55163797/37900ec6-0961-4f8e-9b96-121be65aa3b0"> |
 | `AnalysisPlotBulletGraze` <br>Plots bullets with color intensity based on graze timer. <br>*Uses bullets.* | <img alt="EX Doremy final" src="https://github.com/Guy-L/parakit/assets/55163797/8727b316-9f84-4201-ade7-9d5e8bbb3f08"> |
 | `AnalysisPlotWBaWC` <br>Plots the animal token and shield otter positions of the last frame. Included in `AnalysisPlotAll`. <br>*Uses items.* | <img alt="Keiki penult with otter hyper" src="https://github.com/Guy-L/parakit/assets/55163797/b63c14bb-b19b-4a87-8260-3df0fe8297a8"> |
