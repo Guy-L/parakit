@@ -77,6 +77,7 @@ def extract_bullets(bullet_manager = zBulletManager):
             'hitbox_radius': read_float(zBullet + zBullet_hitbox_radius),
             'iframes':       read_int(zBullet + zBullet_iframes),
             'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
+            'alive_timer':   read_int(zBullet + zBullet_timer),
             'bullet_type':   read_int(zBullet + zBullet_type, 2),
             'color':         read_int(zBullet + zBullet_color, 2),
         }
@@ -230,17 +231,13 @@ def extract_items(item_manager = zItemManager):
                 print(f"Found and skipped unknown item with type ID {item_type}. If this is a real in-game item, please report it to the developper!")
             continue
 
-        item_x     = read_float(item + zItem_pos)
-        item_y     = read_float(item + zItem_pos + 0x4)
-        item_vel_x = read_float(item + zItem_vel)
-        item_vel_y = read_float(item + zItem_vel + 0x4)
-
         items.append(Item(
-            id        = item,
-            state     = item_state,
-            item_type = item_type,
-            position  = (item_x, item_y), 
-            velocity  = (item_vel_x, item_vel_y),
+            id          = item,
+            state       = item_state,
+            item_type   = item_type,
+            position    = (read_float(item + zItem_pos), read_float(item + zItem_pos + 0x4)),
+            velocity    = (read_float(item + zItem_vel), read_float(item + zItem_vel + 0x4)),
+            alive_timer = read_int(item + zItem_timer) + 1,
         ))
 
     return items
@@ -258,7 +255,7 @@ def extract_spirit_items():
                 spirit_type = read_int(spirit_item + zSpiritItem_type),
                 position    = (read_float(spirit_item + zSpiritItem_pos), read_float(spirit_item + zSpiritItem_pos + 0x4)),
                 velocity    = (read_float(spirit_item + zSpiritItem_vel), read_float(spirit_item + zSpiritItem_vel + 0x4)),
-                timer       = read_int(spirit_item + zSpiritItem_timer),
+                alive_timer = read_int(spirit_item + zSpiritItem_timer) + 1,
             ))
 
     return spirit_items
@@ -303,18 +300,18 @@ def extract_lasers(laser_manager = zLaserManager):
         laser_type  = read_int(current_laser_ptr + zLaserBaseClass_type)
 
         laser_base = {
-            'id':         current_laser_ptr,
-            'state':      laser_state,
-            'laser_type': laser_type,
-            'timer':      read_int(current_laser_ptr + zLaserBaseClass_timer),
-            'position':  (read_float(current_laser_ptr + zLaserBaseClass_offset), read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)),
-            'angle':      read_float(current_laser_ptr + zLaserBaseClass_angle),
-            'length':     read_float(current_laser_ptr + zLaserBaseClass_length),
-            'width':      read_float(current_laser_ptr + zLaserBaseClass_width),
-            'speed':      read_float(current_laser_ptr + zLaserBaseClass_speed),
-            'iframes':    read_int(current_laser_ptr + zLaserBaseClass_iframes),
-            'sprite':     read_int(current_laser_ptr + zLaserBaseClass_sprite),
-            'color':      read_int(current_laser_ptr + zLaserBaseClass_color),
+            'id':          current_laser_ptr,
+            'state':       laser_state,
+            'laser_type':  laser_type,
+            'alive_timer': read_int(current_laser_ptr + zLaserBaseClass_timer),
+            'position':   (read_float(current_laser_ptr + zLaserBaseClass_offset), read_float(current_laser_ptr + zLaserBaseClass_offset + 0x4)),
+            'angle':       read_float(current_laser_ptr + zLaserBaseClass_angle),
+            'length':      read_float(current_laser_ptr + zLaserBaseClass_length),
+            'width':       read_float(current_laser_ptr + zLaserBaseClass_width),
+            'speed':       read_float(current_laser_ptr + zLaserBaseClass_speed),
+            'iframes':     read_int(current_laser_ptr + zLaserBaseClass_iframes),
+            'sprite':      read_int(current_laser_ptr + zLaserBaseClass_sprite),
+            'color':       read_int(current_laser_ptr + zLaserBaseClass_color),
         }
 
         if laser_type == 0: #LINE
@@ -793,7 +790,7 @@ def print_game_state(gs: GameState):
                 description += tabulate(spirit_types[spirit.spirit_type], 11)
                 description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
                 description += tabulate(f"({round(spirit.velocity[0], 1)}, {round(spirit.velocity[1], 1)})", 17)
-                description += str(522 - spirit.timer)
+                description += tabulate(523 - spirit.alive_timer, 12)
                 print(description)
 
                 counter += 1
@@ -995,7 +992,7 @@ def print_game_state(gs: GameState):
         counter = 0
 
         print("\nList of bullets:")
-        print("  Position         Velocity         Speed   Angle   Radius  Color        Type")
+        print("  Position         Velocity         Speed   Angle   Radius  Timer  Color        Type")
         for bullet in gs.bullets:
             if not bullet.is_active:
                 continue
@@ -1006,6 +1003,7 @@ def print_game_state(gs: GameState):
             description += tabulate(round(bullet.speed, 1), 8)
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
+            description += tabulate(bullet.alive_timer, 7)
             description += tabulate(get_color(bullet.bullet_type, bullet.color)[0], 13)
 
             #account for mono-color sprites
@@ -1079,13 +1077,13 @@ def print_game_state(gs: GameState):
                 description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
 
                 if laser.state == 3:
-                    description += f"Telegraph ({laser.start_time - laser.timer}f)"
+                    description += f"Telegraph ({laser.start_time - laser.alive_timer}f)"
                 elif laser.state == 4:
-                    description += f"Expand ({laser.expand_time - laser.timer}f)"
+                    description += f"Expand ({laser.expand_time - laser.alive_timer}f)"
                 elif laser.state == 2:
-                    description += f"Active ({laser.active_time - laser.timer}f)"
+                    description += f"Active ({laser.active_time - laser.alive_timer}f)"
                 elif laser.state == 5:
-                    description += f"Shrink ({laser.shrink_time - laser.timer}f)"
+                    description += f"Shrink ({laser.shrink_time - laser.alive_timer}f)"
                 else:
                     description += "Unknown"
 
@@ -1208,14 +1206,14 @@ def print_game_state(gs: GameState):
         counter = 0
 
         print("\nList of items:")
-        print("  Position         Velocity         Type")
+        print("  Position         Velocity         Timer   Type")
         for item in gs.items:
             description = "• "
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
+            description += tabulate(item.alive_timer, 8)
             description += tabulate(get_item_type(item.item_type), 14)
 
-            #not in table since rare
             if item.state == zItemState_autocollect:
                 description += " (Auto-collecting)"
             elif item.state == zItemState_attracted:

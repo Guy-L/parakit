@@ -109,6 +109,7 @@ zBullet_angle          = offsets[_module_name].bullets.zBullet_angle
 zBullet_hitbox_radius  = offsets[_module_name].bullets.zBullet_hitbox_radius
 zBullet_scale          = offsets[_module_name].bullets.zBullet_scale
 zBullet_state          = offsets[_module_name].bullets.zBullet_state
+zBullet_timer          = offsets[_module_name].bullets.zBullet_timer
 zBullet_type           = offsets[_module_name].bullets.zBullet_type
 zBullet_color          = offsets[_module_name].bullets.zBullet_color
 
@@ -147,6 +148,7 @@ zItem_state  = offsets[_module_name].items.zItem_state
 zItem_type   = offsets[_module_name].items.zItem_type
 zItem_pos    = offsets[_module_name].items.zItem_pos
 zItem_vel    = offsets[_module_name].items.zItem_vel
+zItem_timer  = offsets[_module_name].items.zItem_timer
 zItem_len    = offsets[_module_name].items.zItem_len
 
 zItemState_autocollect = offsets[_module_name].associations.zItemState_autocollect

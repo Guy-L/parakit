@@ -21,6 +21,7 @@ class Bullet:
     hitbox_radius: float
     iframes: int
     is_active: bool
+    alive_timer: int
     bullet_type: int
     color: int
 
@@ -53,13 +54,14 @@ class Item:
     item_type: int
     position: Tuple[float, float]
     velocity: Tuple[float, float]
+    alive_timer: int
 
 @dataclass 
 class Laser:
     id: int
     state: int
     laser_type: int
-    timer: int
+    alive_timer: int
     position: Tuple[float, float]
     angle: float
     length: float
@@ -171,7 +173,7 @@ class SpiritItem:
     spirit_type: int #meaning: spirit_types[spirit_type]
     position: Tuple[float, float]
     velocity: Tuple[float, float]
-    timer: int #[0, 521] frames alive
+    alive_timer: int #[1, 522] frames alive
 
 # Wily Beast & Weakest Creature
 @dataclass

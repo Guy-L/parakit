@@ -77,6 +77,7 @@ class BulletOffsets:
     zBullet_hitbox_radius: int
     zBullet_scale: Optional[int] #absent in pre-DDC
     zBullet_state: int
+    zBullet_timer: int
     zBullet_type: int
     zBullet_color: int
 
@@ -106,11 +107,12 @@ class ItemOffsets:
     item_manager_pointer: int
     zItemManager_array: int
     zItemManager_array_len: int
-    zItem_len: int
     zItem_state: int
     zItem_type: int
     zItem_pos: int
     zItem_vel: int
+    zItem_timer: int
+    zItem_len: int
 
 @dataclass
 class LaserBaseOffsets:
@@ -364,6 +366,7 @@ offsets = {
             zBullet_hitbox_radius  = 0xb90,
             zBullet_scale          = None,
             zBullet_state          = 0xbbe,
+            zBullet_timer          = 0x132c,
             zBullet_type           = 0x1354,
             zBullet_color          = 0x1356,
         ),
@@ -395,6 +398,7 @@ offsets = {
             zItem_type  = 0xba4,
             zItem_pos   = 0xb5c,
             zItem_vel   = 0xb68,
+            zItem_timer = 0xb7c,
             zItem_len   = 0xbc8,
         ),
         laser_base = LaserBaseOffsets(
@@ -571,6 +575,7 @@ offsets = {
             zBullet_hitbox_radius  = 0xbe0,
             zBullet_scale          = 0x13bc,
             zBullet_state          = 0xc0e,
+            zBullet_timer          = 0x13c4,
             zBullet_type           = 0x13ec,
             zBullet_color          = 0x13ee,
         ),
@@ -598,11 +603,12 @@ offsets = {
             item_manager_pointer   = 0xdb660,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
-            zItem_len   = 0xc18,
             zItem_state = 0xbf0,
             zItem_type  = 0xbf4,
             zItem_pos   = 0xbac,
             zItem_vel   = 0xbb8,
+            zItem_timer = 0xbcc,
+            zItem_len   = 0xc18,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xdb664,
@@ -764,6 +770,7 @@ offsets = {
             zBullet_hitbox_radius  = 0xc58,
             zBullet_scale          = 0x1438,
             zBullet_state          = 0xc8a,
+            zBullet_timer          = 0x146c,
             zBullet_type           = 0x1490,
             zBullet_color          = 0x1492,
         ),
@@ -791,11 +798,12 @@ offsets = {
             item_manager_pointer   = 0xe9a9c,
             zItemManager_array     = 0x0,
             zItemManager_array_len = 0x1258,
-            zItem_len   = 0xc88,
             zItem_state = 0xc74,
             zItem_type  = 0xc78,
             zItem_pos   = 0xc30,
             zItem_vel   = 0xc3c,
+            zItem_timer = 0xc50,
+            zItem_len   = 0xc88,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xe9ba0,
@@ -958,6 +966,7 @@ offsets = {
             zBullet_hitbox_radius  = 0xc40,
             zBullet_scale          = 0x141c,
             zBullet_state          = 0xc72,
+            zBullet_timer          = 0x1450,
             zBullet_type           = 0x1474,
             zBullet_color          = 0x1476,
         ),
@@ -985,11 +994,12 @@ offsets = {
             item_manager_pointer   = 0xa6ddc,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
-            zItem_len   = 0xc78,
             zItem_state = 0xc50,
             zItem_type  = 0xc54,
             zItem_pos   = 0xc08,
             zItem_vel   = 0xc14,
+            zItem_timer = 0xc2c,
+            zItem_len   = 0xc78,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xa6ee0,
@@ -1160,6 +1170,7 @@ offsets = {
             zBullet_hitbox_radius  = 0x64c,
             zBullet_scale          = 0xe20,
             zBullet_state          = 0xe50,
+            zBullet_timer          = 0xe58,
             zBullet_type           = 0xe80,
             zBullet_color          = 0xe82,
         ),
@@ -1187,11 +1198,12 @@ offsets = {
             item_manager_pointer   = 0xb76b8,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
-            zItem_len   = 0xc78,
             zItem_state = 0xc58,
             zItem_type  = 0xc5c,
             zItem_pos   = 0xc10,
             zItem_vel   = 0xc1c,
+            zItem_timer = 0xc34,
+            zItem_len   = 0xc78,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xb76bc,
@@ -1369,6 +1381,7 @@ offsets = {
             zBullet_hitbox_radius  = 0x658,
             zBullet_scale          = 0xF38,
             zBullet_state          = 0xF68,
+            zBullet_timer          = 0xF70,
             zBullet_type           = 0xF98,
             zBullet_color          = 0xF9A,
         ),
@@ -1396,11 +1409,12 @@ offsets = {
             item_manager_pointer   = 0xCF2EC,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
-            zItem_len   = 0xC94,
             zItem_state = 0xC74,
             zItem_type  = 0xC78,
             zItem_pos   = 0xC2C,
             zItem_vel   = 0xC38,
+            zItem_timer = 0xC50,
+            zItem_len   = 0xC94,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xCF3F4,
@@ -1567,6 +1581,7 @@ offsets = {
             zBullet_hitbox_radius  = 0x674,
             zBullet_scale          = 0xfd4,
             zBullet_state          = 0x1044,
+            zBullet_timer          = 0x104c,
             zBullet_type           = 0x1078,
             zBullet_color          = 0x107a,
         ),
@@ -1594,11 +1609,12 @@ offsets = {
             item_manager_pointer   = 0x1ae47c,
             zItemManager_array     = 0x18,
             zItemManager_array_len = 0x13c,
-            zItem_len   = 0xcf0,
             zItem_state = 0xcc8,
             zItem_type  = 0xccc,
             zItem_pos   = 0xc80,
             zItem_vel   = 0xc8c,
+            zItem_timer = 0xca4,
+            zItem_len   = 0xcf0,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0x1ae484,
@@ -1817,6 +1833,7 @@ offsets = {
 #            zBullet_hitbox_radius  = None,
 #            zBullet_scale          = None,
 #            zBullet_state          = None,
+#            zBullet_timer          = None,
 #            zBullet_type           = None,
 #            zBullet_color          = None,
 #        ),
@@ -1843,11 +1860,12 @@ offsets = {
 #            item_manager_pointer   = None,
 #            zItemManager_array     = None,
 #            zItemManager_array_len = None,
-#            zItem_len   = None,
 #            zItem_state = None,
 #            zItem_type  = None,
 #            zItem_pos   = None,
 #            zItem_vel   = None,
+#            zItem_timer = None,
+#            zItem_len   = None,
 #        ),
 #        laser_base = LaserBaseOffsets(
 #            laser_manager_pointer   = None,

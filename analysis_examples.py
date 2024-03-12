@@ -742,7 +742,7 @@ class AnalysisPlotTD(AnalysisPlot):
             edge_colors = [self.type_colors[spirit.spirit_type] + (self.edge_alpha,) for spirit in spirit_items]
 
             if self.use_visual_sizes and not self.lastframe.game_specific.trance_active:
-                sizes = [((522 - spirit.timer)/522) * self.type_sizes[spirit.spirit_type] for spirit in spirit_items]
+                sizes = [((523 - spirit.alive_timer)/523) * self.type_sizes[spirit.spirit_type] for spirit in spirit_items]
             else:
                 sizes = self.actual_size
 
