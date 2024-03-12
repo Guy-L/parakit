@@ -252,6 +252,7 @@ def extract_spirit_items():
         if read_int(spirit_item + zSpiritItem_state) != 0:
             spirit_items.append(SpiritItem(
                 id          = spirit_item,
+                state       = read_int(spirit_item),
                 spirit_type = read_int(spirit_item + zSpiritItem_type),
                 position    = (read_float(spirit_item + zSpiritItem_pos), read_float(spirit_item + zSpiritItem_pos + 0x4)),
                 velocity    = (read_float(spirit_item + zSpiritItem_vel), read_float(spirit_item + zSpiritItem_vel + 0x4)),
@@ -276,8 +277,9 @@ def extract_animal_tokens():
             type             = read_int(zToken + zToken_type),
             position         = (read_float(zToken + zToken_pos), read_float(zToken + zToken_pos + 0x4)),
             base_velocity    = (read_float(zToken + zToken_base_vel), read_float(zToken + zToken_base_vel + 0x4)),
-            slowed_by_player = token_flags & 2**2 != 0,
+            being_grabbed    = token_flags & 2**0 != 0,
             can_switch       = token_flags & 2**1 != 0,
+            slowed_by_player = token_flags & 2**2 != 0,
             switch_timer     = read_int(zToken + zToken_switch_timer),
             alive_timer      = read_int(zToken + zToken_alive_timer),
         ))
@@ -791,6 +793,12 @@ def print_game_state(gs: GameState):
                 description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
                 description += tabulate(f"({round(spirit.velocity[0], 1)}, {round(spirit.velocity[1], 1)})", 17)
                 description += tabulate(523 - spirit.alive_timer, 12)
+
+                if spirit.state == 2:
+                    description += " (Attracted)"
+                elif spirit.state == 4:
+                    description += " (Auto-collecting)"
+
                 print(description)
 
                 counter += 1
@@ -908,11 +916,14 @@ def print_game_state(gs: GameState):
                 if token.alive_timer >= 7800:
                     description += f" (can leave{' in ' + str(8400 - token.alive_timer) + 'f' if token.alive_timer < 8400 else '!'})"
 
+                if token.being_grabbed:
+                    description += " (being grabbed)"
+                elif token.slowed_by_player:
+                    description += " (slowed by player)"
+
                 if token.can_switch:
                     description += f" (switches in {token.switch_timer}f)"
 
-                if token.slowed_by_player:
-                    description += " (slowed by player)"
 
                 print(description)
 

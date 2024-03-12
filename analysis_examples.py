@@ -888,11 +888,12 @@ class AnalysisPlotWBaWC(AnalysisPlot):
         if field_tokens:
             x_coords = [token.position[0] for token in field_tokens]
             y_coords = [token.position[1] for token in field_tokens]
+            sizes = [self.token_size/2 if token.being_grabbed else self.token_size for token in field_tokens]
             face_colors = []
             edge_colors = []
 
             for token in field_tokens:
-                alpha = self.normal_alpha if token.alive_timer < 7800 else self.leaving_alpha
+                alpha = self.normal_alpha if token.alive_timer < 7800 and not token.being_grabbed else self.leaving_alpha
                 face_color = self.type_colors[token.type-1] if token.type < 8 else self.special_color
                 edge_color = face_color
 
@@ -907,7 +908,7 @@ class AnalysisPlotWBaWC(AnalysisPlot):
                 face_colors.append(face_color + (alpha,))
                 edge_colors.append(edge_color + (alpha + 0.1,))
 
-            ax.scatter(x_coords, y_coords, facecolor=face_colors, s=self.token_size, marker='H',
+            ax.scatter(x_coords, y_coords, facecolor=face_colors, s=sizes, marker='H',
                        edgecolor=edge_colors, linewidth=2, zorder=0)
         else:
             print("No animal tokens to plot.")

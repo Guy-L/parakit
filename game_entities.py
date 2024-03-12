@@ -170,6 +170,7 @@ class SeasonDroppingEnemy(Enemy):
 @dataclass
 class SpiritItem:
     id: int
+    state: int #1 = idle, 2 = attracted, 4 = reimu trance PoC
     spirit_type: int #meaning: spirit_types[spirit_type]
     position: Tuple[float, float]
     velocity: Tuple[float, float]
@@ -182,8 +183,9 @@ class AnimalToken:
     type: int #meaning: token_types[type]
     position: Tuple[float, float]
     base_velocity: Tuple[float, float]
-    slowed_by_player: bool
+    being_grabbed: bool
     can_switch: bool
+    slowed_by_player: bool
     switch_timer: int #ticks down from 180f, token starts blinking at 60f; when it hits 0, resets to 180f and type = type++ % 3
     alive_timer: int #ticks up; token becomes transparent after 7800f, can leave field after 8400f
 
