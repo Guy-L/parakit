@@ -175,11 +175,15 @@ def extract_enemies(enemy_manager = zEnemyManager):
                 base_season_drop_count = enemy['drops'][16]
                 enemy['speedkill_cur_drop_amt'] = min_count + ((base_season_drop_count - min_count) * bonus_timer) // max_time
 
-                frames_left = 1 #bruteforce because interval size for above formula is NOT regular, too hard
-                while min_count + ((base_season_drop_count - min_count) * (bonus_timer-frames_left)) // max_time == enemy['speedkill_cur_drop_amt']:
-                    frames_left += 1
+                if enemy['speedkill_cur_drop_amt'] == min_count:
+                    enemy['speedkill_time_left_for_amt'] = 0
 
-                enemy['speedkill_time_left_for_amt'] = frames_left
+                else:
+                    frames_left = 1 #bruteforce because interval size for above formula is NOT regular, too hard
+                    while min_count + ((base_season_drop_count - min_count) * (bonus_timer-frames_left)) // max_time == enemy['speedkill_cur_drop_amt']:
+                        frames_left += 1
+
+                    enemy['speedkill_time_left_for_amt'] = frames_left
 
             else:
                 enemy['speedkill_cur_drop_amt'] = 0
@@ -1187,8 +1191,11 @@ def print_game_state(gs: GameState):
                 if game_id == 13 and enemy.speedkill_cur_drop_amt:
                     description += f" (+ {enemy.speedkill_cur_drop_amt} Blue Spirit; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
 
-                elif game_id == 16 and enemy.speedkill_cur_drop_amt:
-                    description += f" (reduced to {enemy.speedkill_cur_drop_amt} Season; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
+                elif game_id == 16 and enemy.drops[16] > enemy.speedkill_cur_drop_amt:
+                    description += f" (reduced to {enemy.speedkill_cur_drop_amt} Season"
+                    if enemy.speedkill_time_left_for_amt:
+                        description += f"; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f"
+                    description += ")"
 
             print(description)
 
