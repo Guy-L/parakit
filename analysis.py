@@ -41,7 +41,7 @@ class AnalysisTemplate(Analysis):
 from settings import pyplot_settings
 from interface import save_screenshot, terminate, get_color, get_curve_color, get_item_type
 from interface import enemy_anms, world_width, world_height, color16, np
-from interface import zItemState_autocollect, zItemState_attracted
+from interface import zItemState_autocollect, zItemState_attracted, subshot
 from scipy.ndimage import uniform_filter
 import matplotlib
 import matplotlib.pyplot as plt
@@ -105,6 +105,16 @@ def item_color(item_type):
         return 'green'
     elif 'Cancel' in item_type:
         return 'olive'
+    elif 'Season' in item_type:
+        if subshot == 0:
+            return 'pink'
+        elif subshot == 1:
+            return 'lime'
+        elif subshot == 2:
+            return 'chocolate'
+        elif subshot == 3:
+            return 'cyan'
+        return 'plum'
     elif 'Gold' in item_type:
         return 'gold'
     else:
@@ -118,7 +128,7 @@ def item_size(item_type):
         if word in item_type:
             return 100
 
-    for type in ['Green', 'Graze', 'Spirit Power']:
+    for type in ['Green', 'Graze', 'Season', 'Spirit Power']:
         if item_type == type:
             return 10
 

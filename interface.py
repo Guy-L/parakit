@@ -766,4 +766,5 @@ def _random_player():
 # Step 5 - Set stage/global timer addresses here so timing methods work
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
-difficulty = read_int(difficulty, rel=True) #not in states but useful
+difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
+subshot = read_int(subshot, rel=True) #not in states but useful for extraction/analysis.
