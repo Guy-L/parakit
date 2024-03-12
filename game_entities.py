@@ -336,8 +336,8 @@ class GameSpecificUDoALG(GameSpecific):
     boss_attack_level: int
     pvp_wins: int
     side2: Optional[P2Side]
-    story_fight_phase: int | None
-    story_progress_meter: int | None
+    story_fight_phase: Optional[int]
+    story_progress_meter: Optional[int]
     pvp_timer_start: int
     pvp_timer: int
 
