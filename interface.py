@@ -56,6 +56,7 @@ if not _module_name or game_id == 0:
 # ==========================================================
 # Game logic groups
 has_bullet_delay = [14, 14.3, 18.5]
+has_bullet_intangible = [16, 16.5]
 has_boss_timer_drawn_if_indic_zero = [19]
 has_ability_cards = [18, 18.5, 19]
 uses_rank = [6, 7, 19]
@@ -231,6 +232,10 @@ rng_seed        = offsets[_module_name].supervisor.rng_seed
 # Game-specific
 if game_id in has_bullet_delay:
     zBullet_ex_delay_timer = offsets[_module_name].game_specific['zBullet_ex_delay_timer']
+
+if game_id in has_bullet_intangible:
+    bullet_typedefs_radius = offsets[_module_name].game_specific['bullet_typedefs_radius']
+    bullet_typedef_len     = offsets[_module_name].game_specific['bullet_typedef_len']
 
 if game_id == 13:
     trance_meter = offsets[_module_name].game_specific['trance_meter']
@@ -769,4 +774,4 @@ def _random_player():
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
 difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
-subshot = read_int(subshot, rel=True) #not in states but useful for extraction/analysis.
+subshot = read_int(subshot, rel=True) #not in states but useful for analysis

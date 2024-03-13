@@ -147,6 +147,11 @@ class ShowDelayBullet(Bullet):
 class GrazeTimerBullet(Bullet):
     graze_timer: int
 
+# HSiFS / VD
+@dataclass
+class CanIntangibleBullet(Bullet):
+    is_intangible: bool
+
 @dataclass
 class WeightedEnemy(Enemy):
     shootdown_weight: int

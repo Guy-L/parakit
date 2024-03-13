@@ -1101,6 +1101,8 @@ offsets = {
             'next_extend_score_index': 0xa57fc,
             'extend_scores_maingame': 0x91880,
             'extend_scores_extra': 0x917c4,
+            'bullet_typedefs_radius': 0x9f3e4,
+            'bullet_typedef_len': 0x114,
             'zEnemy_season_drop': 0x403c,
             'zSeasonDrop_timer': 0x4,
             'zSeasonDrop_max_time': 0x14,

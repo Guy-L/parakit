@@ -67,6 +67,17 @@ def extract_bullets(bullet_manager = zBulletManager):
         current_bullet_list = read_zList(current_bullet_list["next"])
         zBullet = current_bullet_list["entry"]
 
+        bullet_type = read_int(zBullet + zBullet_type, 2)
+        bullet_color = read_int(zBullet + zBullet_color, 2)
+        bullet_hitbox_rad = read_float(zBullet + zBullet_hitbox_radius)
+        bullet_is_intangible = False
+
+        #fallback for intangible bullets (radius set to 0) in HSiFS
+        if not bullet_hitbox_rad and game_id in has_bullet_intangible:
+            bullet_hitbox_rad = read_float(bullet_typedefs_radius + bullet_typedef_len * bullet_type, rel=True)
+            bullet_is_intangible = True
+            bullet_color = 0 #all intangible bullets are black
+
         bullet = {
             'id':            zBullet,
             'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
@@ -74,18 +85,22 @@ def extract_bullets(bullet_manager = zBulletManager):
             'speed':         read_float(zBullet + zBullet_speed),
             'angle':         read_float(zBullet + zBullet_angle),
             'scale':         read_float(zBullet + zBullet_scale) if zBullet_scale else 1,
-            'hitbox_radius': read_float(zBullet + zBullet_hitbox_radius),
+            'hitbox_radius': bullet_hitbox_rad,
             'iframes':       read_int(zBullet + zBullet_iframes),
             'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
             'alive_timer':   read_int(zBullet + zBullet_timer),
-            'bullet_type':   read_int(zBullet + zBullet_type, 2),
-            'color':         read_int(zBullet + zBullet_color, 2),
+            'bullet_type':   bullet_type,
+            'color':         bullet_color,
         }
 
         #Game-specific attributes
         if game_id in has_bullet_delay:
             bullet['show_delay'] = read_int(zBullet + zBullet_ex_delay_timer)
             bullets.append(ShowDelayBullet(**bullet))
+
+        elif game_id in has_bullet_intangible:
+            bullet['is_intangible'] = bullet_is_intangible
+            bullets.append(CanIntangibleBullet(**bullet))
 
         elif game_id == 15:
             bullet['graze_timer'] = read_int(zBullet + zBullet_graze_timer)
@@ -1037,6 +1052,9 @@ def print_game_state(gs: GameState):
             if bullet.scale != 1:
                 description += f" (scale: {round(bullet.scale, 2)}x)"
 
+            if hasattr(bullet, 'is_intangible') and bullet.is_intangible:
+                description += f" (intangible)"
+
             print(description)
 
             counter += 1
@@ -1189,8 +1207,6 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
-            if hasattr(enemy, 'kyouko_echo') and enemy.kyouko_echo:
-                description += f" (Echoing)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
 

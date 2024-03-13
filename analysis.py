@@ -104,17 +104,17 @@ def item_color(item_type):
     elif 'Green' in item_type or 'Graze' in item_type:
         return 'green'
     elif 'Cancel' in item_type:
-        return 'olive'
+        return (0.5, 0.5, 0, 0.4) #olive
     elif 'Season' in item_type:
         if subshot == 0:
-            return 'pink'
+            return (1, 0.75, 0.8, 0.5) #pink
         elif subshot == 1:
-            return 'lime'
+            return (0, 1, 0, 0.5) #lime
         elif subshot == 2:
-            return 'chocolate'
+            return (0.82, 0.41, 0.12, 0.5) #chocolate
         elif subshot == 3:
-            return 'cyan'
-        return 'plum'
+            return (0, 1, 1, 0.5) #cyan
+        return (0.87, 0.63, 0.87, 0.5) #plum
     elif 'Gold' in item_type:
         return 'gold'
     else:

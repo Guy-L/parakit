@@ -321,7 +321,15 @@ class AnalysisPlotBullets(AnalysisPlot):
             y_coords = [bullet.position[1] for bullet in bullets]
             colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]) for bullet in bullets]
             sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
-            alphas = [0.1 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 1 for bullet in bullets]
+
+            alphas = []
+            for bullet in bullets:
+                if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay):
+                    alphas.append(0.1)
+                elif hasattr(bullet, 'is_intangible') and bullet.is_intangible:
+                    alphas.append(0.75)
+                else:
+                    alphas.append(1)
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
 
@@ -512,35 +520,34 @@ class AnalysisPlotAll(AnalysisPlot):
     plot_title = 'Game Entity Scatter Plot'
 
     def plot(self, ax, side2):
-        plottedBullets = AnalysisPlotBullets(self.lastframe).plot(ax, side2)
+        if game_id == 13 and self.lastframe.game_specific.miko_final_logic_active:
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False))
+
+        elif game_id == 14 and self.lastframe.game_specific.sukuna_penult_logic_active:
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False))
+
+        elif game_id == 15 and self.lastframe.game_specific.graze_inferno_logic_active:
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False))
+
+        elif game_id == 16 and self.lastframe.game_specific.snowman_logic_active:
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False))
+
+        elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False))
+
         plottedEnemies = AnalysisPlotEnemies(self.lastframe).plot(ax, side2)
         plottedItems = AnalysisPlotItems(self.lastframe).plot(ax, side2)
         plottedLines = AnalysisPlotLineLasers(self.lastframe).plot(ax, side2)
         plottedInfinites = AnalysisPlotInfiniteLasers(self.lastframe).plot(ax, side2)
         plottedCurves = AnalysisPlotCurveLasers(self.lastframe).plot(ax, side2)
+        plottedBullets = AnalysisPlotBullets(self.lastframe).plot(ax, side2)
 
         plottedGameSpecific = DONT_PLOT
         if game_id == 13:
             plottedGameSpecific = AnalysisPlotTD(self.lastframe).plot(ax, side2)
         elif game_id == 17:
             plottedGameSpecific = AnalysisPlotWBaWC(self.lastframe).plot(ax, side2)
-
-        if plottedBullets != DONT_PLOT:
-            if game_id == 13 and self.lastframe.game_specific.miko_final_logic_active:
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
-
-            elif game_id == 14 and self.lastframe.game_specific.sukuna_penult_logic_active:
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False, zorder=0))
-
-            elif game_id == 15 and self.lastframe.game_specific.graze_inferno_logic_active:
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
-
-            elif game_id == 16 and self.lastframe.game_specific.snowman_logic_active:
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False, zorder=0))
-
-            elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
-                ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False, zorder=0))
 
         if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
             return DONT_PLOT
