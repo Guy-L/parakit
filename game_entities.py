@@ -208,7 +208,7 @@ class RoaringHyper:
 @dataclass
 class ActiveCard:
     type: int #meaning: card_nicknames[type]
-    charge: int #[0, charge_max], ticks up every frame, set to 0 after use period ends (or 20% of max if Scroll equipped)
+    charge: int #[0, charge_max], set to 0 upon use (or 20% of max if Scroll equipped), ticks up every frame once no longer in use
     charge_max: int #depends purely on the type of card
     internal_name: str
     selected: bool
