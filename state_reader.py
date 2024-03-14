@@ -13,46 +13,6 @@ exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 infinite_print_updates = seqext_settings['infinite_print_updates']
 
-zPlayer        = read_int(player_pointer, rel=True)
-zBomb          = read_int(bomb_pointer, rel=True)
-zBulletManager = read_int(bullet_manager_pointer, rel=True)
-zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
-zItemManager   = read_int(item_manager_pointer, rel=True)
-zLaserManager  = read_int(laser_manager_pointer, rel=True)
-zSpellCard     = read_int(spellcard_pointer, rel=True)
-zGui           = read_int(gui_pointer, rel=True)
-
-if game_id == 13:
-    zSpiritManager = read_int(spirit_manager_pointer, rel=True)
-
-elif game_id == 14:
-    ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
-
-elif game_id == 16:
-    zSeasomBomb = read_int(season_bomb_ptr, rel=True)
-
-elif game_id == 17:
-    zTokenManager = read_int(token_manager_pointer, rel=True)
-    zAnmManager = read_int(anm_manager_pointer, rel=True)
-
-elif game_id == 19:
-    zGaugeManager = read_int(gauge_manager_pointer, rel=True)
-
-    if requires_side2_pvp:
-        zPlayerP2         = read_int(p2_player_pointer, rel=True)
-        zBombP2           = read_int(p2_bomb_pointer, rel=True)
-        zBulletManagerP2  = read_int(p2_bullet_manager_pointer, rel=True)
-        zEnemyManagerP2   = read_int(p2_enemy_manager_pointer, rel=True)
-        zItemManagerP2    = read_int(p2_item_manager_pointer, rel=True)
-        zLaserManagerP2   = read_int(p2_laser_manager_pointer, rel=True)
-        zSpellCardP2      = read_int(p2_spellcard_pointer, rel=True)
-        zGaugeManagerP2   = read_int(p2_gauge_manager_pointer, rel=True)
-        zAbilityManagerP2 = read_int(p2_ability_manager_pointer, rel=True)
-        zAiP2             = read_int(p2_ai_pointer, rel=True)
-
-if game_id in has_ability_cards:
-    zAbilityManager = read_int(ability_manager_pointer, rel=True)
-
 def extract_bullets(bullet_manager = zBulletManager):
     bullets = []
     current_bullet_list = read_zList(bullet_manager + zBulletManager_list)
@@ -131,6 +91,7 @@ def extract_enemy_drops(enemy_drops):
 def extract_enemies(enemy_manager = zEnemyManager):
     enemies = []
     current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
+    ecl_sub_names, ecl_sub_starts = ecl_sub_arrs[enemy_manager]
 
     while current_enemy_list["next"]:
         current_enemy_list = read_zList(current_enemy_list["next"])
@@ -140,6 +101,21 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
         if zEnemyFlags & zEnemyFlags_intangible != 0:
             continue
+
+        zEnemyEclSubName = ""
+        if game_id >= switch_to_serializable_ecl:
+            zEnemyEclSubName = ecl_sub_names[read_int(zEnemy + zEnemy_ecl_ref)]
+
+        else:
+            cur_instr_addr = read_int(zEnemy + zEnemy_ecl_ref)
+            enemy_sub_id = None
+            for sub_id in range(len(ecl_sub_starts)):
+                if ecl_sub_starts[sub_id] <= cur_instr_addr:
+                    if not enemy_sub_id or ecl_sub_starts[sub_id] > ecl_sub_starts[enemy_sub_id] :
+                        enemy_sub_id = sub_id
+
+            if enemy_sub_id:
+                zEnemyEclSubName = ecl_sub_names[enemy_sub_id]
 
         enemy = {
             'id':           zEnemy,
@@ -153,6 +129,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
             'subboss_id':   read_int(zEnemy + zEnemy_subboss_id, signed=True),
             'rotation':     read_float(zEnemy + zEnemy_rotation),
+            'ecl_sub_name': zEnemyEclSubName,
             'anm_page':     read_int(zEnemy + zEnemy_anm_page),
             'anm_id':       read_int(zEnemy + zEnemy_anm_id),
             'alive_timer':  read_int(zEnemy + zEnemy_timer),
@@ -1172,15 +1149,15 @@ def print_game_state(gs: GameState):
         counter = 0
 
         print("\nList of enemies:")
-        print("  Position        Hurtbox         Hitbox          Timer    IFrames  HP / Max HP     Type")
+        print("  Position        Hurtbox         Hitbox          Timer  HP / Max HP     ECL Sub         Type")
         for enemy in gs.enemies:
             description = "• "
             description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
-            description += tabulate(enemy.alive_timer, 9)
-            description += tabulate(enemy.iframes, 9)
+            description += tabulate(enemy.alive_timer, 7)
             description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
+            description += truncate(enemy.ecl_sub_name, 14)
 
             type = ""
             if enemy.anm_page == 2:
@@ -1198,7 +1175,7 @@ def print_game_state(gs: GameState):
                     type = "Boss-specific"
             else:
                 type = f"Unknown {enemy.anm_page}/{enemy.anm_id}"
-            description += tabulate(type, 16)
+            description += truncate(type, 18, 1)
 
             #not in table since rare
             if enemy.no_hurtbox:
@@ -1207,6 +1184,8 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if enemy.iframes:
+                description += f" ({enemy.iframes} iframes)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
 

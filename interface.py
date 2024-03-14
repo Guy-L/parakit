@@ -60,6 +60,7 @@ has_bullet_intangible = [16, 16.5]
 has_boss_timer_drawn_if_indic_zero = [19]
 has_ability_cards = [18, 18.5, 19]
 uses_rank = [6, 7, 19]
+switch_to_serializable_ecl = 15 #first game where enemies store sub_id + offset within the sub as opposed to instruction pointers
 
 # ==========================================================
 # Offset object unpacking
@@ -115,24 +116,28 @@ zBullet_type           = offsets[_module_name].bullets.zBullet_type
 zBullet_color          = offsets[_module_name].bullets.zBullet_color
 
 # Enemies
-enemy_manager_pointer = offsets[_module_name].enemies.enemy_manager_pointer
-zEnemyManager_list    = offsets[_module_name].enemies.zEnemyManager_list
-zEnemy_data           = offsets[_module_name].enemies.zEnemy_data
-zEnemy_pos            = offsets[_module_name].enemies.zEnemy_pos
-zEnemy_hurtbox        = offsets[_module_name].enemies.zEnemy_hurtbox
-zEnemy_hitbox         = offsets[_module_name].enemies.zEnemy_hitbox
-zEnemy_rotation       = offsets[_module_name].enemies.zEnemy_rotation
-zEnemy_anm_page       = offsets[_module_name].enemies.zEnemy_anm_page
-zEnemy_anm_id         = offsets[_module_name].enemies.zEnemy_anm_id
-zEnemy_timer          = offsets[_module_name].enemies.zEnemy_timer
-zEnemy_score_reward   = offsets[_module_name].enemies.zEnemy_score_reward
-zEnemy_hp             = offsets[_module_name].enemies.zEnemy_hp
-zEnemy_hp_max         = offsets[_module_name].enemies.zEnemy_hp_max
-zEnemy_drops          = offsets[_module_name].enemies.zEnemy_drops
-zEnemy_iframes        = offsets[_module_name].enemies.zEnemy_iframes
-zEnemy_flags          = offsets[_module_name].enemies.zEnemy_flags
-zEnemy_subboss_id     = offsets[_module_name].enemies.zEnemy_subboss_id
-zEnemy_special_func   = offsets[_module_name].enemies.zEnemy_special_func
+enemy_manager_pointer  = offsets[_module_name].enemies.enemy_manager_pointer
+zEnemyManager_ecl_file = offsets[_module_name].enemies.zEnemyManager_ecl_file
+zEnemyManager_list     = offsets[_module_name].enemies.zEnemyManager_list
+zEclFile_sub_count     = offsets[_module_name].enemies.zEclFile_sub_count
+zEclFile_subroutines   = offsets[_module_name].enemies.zEclFile_subroutines
+zEnemy_ecl_ref         = offsets[_module_name].enemies.zEnemy_ecl_ref
+zEnemy_data            = offsets[_module_name].enemies.zEnemy_data
+zEnemy_pos             = offsets[_module_name].enemies.zEnemy_pos
+zEnemy_hurtbox         = offsets[_module_name].enemies.zEnemy_hurtbox
+zEnemy_hitbox          = offsets[_module_name].enemies.zEnemy_hitbox
+zEnemy_rotation        = offsets[_module_name].enemies.zEnemy_rotation
+zEnemy_anm_page        = offsets[_module_name].enemies.zEnemy_anm_page
+zEnemy_anm_id          = offsets[_module_name].enemies.zEnemy_anm_id
+zEnemy_timer           = offsets[_module_name].enemies.zEnemy_timer
+zEnemy_score_reward    = offsets[_module_name].enemies.zEnemy_score_reward
+zEnemy_hp              = offsets[_module_name].enemies.zEnemy_hp
+zEnemy_hp_max          = offsets[_module_name].enemies.zEnemy_hp_max
+zEnemy_drops           = offsets[_module_name].enemies.zEnemy_drops
+zEnemy_iframes         = offsets[_module_name].enemies.zEnemy_iframes
+zEnemy_flags           = offsets[_module_name].enemies.zEnemy_flags
+zEnemy_subboss_id      = offsets[_module_name].enemies.zEnemy_subboss_id
+zEnemy_special_func    = offsets[_module_name].enemies.zEnemy_special_func
 
 zEnemyFlags_no_hurtbox   = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
 zEnemyFlags_no_hitbox    = offsets[_module_name].associations.zEnemyFlags_no_hitbox
@@ -541,7 +546,7 @@ def read_float(offset, rel = False):
     return struct.unpack('f', _read_memory(offset, 4, rel))[0]
 
 def read_string(offset, length, rel = False):
-    return _read_memory(offset, length, rel).decode('utf-8').split('\x00', 1)[0]
+    return _read_memory(offset, length, rel).decode('utf-8', 'ignore').split('\x00', 1)[0]
 
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4), "prev": read_int(offset + 0x8)}
@@ -551,8 +556,16 @@ def tabulate(x, min_size=10):
     to_append = min_size - len(x_str)
     return x_str + " "*to_append
 
+def truncate(x, size=10, spaces = 2):
+    x_str = str(x)
+    if len(x_str) > size:
+        return x_str[:size-1] + "…" + " "*spaces
+
+    to_append = size - len(x_str) + spaces
+    return x_str + " "*to_append
+
 def get_item_type(item_type):
-    if item_type in item_types.keys() :
+    if item_type in item_types.keys():
         return item_types[item_type]
     else:
         return None
@@ -770,8 +783,60 @@ def _random_player():
                     cur_frame+1])))
         apply_action_int(action)
 
-# Step 5 - Set stage/global timer addresses here so timing methods work
+# Step 5 - Initial reads used by extraction context
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
 difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
 subshot = read_int(subshot, rel=True) #not in states but useful for analysis
+
+zPlayer        = read_int(player_pointer, rel=True)
+zBomb          = read_int(bomb_pointer, rel=True)
+zBulletManager = read_int(bullet_manager_pointer, rel=True)
+zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
+zItemManager   = read_int(item_manager_pointer, rel=True)
+zLaserManager  = read_int(laser_manager_pointer, rel=True)
+zSpellCard     = read_int(spellcard_pointer, rel=True)
+zGui           = read_int(gui_pointer, rel=True)
+
+if game_id == 13:
+    zSpiritManager = read_int(spirit_manager_pointer, rel=True)
+
+elif game_id == 14:
+    ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
+
+elif game_id == 16:
+    zSeasomBomb = read_int(season_bomb_ptr, rel=True)
+
+elif game_id == 17:
+    zTokenManager = read_int(token_manager_pointer, rel=True)
+    zAnmManager = read_int(anm_manager_pointer, rel=True)
+
+elif game_id == 19:
+    zGaugeManager     = read_int(gauge_manager_pointer, rel=True)
+    zPlayerP2         = read_int(p2_player_pointer, rel=True)
+    zBombP2           = read_int(p2_bomb_pointer, rel=True)
+    zBulletManagerP2  = read_int(p2_bullet_manager_pointer, rel=True)
+    zEnemyManagerP2   = read_int(p2_enemy_manager_pointer, rel=True)
+    zItemManagerP2    = read_int(p2_item_manager_pointer, rel=True)
+    zLaserManagerP2   = read_int(p2_laser_manager_pointer, rel=True)
+    zSpellCardP2      = read_int(p2_spellcard_pointer, rel=True)
+    zGaugeManagerP2   = read_int(p2_gauge_manager_pointer, rel=True)
+    zAbilityManagerP2 = read_int(p2_ability_manager_pointer, rel=True)
+    zAiP2             = read_int(p2_ai_pointer, rel=True)
+
+if game_id in has_ability_cards:
+    zAbilityManager = read_int(ability_manager_pointer, rel=True)
+
+ecl_sub_arrs = {}
+for enemy_manager in ((zEnemyManager, zEnemyManagerP2) if 'zBulletManagerP2' in globals() else (zEnemyManager,)):
+    ecl_sub_names = []
+    ecl_sub_starts = []
+    file_manager = read_int(enemy_manager + zEnemyManager_ecl_file)
+    subroutine_count = read_int(file_manager + zEclFile_sub_count)
+    subroutines = read_int(file_manager + zEclFile_subroutines)
+
+    for i in range(subroutine_count):
+        ecl_sub_names.append(read_string(read_int(subroutines + 0x8 * i), 64))
+        ecl_sub_starts.append(read_int(subroutines + 0x4 + 0x8 * i))
+
+    ecl_sub_arrs[enemy_manager] = (ecl_sub_names, ecl_sub_starts)

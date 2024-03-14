@@ -38,8 +38,9 @@ class Enemy:
     is_boss: bool
     subboss_id: int
     rotation: float
-    anm_page: int
-    anm_id: int
+    ecl_sub_name: str #name of the ecl subroutine ran by the enemy. useful to tell apart stage enemies
+    anm_page: int #usually: 0 for bosses sprites, 1 for stage enemy sprites, 2 for custom enemy sprites
+    anm_id: int #id of the sprite within the page
     alive_timer: int
     score_reward: int
     hp: int
