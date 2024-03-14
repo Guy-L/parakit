@@ -42,7 +42,6 @@ class Enemy:
     anm_page: int #usually: 0 for bosses sprites, 1 for stage enemy sprites, 2 for custom enemy sprites
     anm_id: int #id of the sprite within the page
     alive_timer: int
-    score_reward: int
     hp: int
     hp_max: int
     drops: Dict[int, int]
@@ -119,6 +118,11 @@ class Spellcard:
 # ================================================
 # Game specific game entities ====================
 # ================================================
+
+# EoSD / PCB / IN / PoFV / MoF / SA
+@dataclass
+class ScoreRewardEnemy(Enemy):
+    score_reward: int
 
 # Ten Desires
 @dataclass

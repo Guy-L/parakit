@@ -133,12 +133,15 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'anm_page':     read_int(zEnemy + zEnemy_anm_page),
             'anm_id':       read_int(zEnemy + zEnemy_anm_id),
             'alive_timer':  read_int(zEnemy + zEnemy_timer),
-            'score_reward': read_int(zEnemy + zEnemy_score_reward),
             'hp':           read_int(zEnemy + zEnemy_hp),
             'hp_max':       read_int(zEnemy + zEnemy_hp_max),
             'drops':        extract_enemy_drops(zEnemy + zEnemy_drops),
             'iframes':      read_int(zEnemy + zEnemy_iframes),
         }
+
+        if game_id in has_enemy_score_reward:
+            enemy['score_reward'] = read_int(zEnemy + zEnemy_score_reward)
+            enemies.append(ScoreRewardEnemy(**enemy))
 
         if game_id == 13:
             spirit_time_max  = read_int(zEnemy + zEnemy_spirit_time_max)

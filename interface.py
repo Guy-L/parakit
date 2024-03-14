@@ -55,11 +55,12 @@ if not _module_name or game_id == 0:
 
 # ==========================================================
 # Game logic groups
+uses_rank = [6, 7, 19]
+has_enemy_score_reward = [6, 7, 8, 9, 10, 11]
 has_bullet_delay = [14, 14.3, 18.5]
 has_bullet_intangible = [16, 16.5]
 has_boss_timer_drawn_if_indic_zero = [19]
 has_ability_cards = [18, 18.5, 19]
-uses_rank = [6, 7, 19]
 switch_to_serializable_ecl = 15 #first game where enemies store sub_id + offset within the sub as opposed to instruction pointers
 
 # ==========================================================
