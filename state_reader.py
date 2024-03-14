@@ -576,31 +576,26 @@ def extract_game_state(frame_id = None, real_time = None):
             current_active_list = read_zList(current_active_list["next"])
 
             zCard                  = current_active_list["entry"]
-            card_id                = read_int(zCard + zCard_id)
-            card_charge_max        = int(read_int(zCard + zCard_charge_max)) #the first 20% of the cooldown time is always skipped
+            card_type              = read_int(zCard + zCard_type)
+            card_charge_max        = read_int(zCard + zCard_charge_max) #the first 20% of the cooldown time is always skipped
             card_charge            = card_charge_max - read_int(zCard + zCard_charge) #game counts down rather than up, but up is more intuitive
 
-            card_name = read_string(read_int(read_int(zCard + zCard_name)), 15)
-
-            #uncomment to see other internal card names and uses of counter 
-            #(some actives use it temporarily, out of bounds address for most passives)
-            #print(f"{card_name} ({card_id}): {read_int(zCard + zCard_counter)}")
-
-            if card_id == 48: #Lily
+            if card_type == 48: #Lily
                 lily_counter = read_int(zCard + zCard_counter)
 
-            if card_id not in card_nicknames.keys():
-                if card_id == 54: #Centipede
+            if card_type not in card_nicknames.keys():
+                if card_type == 54: #Centipede
                     centipede_multiplier = 1 + 0.00005 * min(16000, read_int(zCard + zCard_counter))
 
                 continue #skip non-actives
 
             active_cards.append(ActiveCard(
-                id            = card_id,
+                type          = card_type,
                 charge        = card_charge, 
                 charge_max    = card_charge_max,
-                internal_name = card_name,
-                selected      = zCard == selected_active
+                internal_name = read_string(read_int(read_int(zCard + zCard_name)), 15),
+                selected      = zCard == selected_active,
+                in_use        = read_int(zCard + zCard_flags) & 2**5 != 0,
             ))
 
         game_specific = GameSpecificUM(
@@ -958,15 +953,17 @@ def print_game_state(gs: GameState):
             print("  ID   Internal Name   Nickname    Charge / Max     %")
             for card in gs.game_specific.active_cards:
                 description = "• "
-                description += tabulate(card.id, 5)
+                description += tabulate(card.type, 5)
                 description += tabulate(card.internal_name, 16)
-                description += tabulate(card_nicknames[card.id], 12)
+                description += tabulate(card_nicknames[card.type], 12)
                 description += tabulate(card.charge, 6) + " / "
                 description += tabulate(card.charge_max, 8)
                 description += tabulate(f"{round(100*card.charge / card.charge_max, 2):.3g}%", 6)
 
                 if card.selected:
                     description += " (selected)"
+                if card.in_use:
+                    description += " (in use)"
 
                 print(description)
 

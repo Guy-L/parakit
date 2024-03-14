@@ -353,10 +353,11 @@ elif game_id == 18:
     zAbilityManager_total_equipmt   = offsets[_module_name].game_specific['zAbilityManager_total_equipmt']
     zAbilityManager_total_passive   = offsets[_module_name].game_specific['zAbilityManager_total_passive']
     zAbilityManager_selected_active = offsets[_module_name].game_specific['zAbilityManager_selected_active']
-    zCard_id          = offsets[_module_name].game_specific['zCard_id']
+    zCard_type        = offsets[_module_name].game_specific['zCard_type']
     zCard_charge      = offsets[_module_name].game_specific['zCard_charge']
     zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
-    zCard_name        = offsets[_module_name].game_specific['zCard_name_pointer_pointer']
+    zCard_name        = offsets[_module_name].game_specific['zCard_name_ptr_ptr']
+    zCard_flags       = offsets[_module_name].game_specific['zCard_flags']
     zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
     asylum_func = offsets[_module_name].game_specific['asylum_func']
 

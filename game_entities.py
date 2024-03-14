@@ -200,18 +200,19 @@ class RoaringHyper:
     type: int #meaning: hyper_types[type]
     duration: int
     time_remaining: int #extra beasts appear 120f (2s) after timer expires
-    reward_mode: int #0 = regular, 2 = cow, 3 = chick, 1 and >5 = jelly/others
+    reward_mode: int #0 = regular, 2 = cow, 3 = chick, 1 and >5 = jelly & others
     token_grab_time_bonus: int #first grab adds 180f, then 120f, 80f, 53f then always 23f
     currently_breaking: bool #used for ST6 secret token
 
 # Unconnected Marketeers
 @dataclass
 class ActiveCard:
-    id: int #meaning: card_nicknames[id]
-    charge: int
-    charge_max: int
+    type: int #meaning: card_nicknames[type]
+    charge: int #[0, charge_max], ticks up every frame, set to 0 after use period ends (or 20% of max if Scroll equipped)
+    charge_max: int #depends purely on the type of card
     internal_name: str
     selected: bool
+    in_use: bool
 
 # Unfinished Dream of All Living Ghost
 @dataclass

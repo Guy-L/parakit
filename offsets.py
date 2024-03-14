@@ -1553,10 +1553,11 @@ offsets = {
             'zAbilityManager_total_equipmt': 0x30,
             'zAbilityManager_total_passive': 0x34,
             'zAbilityManager_selected_active': 0x38,
-            'zCard_id': 0x4,
+            'zCard_type': 0x4,
             'zCard_charge': 0x38,
             'zCard_charge_max': 0x48,
-            'zCard_name_pointer_pointer': 0x4C,
+            'zCard_name_ptr_ptr': 0x4C,
+            'zCard_flags': 0x50,
             'zCard_counter': 0x54, #used by Centipede & Lily
             'asylum_func': 0x438d90,
         }
