@@ -131,6 +131,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'no_hurtbox':   zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
             'no_hitbox':    zEnemyFlags & zEnemyFlags_no_hitbox != 0,
             'invincible':   zEnemyFlags & zEnemyFlags_invincible != 0,
+            'is_grazeable': zEnemyFlags & zEnemyFlags_is_grazeable != 0,
             'is_rectangle': zEnemyFlags & zEnemyFlags_is_rectangle != 0,
             'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
             'subboss_id':   read_int(zEnemy + zEnemy_subboss_id, signed=True),
@@ -1190,6 +1191,8 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if enemy.is_grazeable:
+                description += " (Grazeable)"
             if enemy.iframes:
                 description += f" ({enemy.iframes} iframes)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:

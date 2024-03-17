@@ -147,6 +147,7 @@ zEnemyFlags_no_hurtbox   = offsets[_module_name].associations.zEnemyFlags_no_hur
 zEnemyFlags_no_hitbox    = offsets[_module_name].associations.zEnemyFlags_no_hitbox
 zEnemyFlags_invincible   = offsets[_module_name].associations.zEnemyFlags_invincible
 zEnemyFlags_intangible   = offsets[_module_name].associations.zEnemyFlags_intangible
+zEnemyFlags_is_grazeable = offsets[_module_name].associations.zEnemyFlags_is_grazeable
 zEnemyFlags_is_rectangle = offsets[_module_name].associations.zEnemyFlags_is_rectangle
 zEnemyFlags_is_boss      = offsets[_module_name].associations.zEnemyFlags_is_boss
 

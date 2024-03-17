@@ -35,6 +35,7 @@ class Enemy:
     no_hurtbox: bool
     no_hitbox: bool
     invincible: bool
+    is_grazeable: bool
     is_rectangle: bool
     is_boss: bool
     subboss_id: int

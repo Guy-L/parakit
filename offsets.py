@@ -218,6 +218,7 @@ class Associations:
     zEnemyFlags_no_hitbox: int
     zEnemyFlags_invincible: int
     zEnemyFlags_intangible: int
+    zEnemyFlags_is_grazeable: int
     zEnemyFlags_is_rectangle: int
     zEnemyFlags_is_boss: int
     zItemState_autocollect: int
@@ -500,6 +501,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**15,
             zEnemyFlags_is_boss      = 2**24,
             zItemState_autocollect = 3,
@@ -715,6 +717,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
             zItemState_autocollect = 3,
@@ -916,6 +919,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
             zItemState_autocollect = 3,
@@ -1118,6 +1122,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
             zItemState_autocollect = 4,
@@ -1330,6 +1335,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
             zItemState_autocollect = 3,
@@ -1547,6 +1553,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**23,
             zItemState_autocollect = 3,
@@ -1754,6 +1761,7 @@ offsets = {
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
             zEnemyFlags_intangible   = 2**5,
+            zEnemyFlags_is_grazeable = 2**9,
             zEnemyFlags_is_rectangle = 2**12,
             zEnemyFlags_is_boss      = 2**6,
             zItemState_autocollect = 3,
@@ -2013,6 +2021,7 @@ offsets = {
 #            zEnemyFlags_no_hitbox    = None,
 #            zEnemyFlags_invincible   = None,
 #            zEnemyFlags_intangible   = None,
+#            zEnemyFlags_is_grazeable = None,
 #            zEnemyFlags_is_rectangle = None,
 #            zEnemyFlags_is_boss      = None,
 #            zItemState_autocollect = None,
