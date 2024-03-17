@@ -21,6 +21,7 @@ class Bullet:
     hitbox_radius: float
     iframes: int
     is_active: bool
+    is_grazeable: bool
     alive_timer: int
     bullet_type: int
     color: int
@@ -171,6 +172,12 @@ class SeasonDroppingEnemy(Enemy):
     season_drop_min_count: int
     damage_per_season_drop: int
     damage_taken_for_season_drops: int
+
+# Unfinished Dream of All Living Ghost
+@dataclass
+class CanGenItemsTimerBullet(Bullet):
+    can_gen_items_timer: int #set to 0 when grazed/scoped, tikcs up when not
+    #bullet can be grazed/scoped for items again at 60f (stored in bullet.is_grazeable)
 
 # ================================================
 # Game specific objects ==========================

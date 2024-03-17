@@ -69,6 +69,7 @@ class BombOffsets:
 class BulletOffsets:
     bullet_manager_pointer: int
     zBulletManager_list: int
+    zBullet_flags: int
     zBullet_iframes: int
     zBullet_pos: int
     zBullet_velocity: int
@@ -212,6 +213,7 @@ class Associations:
     characters: List[str]
     subshots: List[str]
     difficulties: List[str]
+    zBulletFlags_grazed: int
     zEnemyFlags_no_hurtbox: int
     zEnemyFlags_no_hitbox: int
     zEnemyFlags_invincible: int
@@ -362,6 +364,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xc2174,
             zBulletManager_list    = 0x80,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0xb70,
             zBullet_velocity       = 0xb7c,
@@ -492,6 +495,7 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Youmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -575,6 +579,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xdb530,
             zBulletManager_list    = 0x7c,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0xbc0,
             zBullet_velocity       = 0xbcc,
@@ -705,6 +710,7 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya'],
             subshots      = ['A', 'B'],
             difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -774,6 +780,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xe9a6c,
             zBulletManager_list    = 0x68,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0xc38,
             zBullet_velocity       = 0xc44,
@@ -904,6 +911,7 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Reisen'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2, #note: unused
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -974,6 +982,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xa6dac,
             zBulletManager_list    = 0x6c,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0xc20,
             zBullet_velocity       = 0xc2c,
@@ -1103,7 +1112,8 @@ offsets = {
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Cirno', 'Aya', 'Marisa'],
             subshots      = ['Spring', 'Summer', 'Autumn', 'Winter', 'Full'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -1129,7 +1139,7 @@ offsets = {
             'zSeasonDrop_min_count': 0x18,
             'zSeasonDrop_damage_for_drop': 0x1c,
             'zSeasonDrop_total_damage': 0x20,
-            'snowman_func': 0x4252d0,
+            'snowman_func': 0x4252d0, #note: snowman state at offset 0xc4c of bullets
             'zPlayer_season_level': 0x1669c,
             'season_power': 0xa5808,
             'season_power_thresholds': 0xa583c,
@@ -1184,6 +1194,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xb768c,
             zBulletManager_list    = 0xbc,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0x62c,
             zBullet_velocity       = 0x638,
@@ -1313,7 +1324,8 @@ offsets = {
             game_modes    = modern_game_modes,
             characters    = ['Reimu', 'Marisa', 'Youmu'],
             subshots      = ['Wolf', 'Otter', 'Eagle'],
-            difficulties  = usual_difficulties,
+            difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -1399,6 +1411,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0xCF2BC,
             zBulletManager_list    = 0xBC,
+            zBullet_flags          = 0x20,
             zBullet_iframes        = 0x24,
             zBullet_pos            = 0x638,
             zBullet_velocity       = 0x644,
@@ -1529,6 +1542,7 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2,
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -1604,6 +1618,7 @@ offsets = {
         bullets = BulletOffsets(
             bullet_manager_pointer = 0x1ae470,
             zBulletManager_list    = 0x8156e0,
+            zBullet_flags          = 0x10,
             zBullet_iframes        = 0x14,
             zBullet_pos            = 0x650,
             zBullet_velocity       = 0x65c,
@@ -1734,6 +1749,7 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
+            zBulletFlags_grazed      = 2**2, #note: unused
             zEnemyFlags_no_hurtbox   = 2**0,
             zEnemyFlags_no_hitbox    = 2**1,
             zEnemyFlags_invincible   = 2**4,
@@ -1748,12 +1764,14 @@ offsets = {
             world_height   = usual_world_height,
         ),
         game_specific = {
-            #Struct Members (Singletons)
+            #Struct Members
             'zPlayer_hitstun_status': 0x10,
             'zPlayer_shield_status': 0x18,
             'zPlayer_last_combo_hits': 0x22b4,
             'zPlayer_current_combo_hits': 0x22b8,
             'zPlayer_current_combo_chain': 0x22bc,
+            'zBullet_can_gen_items_timer': 0x1004,
+            'zBullet_can_gen_items': 0x1018,
             'zEnemyManager_pattern_count': 0x42ac,
             'zItemManager_spawn_total': 0xff8d8,
             'zGaugeManager_charging_bool': 0x2c,
@@ -1860,6 +1878,7 @@ offsets = {
 #        bullets = BulletOffsets(
 #            bullet_manager_pointer = None,
 #            zBulletManager_list    = None,
+#            zBullet_flags          = None,
 #            zBullet_iframes        = None,
 #            zBullet_pos            = None,
 #            zBullet_velocity       = None,
@@ -1989,6 +2008,7 @@ offsets = {
 #            characters    = None,
 #            subshots      = None,
 #            difficulties  = None,
+#            zBulletFlags_grazed      = None,
 #            zEnemyFlags_no_hurtbox   = None,
 #            zEnemyFlags_no_hitbox    = None,
 #            zEnemyFlags_invincible   = None,

@@ -48,6 +48,7 @@ def extract_bullets(bullet_manager = zBulletManager):
             'hitbox_radius': bullet_hitbox_rad,
             'iframes':       read_int(zBullet + zBullet_iframes),
             'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
+            'is_grazeable':  read_int(zBullet + zBullet_flags) & zBulletFlags_grazed == 0,
             'alive_timer':   read_int(zBullet + zBullet_timer),
             'bullet_type':   bullet_type,
             'color':         bullet_color,
@@ -65,6 +66,11 @@ def extract_bullets(bullet_manager = zBulletManager):
         elif game_id == 15:
             bullet['graze_timer'] = read_int(zBullet + zBullet_graze_timer)
             bullets.append(GrazeTimerBullet(**bullet))
+
+        elif game_id == 19:
+            bullet['can_gen_items_timer'] = read_int(zBullet + zBullet_can_gen_items_timer)
+            bullet['is_grazeable'] = read_int(zBullet + zBullet_can_gen_items) == 1
+            bullets.append(CanGenItemsTimerBullet(**bullet))
 
         else:
             bullets.append(Bullet(**bullet))
@@ -849,7 +855,7 @@ def print_game_state(gs: GameState):
         else:
             remaining_charge_desc = ""
             if gs.game_specific.next_level_season_power - gs.game_specific.season_power:
-                remaining_charge_desc = f" (need {gs.game_specific.next_level_season_power - gs.game_specific.season_power} more season items)"
+                remaining_charge_desc = f" for level {gs.game_specific.season_level+1}"
 
             releasability_desc = " (can't release)"
             if gs.game_specific.season_level and not gs.bomb_state and not gs.game_specific.release_active:
@@ -858,7 +864,7 @@ def print_game_state(gs: GameState):
                 else:
                     releasability_desc = " (can release)"
 
-            print(f"| HSiFS Season Gauge: level {gs.game_specific.season_level}, charge {gs.game_specific.season_power}/{gs.game_specific.next_level_season_power}{remaining_charge_desc}{releasability_desc}")
+            print(f"| HSiFS Season Gauge: level {gs.game_specific.season_level}, {gs.game_specific.season_power}/{gs.game_specific.next_level_season_power} season items{remaining_charge_desc}{releasability_desc}")
 
     elif game_id == 17: #WBaWC
         if gs.game_specific.held_tokens:

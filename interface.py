@@ -104,6 +104,7 @@ zBomb_state  = offsets[_module_name].bomb.zBomb_state
 # Bullets
 bullet_manager_pointer = offsets[_module_name].bullets.bullet_manager_pointer
 zBulletManager_list    = offsets[_module_name].bullets.zBulletManager_list
+zBullet_flags          = offsets[_module_name].bullets.zBullet_flags
 zBullet_iframes        = offsets[_module_name].bullets.zBullet_iframes
 zBullet_pos            = offsets[_module_name].bullets.zBullet_pos
 zBullet_velocity       = offsets[_module_name].bullets.zBullet_velocity
@@ -115,6 +116,8 @@ zBullet_state          = offsets[_module_name].bullets.zBullet_state
 zBullet_timer          = offsets[_module_name].bullets.zBullet_timer
 zBullet_type           = offsets[_module_name].bullets.zBullet_type
 zBullet_color          = offsets[_module_name].bullets.zBullet_color
+
+zBulletFlags_grazed    = offsets[_module_name].associations.zBulletFlags_grazed
 
 # Enemies
 enemy_manager_pointer  = offsets[_module_name].enemies.enemy_manager_pointer
@@ -368,6 +371,8 @@ elif game_id == 19:
     zPlayer_last_combo_hits     = offsets[_module_name].game_specific['zPlayer_last_combo_hits']
     zPlayer_current_combo_hits  = offsets[_module_name].game_specific['zPlayer_current_combo_hits']
     zPlayer_current_combo_chain = offsets[_module_name].game_specific['zPlayer_current_combo_chain']
+    zBullet_can_gen_items_timer = offsets[_module_name].game_specific['zBullet_can_gen_items_timer']
+    zBullet_can_gen_items       = offsets[_module_name].game_specific['zBullet_can_gen_items']
     zEnemyManager_pattern_count = offsets[_module_name].game_specific['zEnemyManager_pattern_count']
     zItemManager_spawn_total    = offsets[_module_name].game_specific['zItemManager_spawn_total']
     zGaugeManager_charging_bool = offsets[_module_name].game_specific['zGaugeManager_charging_bool']
@@ -737,8 +742,8 @@ def enact_game_actions_text(actions): #line-separated sets of space-seperates ke
         wait_game_frame(need_active=True)
     apply_action_int(0)
 
-def print_int(offset, bytes = 4, rel = False, signed = False, name = None, hexa = False):
-    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {hex(read_int(offset, bytes, rel, signed)) if hexa else read_int(offset, bytes, rel, signed)}")
+def print_int(offset, bytes = 4, rel = False, signed = False, name = None, format = ""):
+    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_int(offset, bytes, rel, signed):{format}}")
 
 def print_float(offset, rel = False, name = None):
     print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_float(offset, rel)}")

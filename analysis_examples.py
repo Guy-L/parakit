@@ -720,6 +720,45 @@ class AnalysisPrintBulletsASCII(Analysis):
             print(line)
         print("```")
 
+
+# =======================================================================
+# Useful analyzers & templates for multiple games =======================
+# =======================================================================
+
+# Plot9: Plot bullets but obscure those that can't be grazed (or scoped in UDoALG)
+class AnalysisPlotGrazeableBullets(AnalysisPlot):
+
+    @property
+    def plot_title(self):
+        return 'Grazeable ' + ('(& Scopeable) ' if game_id == 19 else '') + 'Bullet Scatter Plot'
+
+    def plot(self, ax, side2):
+        bullets = self.lastframe.game_specific.side2.bullets if side2 else self.lastframe.bullets
+
+        if bullets:
+            x_coords = [bullet.position[0] for bullet in bullets]
+            y_coords = [bullet.position[1] for bullet in bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
+
+            colors = []
+            alphas = []
+            for bullet in bullets:
+                if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay):
+                    alphas.append(0.1)
+                    colors.append('black')
+                elif not bullet.is_grazeable or hasattr(bullet, 'is_intangible') and bullet.is_intangible:
+                    alphas.append(0.5)
+                    colors.append('black')
+                else:
+                    alphas.append(1)
+                    colors.append(pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]))
+
+            ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
+
+        else:
+            print(("(Player 2) " if side2 else "") + "No bullets to plot.")
+            return DONT_PLOT
+
 # =======================================================================
 # Useful analyzers & templates for specific games =======================
 # =======================================================================
