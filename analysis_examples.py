@@ -754,6 +754,8 @@ class AnalysisPlotGrazeableBullets(AnalysisPlot):
                     colors.append(pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]))
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
+            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 40, color=(0.5, 1, 0.5, 0.75), fill=False))
+            #TODO: check accuracy of graze radius value in all supported games; otherwise add to states & calculate during extraction
 
         else:
             print(("(Player 2) " if side2 else "") + "No bullets to plot.")

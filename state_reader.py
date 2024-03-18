@@ -33,10 +33,11 @@ def extract_bullets(bullet_manager = zBulletManager):
         bullet_is_intangible = False
 
         #fallback for intangible bullets (radius set to 0) in HSiFS
+        #note: bullet flag 2**1 seems to have the same effect, though I've not seen it used yet
         if not bullet_hitbox_rad and game_id in has_bullet_intangible:
             bullet_hitbox_rad = read_float(bullet_typedefs_radius + bullet_typedef_len * bullet_type, rel=True)
             bullet_is_intangible = True
-            bullet_color = 0 #all intangible bullets are black
+            bullet_color = 0 #all intangible bullets use the dark render mode
 
         bullet = {
             'id':            zBullet,
