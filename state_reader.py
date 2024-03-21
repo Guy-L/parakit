@@ -104,10 +104,18 @@ def extract_enemies(enemy_manager = zEnemyManager):
         current_enemy_list = read_zList(current_enemy_list["next"])
 
         zEnemy = current_enemy_list["entry"]
-        zEnemyFlags = read_int(zEnemy + zEnemy_flags)
+        zEnemyFlags = (read_int(zEnemy + zEnemy_flags + 0x4) << 32) | read_int(zEnemy + zEnemy_flags)
 
         if zEnemyFlags & zEnemyFlags_intangible != 0:
             continue
+
+        zEnemyMovementLimit = None
+        if zEnemyFlags & zEnemyFlags_has_move_limit:
+            zEnemyMovementLimit = EnemyMovementLimit(
+                center = (read_float(zEnemy + zEnemy_movement_bounds), read_float(zEnemy + zEnemy_movement_bounds + 0x4)),
+                width = read_float(zEnemy + zEnemy_movement_bounds + 0x8),
+                height = read_float(zEnemy + zEnemy_movement_bounds + 0xc),
+            )
 
         zEnemyEclSubName = ""
         if game_id >= switch_to_serializable_ecl:
@@ -129,6 +137,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'position':     (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
             'hurtbox':      (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
             'hitbox':       (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
+            'move_limit':   zEnemyMovementLimit,
             'no_hurtbox':   zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
             'no_hitbox':    zEnemyFlags & zEnemyFlags_no_hitbox != 0,
             'invincible':   zEnemyFlags & zEnemyFlags_invincible != 0,

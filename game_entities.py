@@ -26,12 +26,19 @@ class Bullet:
     bullet_type: int
     color: int
 
+@dataclass #a rectangle, used by bosses
+class EnemyMovementLimit:
+    center: Tuple[float, float]
+    width: float
+    height: float
+
 @dataclass
 class Enemy:
     id: int
     position: Tuple[float, float]
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
+    move_limit: Optional[EnemyMovementLimit]
     no_hurtbox: bool
     no_hitbox: bool
     invincible: bool
@@ -46,14 +53,14 @@ class Enemy:
     alive_timer: int
     hp: int
     hp_max: int
-    drops: Dict[int, int]
+    drops: Dict[int, int] #key: item type, value: count
     iframes: int
 
 @dataclass
 class Item:
     id: int
     state: int
-    item_type: int
+    item_type: int #meaning: item_types[item_type]
     position: Tuple[float, float]
     velocity: Tuple[float, float]
     alive_timer: int

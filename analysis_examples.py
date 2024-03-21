@@ -348,6 +348,14 @@ class AnalysisPlotEnemies(AnalysisPlot):
             for enemy in enemies:
                 color_rgb = mcolors.to_rgba(enemy_color(enemy.anm_page, enemy.anm_id))
 
+                if enemy.move_limit and plot_enemy_move_limits:
+                    ax.add_patch(Rectangle( #plot enemy move limit rectangle
+                        (enemy.move_limit.center[0]-enemy.move_limit.width/2, enemy.move_limit.center[1]-enemy.move_limit.height/2),
+                        width = enemy.move_limit.width,
+                        height = enemy.move_limit.height,
+                        edgecolor = (0, 0.25, 1, 0.5), linewidth=2, fill=False
+                    ))
+
                 if enemy.is_rectangle:
                     ax.add_patch(Rectangle( #plot rectangular enemy hitbox
                         (enemy.position[0]-enemy.hitbox[0]/2, enemy.position[1]-enemy.hitbox[1]/2),

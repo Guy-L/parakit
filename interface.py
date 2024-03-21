@@ -134,6 +134,7 @@ zEnemy_rotation        = offsets[_module_name].enemies.zEnemy_rotation
 zEnemy_anm_page        = offsets[_module_name].enemies.zEnemy_anm_page
 zEnemy_anm_id          = offsets[_module_name].enemies.zEnemy_anm_id
 zEnemy_timer           = offsets[_module_name].enemies.zEnemy_timer
+zEnemy_movement_bounds = offsets[_module_name].enemies.zEnemy_movement_bounds
 zEnemy_score_reward    = offsets[_module_name].enemies.zEnemy_score_reward
 zEnemy_hp              = offsets[_module_name].enemies.zEnemy_hp
 zEnemy_hp_max          = offsets[_module_name].enemies.zEnemy_hp_max
@@ -143,13 +144,14 @@ zEnemy_flags           = offsets[_module_name].enemies.zEnemy_flags
 zEnemy_subboss_id      = offsets[_module_name].enemies.zEnemy_subboss_id
 zEnemy_special_func    = offsets[_module_name].enemies.zEnemy_special_func
 
-zEnemyFlags_no_hurtbox   = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
-zEnemyFlags_no_hitbox    = offsets[_module_name].associations.zEnemyFlags_no_hitbox
-zEnemyFlags_invincible   = offsets[_module_name].associations.zEnemyFlags_invincible
-zEnemyFlags_intangible   = offsets[_module_name].associations.zEnemyFlags_intangible
-zEnemyFlags_is_grazeable = offsets[_module_name].associations.zEnemyFlags_is_grazeable
-zEnemyFlags_is_rectangle = offsets[_module_name].associations.zEnemyFlags_is_rectangle
-zEnemyFlags_is_boss      = offsets[_module_name].associations.zEnemyFlags_is_boss
+zEnemyFlags_no_hurtbox     = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
+zEnemyFlags_no_hitbox      = offsets[_module_name].associations.zEnemyFlags_no_hitbox
+zEnemyFlags_invincible     = offsets[_module_name].associations.zEnemyFlags_invincible
+zEnemyFlags_intangible     = offsets[_module_name].associations.zEnemyFlags_intangible
+zEnemyFlags_is_grazeable   = offsets[_module_name].associations.zEnemyFlags_is_grazeable
+zEnemyFlags_is_rectangle   = offsets[_module_name].associations.zEnemyFlags_is_rectangle
+zEnemyFlags_has_move_limit = offsets[_module_name].associations.zEnemyFlags_has_move_limit
+zEnemyFlags_is_boss        = offsets[_module_name].associations.zEnemyFlags_is_boss
 
 # Items
 item_manager_pointer   = offsets[_module_name].items.item_manager_pointer

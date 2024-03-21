@@ -55,6 +55,7 @@ pyplot_settings = {
     'enemy_factor':  5,
     'plot_laser_circles': True,
     'plot_enemy_hurtbox': False,
+    'plot_enemy_move_limits': False,
 }
 
 # ParaKit Script Settings
