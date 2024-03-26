@@ -501,6 +501,7 @@ def extract_game_state(frame_id = None, real_time = None):
             chain_counter  = read_int(zSpiritManager + zSpiritManager_chain_counter),
             spirit_items   = extract_spirit_items() if requires_items else [],
             kyouko_echo    = kyouko_echo,
+            youmu_charge_timer = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
             miko_final_logic_active = bool(find_special_enemy_addr(miko_final_func))
         )
 
@@ -580,7 +581,7 @@ def extract_game_state(frame_id = None, real_time = None):
             roaring_hyper                 = hyper,
             otter_shield_angles           = otter_angles,
             extra_token_spawn_delay_timer = read_int(hyper_token_spawn_delay, rel=True),
-            youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge),
+            youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
             yacchie_recent_graze          = sum(read_int(zBulletManager + zBulletManager_recent_graze_gains + 0x4 * i) for i in range(20)),
         )
 

@@ -535,6 +535,7 @@ offsets = {
             'inv_square_echo_func': 0x4224b0,
             'circle_echo_func': 0x4228b0,
             'miko_final_func': 0x422d60,
+            'zPlayer_youmu_charge': 0x146a4,
             'zEnemy_f0_echo_x1': 0x11ec + 0x298, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f1_echo_x2': 0x11ec + 0x29c, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f2_echo_y1': 0x11ec + 0x2a0, #if useful in multiple games, add to Enemy offset spec

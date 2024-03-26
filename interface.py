@@ -57,6 +57,7 @@ if not _module_name or game_id == 0:
 # Game logic groups
 uses_rank = [6, 7, 19]
 has_enemy_score_reward = [6, 7, 8, 9, 10, 11]
+has_charging_youmu = [13, 17]
 has_bullet_delay = [14, 14.3, 18.5]
 has_bullet_intangible = [16, 16.5]
 has_boss_timer_drawn_if_indic_zero = [19]
@@ -249,6 +250,9 @@ if game_id in has_bullet_intangible:
     bullet_typedefs_radius = offsets[_module_name].game_specific['bullet_typedefs_radius']
     bullet_typedef_len     = offsets[_module_name].game_specific['bullet_typedef_len']
 
+if game_id in has_charging_youmu:
+    zPlayer_youmu_charge = offsets[_module_name].game_specific['zPlayer_youmu_charge']
+
 if game_id == 13:
     trance_meter = offsets[_module_name].game_specific['trance_meter']
     trance_state = offsets[_module_name].game_specific['trance_state']
@@ -345,7 +349,6 @@ elif game_id == 17:
     zAnmVm_rotation       = offsets[_module_name].game_specific['zAnmVm_rotation']
     otter_anm_id          = offsets[_module_name].game_specific['otter_anm_id']
 
-    zPlayer_youmu_charge              = offsets[_module_name].game_specific['zPlayer_youmu_charge']
     zBulletManager_recent_graze_gains = offsets[_module_name].game_specific['zBulletManager_recent_graze_gains']
 
 elif game_id == 18:

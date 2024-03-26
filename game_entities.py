@@ -287,6 +287,7 @@ class GameSpecificTD(GameSpecific):
     chain_counter: int #>9 greys spawn
     spirit_items: List[SpiritItem]
     kyouko_echo: Union[RectangleEcho, CircleEcho]
+    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
     miko_final_logic_active: bool
 
 # Double Dealing Character
@@ -331,7 +332,7 @@ class GameSpecificWBaWC(GameSpecific):
     roaring_hyper: Optional[RoaringHyper]
     otter_shield_angles: List[float] #length 3
     extra_token_spawn_delay_timer: int #[0, 120], ticks up, only resets when Extra Beasts Appear! delay starts
-    youmu_charge_timer: int #focus shot on release if >60
+    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
     yacchie_recent_graze: int #sum of graze gains over last 20 frames
 
 # Unconnected Marketeers
