@@ -294,9 +294,9 @@ class AnalysisPlot(Analysis, ABC):
                 plt.show()
 
         else:
-            player_scale = self.lastframe.player_hitbox_rad
+            player_size = self.lastframe.player_hitbox_rad
             if game_id == 14:
-                player_scale *= self.lastframe.game_specific.player_scale
+                player_size *= self.lastframe.game_specific.player_scale
 
                 if self.lastframe.game_specific.seija_flip[0] == -1:
                     axarr[0].invert_xaxis()
@@ -306,7 +306,7 @@ class AnalysisPlot(Analysis, ABC):
 
             plt.title(self.plot_title)
             if self.plot(axarr[0], False) != DONT_PLOT:
-                axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_scale, marker='X')
+                axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_size, marker='X')
                 plt.show()
 
 # Plot1: "Plot the bullet positions of the last frame at game scale (+player)" [only requires bullets]
@@ -320,7 +320,7 @@ class AnalysisPlotBullets(AnalysisPlot):
             x_coords = [bullet.position[0] for bullet in bullets]
             y_coords = [bullet.position[1] for bullet in bullets]
             colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]) for bullet in bullets]
-            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor for bullet in bullets]
 
             alphas = []
             for bullet in bullets:
@@ -351,17 +351,14 @@ class AnalysisPlotEnemies(AnalysisPlot):
                 if enemy.move_limit and plot_enemy_move_limits:
                     ax.add_patch(Rectangle( #plot enemy move limit rectangle
                         (enemy.move_limit.center[0]-enemy.move_limit.width/2, enemy.move_limit.center[1]-enemy.move_limit.height/2),
-                        width = enemy.move_limit.width,
-                        height = enemy.move_limit.height,
+                        width = enemy.move_limit.width, height = enemy.move_limit.height,
                         edgecolor = (0, 0.25, 1, 0.5), linewidth=2, fill=False
                     ))
 
                 if enemy.is_rectangle:
                     ax.add_patch(Rectangle( #plot rectangular enemy hitbox
                         (enemy.position[0]-enemy.hitbox[0]/2, enemy.position[1]-enemy.hitbox[1]/2),
-                        width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
-                        height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
-                        angle = np.degrees(enemy.rotation),
+                        width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
                         facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
                         edgecolor = (0, 0, 0, 0.3), linewidth=3
                     ))
@@ -369,17 +366,13 @@ class AnalysisPlotEnemies(AnalysisPlot):
                     if plot_enemy_hurtbox and not enemy.no_hurtbox:
                         ax.add_patch(Rectangle( #plot rectangular enemy hurtbox
                             (enemy.position[0]-enemy.hurtbox[0]/2, enemy.position[1]-enemy.hurtbox[1]/2),
-                            width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
-                            height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
-                            angle = np.degrees(enemy.rotation),
+                            width = enemy.hurtbox[0], height = enemy.hurtbox[1], angle = np.degrees(enemy.rotation),
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
                 else:
                     ax.add_patch(Ellipse( #plot circular enemy hitbox
                         (enemy.position[0], enemy.position[1]),
-                        width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
-                        height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
-                        angle = np.degrees(enemy.rotation),
+                        width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
                         facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
                         edgecolor = (0, 0, 0, 0.3), linewidth=3
                     ))
@@ -387,9 +380,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
                     if plot_enemy_hurtbox and not enemy.no_hurtbox:
                         ax.add_patch(Ellipse( #plot circular enemy hurtbox
                             (enemy.position[0], enemy.position[1]),
-                            width = enemy.hurtbox[0] * enemy_factor * pyplot_factor,
-                            height = enemy.hurtbox[1] * enemy_factor * pyplot_factor,
-                            angle = np.degrees(enemy.rotation),
+                            width = enemy.hurtbox[0], height = enemy.hurtbox[1], angle = np.degrees(enemy.rotation),
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
 
@@ -435,7 +426,7 @@ class AnalysisPlotLineLasers(AnalysisPlot):
                     tail_y = laser.position[1]
                     head_x = tail_x + laser.length * np.cos(laser.angle)
                     head_y = tail_y + laser.length * np.sin(laser.angle)
-                    ax.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0)
+                    ax.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * laser_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0)
 
                     if plot_laser_circles:
                         ax.scatter(head_x, head_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=75, zorder=1)
@@ -463,7 +454,7 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
                     origin_y = laser.position[1]
                     end_x = origin_x + laser.length * np.cos(laser.angle)
                     end_y = origin_y + laser.length * np.sin(laser.angle)
-                    ax.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * pyplot_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0, alpha=(1 if laser.state==2 else 0.25))
+                    ax.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * laser_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0, alpha=(1 if laser.state==2 else 0.25))
 
                     if plot_laser_circles:
                         ax.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
@@ -499,7 +490,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                         hasCurveLasers = True
 
                     if self.smooth:
-                        sizes = [laser.width * pyplot_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
+                        sizes = [laser.width * laser_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
 
                         if self.has_points:
                             x_coords = [nodes.position[0] for nodes in laser.nodes]
@@ -514,10 +505,10 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                         y_coords = [nodes.position[1] for nodes in laser.nodes]
 
                         if self.has_points:
-                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=laser.width * pyplot_factor)
+                            ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=laser.width * laser_factor)
 
                         if self.has_line:
-                            ax.plot(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], linewidth=laser.width * pyplot_factor)
+                            ax.plot(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], linewidth=laser.width * laser_factor)
 
         if not hasCurveLasers:
             print(("(Player 2) " if side2 else "") + "No curvy lasers to plot.")
@@ -746,7 +737,7 @@ class AnalysisPlotGrazeableBullets(AnalysisPlot):
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
             y_coords = [bullet.position[1] for bullet in bullets]
-            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor for bullet in bullets]
 
             colors = []
             alphas = []
@@ -852,9 +843,7 @@ class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
             for enemy in enemies:
                 ax.add_patch(Ellipse(
                             (enemy.position[0], enemy.position[1]),
-                            width = enemy.hitbox[0] * enemy_factor * pyplot_factor,
-                            height = enemy.hitbox[1] * enemy_factor * pyplot_factor,
-                            angle = np.degrees(enemy.rotation),
+                            width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
                             facecolor = (0.5, 0, enemy.speedkill_cur_drop_amt/max_speedkill_drops if max_speedkill_drops > 0 else 1, 0.5 if enemy.no_hitbox else 1),
                             edgecolor = (0, 0, 0, 0.3), linewidth=3
                         ))
@@ -908,7 +897,7 @@ class AnalysisPlotBulletGraze(AnalysisPlot):
 
             x_coords = [bullet.position[0] for bullet in bullets]
             y_coords = [bullet.position[1] for bullet in bullets]
-            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor * pyplot_factor for bullet in bullets]
+            sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor for bullet in bullets]
             alphas = [0.1 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 1 for bullet in bullets]
 
             if max_graze_timer > 0:

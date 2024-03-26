@@ -43,16 +43,15 @@ seqext_settings = {
     'auto_unpause': False,
     'auto_repause': True,
     'need_active':  False,
-    'infinite_print_updates': True,
+    'infinite_print_updates': False,
 }
 
 # Game-World Plotting Settings (Analysis)
 # See settings.md for more info.
 pyplot_settings = {
     'plot_scale':    1.0,
-    'pyplot_factor': 0.2,
-    'bullet_factor': 35,
-    'enemy_factor':  5,
+    'bullet_factor': 7.0,
+    'laser_factor':  0.2,
     'plot_laser_circles': True,
     'plot_enemy_hurtbox': False,
     'plot_enemy_move_limits': False,

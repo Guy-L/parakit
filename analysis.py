@@ -137,6 +137,6 @@ def item_size(item_type):
 
     return 50
 
-plot_scale, pyplot_factor, bullet_factor, enemy_factor, plot_laser_circles, plot_enemy_hurtbox, plot_enemy_move_limits = pyplot_settings.values()
+plot_scale, bullet_factor, laser_factor, plot_laser_circles, plot_enemy_hurtbox, plot_enemy_move_limits = pyplot_settings.values()
 DONT_PLOT = -1
 HIDE_P2 = -2

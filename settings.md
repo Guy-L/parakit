@@ -56,9 +56,8 @@ If you want to make your own, check how these are used.
 | Name / Type | Description | Default |
 |-|-|-|
 | **`plot_scale`**<br>(number) | Adjusts the size of the PyPlot window. `2.0` is already really big, don't toast your PC setting this much higher.| `1.0` |
-| **`pyplot_factor`**<br>(number) | Converts sizes in game units to pyplot point/line sizes; seems accurate but may be tweaked. | `0.2` |
-| **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `35` |
-| **`enemy_factor`**<br>(number) | Makes enemies bigger than their hitbox radius in enemy scatterplots. | `3` |
+| **`bullet_factor`**<br>(number) | Makes bullets bigger than their hitbox radius in bullet scatterplots. | `7.0` |
+| **`laser_factor`**<br>(number) | Makes lasers smaller than their stored width in laser scatterplots. | `0.2` |
 | **`plot_laser_circles`**<br>(bool) | If enabled, draws the head of line lasers and the tails of telegraphed lasers in their respective plots. | `True`
 | **`plot_enemy_hurtbox`**<br>(bool) | If enabled, draws the outline of enemy hurtboxes on top of their hitbox in enemy scatterplots when applicable. | `False`
 | **`plot_enemy_move_limits`**<br>(bool) | If enabled, draws the outline of enemy movement limits in enemy scatterplots when applicable. | `False`
