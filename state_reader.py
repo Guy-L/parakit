@@ -1262,7 +1262,7 @@ def print_untracked_vars():
     if 'p2_shottype' in globals():
         print(f"| P2 Character: {characters[read_int(p2_shottype, rel=True)]}")
     else:
-        print(f"| Sub-Shot: {subshots[read_int(subshot, rel=True)]}")
+        print(f"| Sub-Shot: {subshots[subshot]}")
 
     print(f"| Difficulty: {difficulties[difficulty]}")
     print(f"| Stage #: {read_int(stage, rel=True)}")
