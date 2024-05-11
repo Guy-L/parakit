@@ -1739,7 +1739,7 @@ offsets = {
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_um,
-            enemy_anms    = {**enemy_anms_post_um, 251: "Jimbo"},
+            enemy_anms    = {**enemy_anms_post_um, 229: "Lily", 251: "Jimbo"},
             item_types    = {**item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
             pause_states  = modern_pause_states,
             game_modes    = modern_game_modes,

@@ -53,6 +53,7 @@ pyplot_settings = {
     'plot_scale':    1.0,
     'bullet_factor': 7.0,
     'laser_factor':  0.2,
+    'plot_velocity': False,
     'plot_laser_circles': True,
     'plot_enemy_hurtbox': False,
     'plot_enemy_move_limits': False,

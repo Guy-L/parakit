@@ -416,13 +416,11 @@ def extract_curve_laser(laser_ptr):
         node_angle = None
         node_speed = None
 
-        if i == 0:
+        if i == 0 or False: #(bool literal marks a removed setting; useless data for non-head nodes afaik)
             node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
             node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
-
-            if i == 0:
-                node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
-                node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
+            node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
+            node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
 
         curve_nodes.append(CurveNode(
             id = current_node_ptr,

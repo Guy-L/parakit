@@ -789,7 +789,8 @@ def _read_memory(address, size, rel):
     if size not in _buffers:
         _buffers[size] = ctypes.create_string_buffer(size)
     buffer = _buffers[size]
-    _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref)
+    if not _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref):
+        raise RuntimeError(f"Failed to read memory at address {hex(address if not rel else _base_address + address)} with size {size}.")
     return buffer.raw
 
 

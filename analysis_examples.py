@@ -324,6 +324,11 @@ class AnalysisPlotBullets(AnalysisPlot):
 
             alphas = []
             for bullet in bullets:
+                if plot_velocity and bullet.speed:
+                    ax.arrow(bullet.position[0], bullet.position[1],
+                             bullet.speed * math.cos(bullet.angle), bullet.speed * math.sin(bullet.angle),
+                             head_width=4, head_length=8, color=(0,0,0,0.2))
+
                 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay):
                     alphas.append(0.1)
                 elif hasattr(bullet, 'is_intangible') and bullet.is_intangible:
@@ -384,6 +389,12 @@ class AnalysisPlotEnemies(AnalysisPlot):
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
 
+                #if plot_velocity and enemy.speed:
+                #    ax.arrow(enemy.position[0], enemy.position[1],
+                #             enemy.speed * math.cos(enemy.angle), enemy.speed * math.sin(enemy.angle),
+                #             head_width=4, head_length=8, color=(0,0,0,0.2))
+
+
         else:
             print(("(Player 2) " if side2 else "") + "No enemies to plot.")
             return DONT_PLOT
@@ -396,6 +407,13 @@ class AnalysisPlotItems(AnalysisPlot):
         items = self.lastframe.game_specific.side2.items if side2 else self.lastframe.items
 
         if items:
+            if plot_velocity:
+                for item in items:
+                    if item.velocity[0] or item.velocity[1]:
+                        ax.arrow(item.position[0], item.position[1],
+                                 item.velocity[0], item.velocity[1],
+                                 head_width=4, head_length=8, color=(0,0,0,0.2))
+
             x_coords = [item.position[0] for item in items]
             y_coords = [item.position[1] for item in items]
             colors = [item_color(get_item_type(item.item_type)) for item in items]
@@ -431,6 +449,11 @@ class AnalysisPlotLineLasers(AnalysisPlot):
                     if plot_laser_circles:
                         ax.scatter(head_x, head_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=75, zorder=1)
 
+                    if plot_velocity and laser.speed:
+                        ax.arrow(head_x, head_y,
+                                 laser.speed * math.cos(laser.angle), laser.speed * math.sin(laser.angle),
+                                 head_width=4, head_length=8, color=(0,0,0,0.2))
+
         if not hasLineLasers:
             print(("(Player 2) " if side2 else "") + "No line lasers to plot.")
             return DONT_PLOT
@@ -458,6 +481,11 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
 
                     if plot_laser_circles:
                         ax.scatter(origin_x, origin_y, color='white', edgecolors=pyplot_color(get_color(laser.sprite, laser.color)[0]), s=100, zorder=1, alpha=(1 if laser.state==2 else 0.25))
+
+                    if plot_velocity and (laser.origin_vel[0] or laser.origin_vel[1]):
+                        ax.arrow(origin_x, origin_y,
+                                 laser.origin_vel[0], laser.origin_vel[1],
+                                 head_width=4, head_length=8, color=(0,0,0,0.2))
 
         if not hasInfiniteLasers:
             print(("(Player 2) " if side2 else "") + "No telegraphed lasers to plot.")
@@ -550,6 +578,11 @@ class AnalysisPlotPlayerShots(AnalysisPlot):
                 if self.show_damage:
                     ax.text(shot.position[0], shot.position[1]+8,
                         str(shot.damage), color='black', fontsize=5, ha='center', va='center')
+
+                if plot_velocity and shot.speed:
+                    ax.arrow(shot.position[0], shot.position[1],       #we could just use velocity to get the end-point, but some custom behavior
+                             shot.speed * math.cos(shot.angle), shot.speed * math.sin(shot.angle), # bullets (e.g. TD Sanae) don't update velocity
+                             head_width=4, head_length=8, color=(0,0,0,0.2))
 
         else:
             print(("(Player 2) " if side2 else "") + "No player shots to plot.")
@@ -838,6 +871,13 @@ class AnalysisPlotTD(AnalysisPlot):
             ax.scatter(x_coords, y_coords, facecolor=face_colors, s=sizes, marker='p',
                        edgecolor = edge_colors, linewidth=2)
 
+            if plot_velocity:
+                for spirit in spirit_items:
+                    if (spirit.velocity[0] or spirit.velocity[1]):
+                        ax.arrow(spirit.position[0], spirit.position[1],
+                                spirit.velocity[0], spirit.velocity[1],
+                                head_width=4, head_length=8, color=(0,0,0,0.2))
+
         if self.lastframe.game_specific.kyouko_echo:
             echo = self.lastframe.game_specific.kyouko_echo
 
@@ -980,6 +1020,11 @@ class AnalysisPlotWBaWC(AnalysisPlot):
             edge_colors = []
 
             for token in field_tokens:
+                if plot_velocity:
+                    ax.arrow(token.position[0], token.position[1],
+                            token.base_velocity[0], token.base_velocity[1],
+                            head_width=4, head_length=8, color=(0,0,0,0.2))
+
                 alpha = self.normal_alpha if token.alive_timer < 7800 and not token.being_grabbed else self.leaving_alpha
                 face_color = self.type_colors[token.type-1] if token.type < 8 else self.special_color
                 edge_color = face_color
