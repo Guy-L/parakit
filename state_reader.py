@@ -135,6 +135,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
         enemy = {
             'id':           zEnemy,
             'position':     (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
+            'velocity':     (read_float(zEnemy + zEnemy_vel), read_float(zEnemy + zEnemy_vel + 0x4)),
             'hurtbox':      (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
             'hitbox':       (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
             'move_limit':   zEnemyMovementLimit,

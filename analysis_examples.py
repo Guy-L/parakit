@@ -389,10 +389,10 @@ class AnalysisPlotEnemies(AnalysisPlot):
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
 
-                #if plot_velocity and enemy.speed:
-                #    ax.arrow(enemy.position[0], enemy.position[1],
-                #             enemy.speed * math.cos(enemy.angle), enemy.speed * math.sin(enemy.angle),
-                #             head_width=4, head_length=8, color=(0,0,0,0.2))
+                if plot_velocity and (enemy.velocity[0] or enemy.velocity[1]):
+                    ax.arrow(enemy.position[0], enemy.position[1],
+                             enemy.velocity[0], enemy.velocity[1],
+                             head_width=4, head_length=8, color=(0,0,0,0.2))
 
 
         else:

@@ -36,6 +36,7 @@ class EnemyMovementLimit:
 class Enemy:
     id: int
     position: Tuple[float, float]
+    velocity: Tuple[float, float]
     hurtbox: Tuple[float, float]
     hitbox: Tuple[float, float]
     move_limit: Optional[EnemyMovementLimit]

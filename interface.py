@@ -149,6 +149,7 @@ zEclFile_subroutines   = offsets[_module_name].enemies.zEclFile_subroutines
 zEnemy_ecl_ref         = offsets[_module_name].enemies.zEnemy_ecl_ref
 zEnemy_data            = offsets[_module_name].enemies.zEnemy_data
 zEnemy_pos             = offsets[_module_name].enemies.zEnemy_pos
+zEnemy_vel             = offsets[_module_name].enemies.zEnemy_vel
 zEnemy_hurtbox         = offsets[_module_name].enemies.zEnemy_hurtbox
 zEnemy_hitbox          = offsets[_module_name].enemies.zEnemy_hitbox
 zEnemy_rotation        = offsets[_module_name].enemies.zEnemy_rotation

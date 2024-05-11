@@ -113,7 +113,8 @@ class EnemyOffsets:
     zEclFile_subroutines: int
     zEnemy_ecl_ref: int #sub id for games >= lolk, otherwise cur instruction ptr
     zEnemy_data: int
-    zEnemy_pos: int #"final_pos"
+    zEnemy_pos: int #from "final_pos"
+    zEnemy_vel: int #from "final_pos"
     zEnemy_hurtbox: int
     zEnemy_hitbox: int
     zEnemy_rotation: int
@@ -441,6 +442,7 @@ offsets = {
             zEnemy_ecl_ref         = 0xc,
             zEnemy_data            = 0x11ec,
             zEnemy_pos             = 0x11ec + 0x44,
+            zEnemy_vel             = 0x11ec + 0x78,
             zEnemy_hurtbox         = 0x11ec + 0x110,
             zEnemy_hitbox          = 0x11ec + 0x118,
             zEnemy_rotation        = 0x11ec + 0x20, #unsure if in game (seems to be set to 0 every frame?)
@@ -686,6 +688,7 @@ offsets = {
             zEnemy_ecl_ref         = 0xc,
             zEnemy_data            = 0x11f0,
             zEnemy_pos             = 0x11f0 + 0x44,
+            zEnemy_vel             = 0x11f0 + 0x78,
             zEnemy_hurtbox         = 0x11f0 + 0x110,
             zEnemy_hitbox          = 0x11f0 + 0x118,
             zEnemy_rotation        = 0x11f0 + 0x120,
@@ -916,6 +919,7 @@ offsets = {
             zEnemy_ecl_ref         = 0x14,
             zEnemy_data            = 0x120c,
             zEnemy_pos             = 0x120c + 0x44,
+            zEnemy_vel             = 0x120c + 0x78,
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
@@ -1147,6 +1151,7 @@ offsets = {
             zEnemy_ecl_ref         = 0x14,
             zEnemy_data            = 0x120c,
             zEnemy_pos             = 0x120c + 0x44,
+            zEnemy_vel             = 0x120c + 0x78,
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
@@ -1388,6 +1393,7 @@ offsets = {
             zEnemy_ecl_ref         = 0x14,
             zEnemy_data            = 0x120c,
             zEnemy_pos             = 0x120c + 0x44,
+            zEnemy_vel             = 0x120c + 0x78,
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
@@ -1630,6 +1636,7 @@ offsets = {
             zEnemy_ecl_ref         = 0x14,
             zEnemy_data            = 0x122c,
             zEnemy_pos             = 0x122c + 0x44,
+            zEnemy_vel             = 0x122c + 0x78,
             zEnemy_hurtbox         = 0x122c + 0x110,
             zEnemy_hitbox          = 0x122c + 0x118,
             zEnemy_rotation        = 0x122c + 0x120,
@@ -1866,6 +1873,7 @@ offsets = {
             zEnemy_ecl_ref         = 0x14,
             zEnemy_data            = 0x1230,
             zEnemy_pos             = 0x1230 + 0x48,
+            zEnemy_vel             = 0x1230 + 0x80,
             zEnemy_hurtbox         = 0x1230 + 0x120,
             zEnemy_hitbox          = 0x1230 + 0x128,
             zEnemy_rotation        = 0x1230 + 0x130,
@@ -2156,6 +2164,7 @@ offsets = {
 #            zEnemy_ecl_ref         = None,
 #            zEnemy_data            = None,
 #            zEnemy_pos             = None,
+#            zEnemy_vel             = None,
 #            zEnemy_hurtbox         = None,
 #            zEnemy_hitbox          = None,
 #            zEnemy_rotation        = None,
