@@ -232,6 +232,7 @@ class RoaringHyper:
     time_remaining: int #extra beasts appear 120f (2s) after timer expires
     reward_mode: int #0 = regular, 2 = cow, 3 = chick, 1 and >5 = jelly & others
     token_grab_time_bonus: int #first grab adds 180f, then 120f, 80f, 53f then always 23f
+    otter_shield_angles: List[float] #length 3 for otter hyper, 0 otherwise
     currently_breaking: bool #used for ST6 secret token
 
 # Unconnected Marketeers
@@ -260,6 +261,7 @@ class P2Side:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    player_options_pos: List[Tuple[float, float]]
     player_shots: List[PlayerShot]
     bomb_state: int
     bullets: List[Bullet]
@@ -342,7 +344,6 @@ class GameSpecificWBaWC(GameSpecific):
     held_tokens: List[int] #length [0, 5], meaning: token_types[token]
     field_tokens: List[AnimalToken]
     roaring_hyper: Optional[RoaringHyper]
-    otter_shield_angles: List[float] #length 3
     extra_token_spawn_delay_timer: int #[0, 120], ticks up, only resets when Extra Beasts Appear! delay starts
     youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
     yacchie_recent_graze: int #sum of graze gains over last 20 frames
@@ -414,6 +415,7 @@ class GameState:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    player_options_pos: List[Tuple[float, float]]
     player_shots: List[PlayerShot]
     bomb_state: int
     bullets: List[Bullet]

@@ -59,8 +59,16 @@ class PlayerOffsets:
     zPlayer_hit_rad: int
     zPlayer_iframes: int
     zPlayer_focused: int
+    zPlayer_option_array: int
+    zPlayer_option_array_len: int
     zPlayer_shots_array: int
     zPlayer_shots_array_len: int
+
+@dataclass
+class PlayerOptionOffsets:
+    zPlayerOption_active: int
+    zPlayerOption_anm_id: int
+    zPlayerOption_len: int
 
 @dataclass
 class PlayerShotOffsets:
@@ -194,6 +202,13 @@ class AsciiOffsets:
     global_timer: int #frames the ascii manager has been alive (never destroyed)
 
 @dataclass
+class AnmOffsets:
+    anm_manager_pointer: int
+    zAnmManager_list: int
+    zAnmVm_id: int
+    zAnmVm_entity_pos: int
+
+@dataclass
 class SpellCardOffsets:
     spellcard_pointer: int
     zSpellcard_indicator: int
@@ -249,6 +264,7 @@ class Offset:
     statics: StaticsOffsets
     statics_untracked: UntrackedStaticsOffsets
     player: PlayerOffsets
+    player_options: PlayerOptionOffsets
     player_shots: PlayerShotOffsets
     bomb: BombOffsets
     bullets: BulletOffsets
@@ -260,6 +276,7 @@ class Offset:
     laser_curve: LaserCurveOffsets
     laser_curve_node: LaserCurveNodeOffsets
     ascii: AsciiOffsets
+    anm: AnmOffsets
     spell_card: SpellCardOffsets
     gui: GUIOffsets
     game_thread: GameThreadOffsets
@@ -374,8 +391,15 @@ offsets = {
             zPlayer_hit_rad = 0x620,
             zPlayer_iframes = 0x14688,
             zPlayer_focused = 0x14840,
+            zPlayer_option_array     = 0xa2b8,
+            zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0x6a0,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xe4,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x1c,
@@ -497,6 +521,12 @@ offsets = {
             ascii_manager_pointer = 0xc2160,
             global_timer          = 0x19190,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0xdc688,
+            zAnmManager_list    = 0xf48208,
+            zAnmVm_id           = 0x530,
+            zAnmVm_entity_pos   = 0x574,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xc2178,
             zSpellcard_indicator = 0x20,
@@ -606,8 +636,15 @@ offsets = {
             zPlayer_hit_rad = 0x648,
             zPlayer_iframes = 0x182c4,
             zPlayer_focused = 0x184b0,
+            zPlayer_option_array     = 0xd6ec,
+            zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0x6c8,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xe4,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x1c,
@@ -729,6 +766,12 @@ offsets = {
             ascii_manager_pointer = 0xdb520,
             global_timer          = 0x191e0,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0xf56cc,
+            zAnmManager_list    = 0xfe8208,
+            zAnmVm_id           = 0x540,
+            zAnmVm_entity_pos   = 0x59c,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xdb534,
             zSpellcard_indicator = 0x20,
@@ -823,8 +866,15 @@ offsets = {
             zPlayer_hit_rad = 0x2bfc8,
             zPlayer_iframes = 0x16284,
             zPlayer_focused = 0x16240,
+            zPlayer_option_array     = 0x668,
+            zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0xd88,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xe4,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x10,
@@ -946,6 +996,12 @@ offsets = {
             ascii_manager_pointer = 0xe9a58,
             global_timer          = 0x19254,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0x103c18,
+            zAnmManager_list    = 0xdc,
+            zAnmVm_id           = 0x544,
+            zAnmVm_entity_pos   = 0x5ec,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xe9a70,
             zSpellcard_indicator = 0x1c,
@@ -1041,8 +1097,15 @@ offsets = {
             zPlayer_hit_rad = 0x2c748,
             zPlayer_iframes = 0x1663c,
             zPlayer_focused = 0x165c8,
+            zPlayer_option_array     = 0x660,
+            zPlayer_option_array_len = 0xc,
             zPlayer_shots_array      = 0x1110,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xe4,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x10,
@@ -1164,6 +1227,12 @@ offsets = {
             ascii_manager_pointer = 0xa6d98,
             global_timer          = 0x1923c,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0xc0f48,
+            zAnmManager_list    = 0xdc,
+            zAnmVm_id           = 0x538,
+            zAnmVm_entity_pos   = 0x5e0,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xa6db0,
             zSpellcard_indicator = 0x1c,
@@ -1269,8 +1338,15 @@ offsets = {
             zPlayer_hit_rad = 0x18ffc,
             zPlayer_iframes = 0x18e7c,
             zPlayer_focused = 0x18dd0,
+            zPlayer_option_array     = 0x660,
+            zPlayer_option_array_len = 0xc,
             zPlayer_shots_array      = 0x1110,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xe4,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x10,
@@ -1392,6 +1468,12 @@ offsets = {
             ascii_manager_pointer = 0xb7678,
             global_timer          = 0x19244,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0x109a20,
+            zAnmManager_list    = 0x6dc,
+            zAnmVm_id           = 0x538,
+            zAnmVm_entity_pos   = 0x5e4,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xb7690,
             zSpellcard_indicator = 0x1c,
@@ -1443,6 +1525,7 @@ offsets = {
             'held_token_array': 0xb5a64,
             'token_manager_pointer': 0xb7684,
             'zTokenManager_list': 0x18,
+            'zTokenManager_otter_anm_ids': 0x44,
             'zToken_type': 0x14,
             'zToken_pos': 0x18,
             'zToken_base_vel': 0x24,
@@ -1450,7 +1533,7 @@ offsets = {
             'zToken_switch_timer': 0x5c,
             'zToken_flags': 0x6c,
 
-            'hyper_types': ["Wolf", "Otter", "Eagle", "Neutral"],
+            'hyper_types': ["N/A", "Wolf", "Otter", "Eagle", "Neutral"],
             'hyper_token_spawn_delay': 0xb5a94,
             'hyper_time_remaining': 0xb5aa8,
             'hyper_duration': 0xb5ab8,
@@ -1458,12 +1541,7 @@ offsets = {
             'hyper_token_time_bonus': 0xb5ac0,
             'hyper_flags': 0xb5ac4,
 
-            'anm_manager_pointer': 0x109a20,
-            'zAnmManager_list_tail': 0x6e0,
-            'zAnmVm_sprite_id': 0x20,
             'zAnmVm_rotation': 0x40,
-            'otter_anm_id': 70,
-
             'zPlayer_youmu_charge': 0x19084,
             'zBulletManager_recent_graze_gains': 0x58,
         }
@@ -1502,8 +1580,15 @@ offsets = {
             zPlayer_hit_rad = 0x4799c,
             zPlayer_iframes = 0x47778,
             zPlayer_focused = 0x476cc,
+            zPlayer_option_array     = 0x670,
+            zPlayer_option_array_len = 0x10,
             zPlayer_shots_array      = 0x1570,
             zPlayer_shots_array_len  = 0x200,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xb0,
+            zPlayerOption_len    = 0xf0,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x10,
@@ -1625,6 +1710,12 @@ offsets = {
             ascii_manager_pointer = 0xcf2ac,
             global_timer          = 0x1925c,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0x11f65c,
+            zAnmManager_list    = 0x6f0,
+            zAnmVm_id           = 0x544,
+            zAnmVm_entity_pos   = 0x5f0,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0xcf2c0,
             zSpellcard_indicator = 0x1c,
@@ -1725,8 +1816,15 @@ offsets = {
             zPlayer_hit_rad = 0x20c4,
             zPlayer_iframes = 0x2078,
             zPlayer_focused = 0x2070,
+            zPlayer_option_array     = 0x700,
+            zPlayer_option_array_len = 0x16,
             zPlayer_shots_array      = 0x22f8,
             zPlayer_shots_array_len  = 0x100,
+        ),
+        player_options = PlayerOptionOffsets(
+            zPlayerOption_active = 0x0,
+            zPlayerOption_anm_id = 0xdc,
+            zPlayerOption_len    = 0x128,
         ),
         player_shots = PlayerShotOffsets(
             zPlayerShot_timer  = 0x1c,
@@ -1848,6 +1946,12 @@ offsets = {
             ascii_manager_pointer = 0x1ae444,
             global_timer          = 0x197b4,
         ),
+        anm = AnmOffsets(
+            anm_manager_pointer = 0x1ae3ac,
+            zAnmManager_list    = 0x724,
+            zAnmVm_id           = 0x4d8,
+            zAnmVm_entity_pos   = 0x614,
+        ),
         spell_card = SpellCardOffsets(
             spellcard_pointer    = 0x1ae480,
             zSpellcard_indicator = 0x10,
@@ -1909,6 +2013,7 @@ offsets = {
             'zGaugeManager_gauge_charge': 0x94,
             'zGaugeManager_gauge_fill': 0xa4,
             'zAbilityManager_total_cards': 0x2c, #untracked
+            'zAnmManager_list_p2': 0x744,
             'zGui_p2_bosstimer_s': 0xd4,
             'zGui_p2_bosstimer_ms': 0xd8,
             'zGui_p2_bosstimer_drawn': 0xcc,
@@ -2001,8 +2106,15 @@ offsets = {
 #            zPlayer_hit_rad = None,
 #            zPlayer_iframes = None,
 #            zPlayer_focused = None,
+#            zPlayer_option_array     = None,
+#            zPlayer_option_array_len = None,
 #            zPlayer_shots_array      = None,
 #            zPlayer_shots_array_len  = None,
+#        ),
+#        player_options = PlayerOptionOffsets(
+#            zPlayerOption_active = None,
+#            zPlayerOption_anm_id = None,
+#            zPlayerOption_len    = None,
 #        ),
 #        player_shots = PlayerShotOffsets(
 #            zPlayerShot_timer  = None,
@@ -2122,6 +2234,12 @@ offsets = {
 #        ascii = AsciiOffsets(
 #            ascii_manager_pointer = None,
 #            global_timer          = None,
+#        ),
+#        anm = AnmOffsets(
+#            anm_manager_pointer = None,
+#            zAnmManager_list    = None,
+#            zAnmVm_id           = None,
+#            zAnmVm_entity_pos   = None,
 #        ),
 #        spell_card = SpellCardOffsets(
 #            spellcard_pointer    = None,

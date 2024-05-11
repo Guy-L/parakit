@@ -97,8 +97,15 @@ zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
 zPlayer_hit_rad = offsets[_module_name].player.zPlayer_hit_rad
 zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
 zPlayer_focused = offsets[_module_name].player.zPlayer_focused
+zPlayer_option_array     = offsets[_module_name].player.zPlayer_option_array
+zPlayer_option_array_len = offsets[_module_name].player.zPlayer_option_array_len
 zPlayer_shots_array      = offsets[_module_name].player.zPlayer_shots_array
 zPlayer_shots_array_len  = offsets[_module_name].player.zPlayer_shots_array_len
+
+# Player Options
+zPlayerOption_active = offsets[_module_name].player_options.zPlayerOption_active
+zPlayerOption_anm_id = offsets[_module_name].player_options.zPlayerOption_anm_id
+zPlayerOption_len    = offsets[_module_name].player_options.zPlayerOption_len
 
 # Player Shots
 zPlayerShot_timer  = offsets[_module_name].player_shots.zPlayerShot_timer
@@ -234,6 +241,12 @@ zLaserCurveNode_size  = offsets[_module_name].laser_curve_node.zLaserCurveNode_s
 ascii_manager_pointer = offsets[_module_name].ascii.ascii_manager_pointer
 global_timer          = offsets[_module_name].ascii.global_timer
 
+# ANM
+anm_manager_pointer = offsets[_module_name].anm.anm_manager_pointer
+zAnmManager_list    = offsets[_module_name].anm.zAnmManager_list
+zAnmVm_id           = offsets[_module_name].anm.zAnmVm_id
+zAnmVm_entity_pos   = offsets[_module_name].anm.zAnmVm_entity_pos
+
 # Spell Card
 spellcard_pointer    = offsets[_module_name].spell_card.spellcard_pointer
 zSpellcard_indicator = offsets[_module_name].spell_card.zSpellcard_indicator
@@ -337,10 +350,11 @@ elif game_id == 16:
     zBomb_timer     = offsets[_module_name].game_specific['zBomb_timer']
 
 elif game_id == 17:
-    token_types           = offsets[_module_name].game_specific['token_types']
-    held_token_array      = offsets[_module_name].game_specific['held_token_array']
-    token_manager_pointer = offsets[_module_name].game_specific['token_manager_pointer']
-    zTokenManager_list    = offsets[_module_name].game_specific['zTokenManager_list']
+    token_types                 = offsets[_module_name].game_specific['token_types']
+    held_token_array            = offsets[_module_name].game_specific['held_token_array']
+    token_manager_pointer       = offsets[_module_name].game_specific['token_manager_pointer']
+    zTokenManager_list          = offsets[_module_name].game_specific['zTokenManager_list']
+    zTokenManager_otter_anm_ids = offsets[_module_name].game_specific['zTokenManager_otter_anm_ids']
     zToken_type         = offsets[_module_name].game_specific['zToken_type']
     zToken_pos          = offsets[_module_name].game_specific['zToken_pos']
     zToken_base_vel     = offsets[_module_name].game_specific['zToken_base_vel']
@@ -356,12 +370,7 @@ elif game_id == 17:
     hyper_token_time_bonus  = offsets[_module_name].game_specific['hyper_token_time_bonus']
     hyper_flags             = offsets[_module_name].game_specific['hyper_flags']
 
-    anm_manager_pointer   = offsets[_module_name].game_specific['anm_manager_pointer']
-    zAnmManager_list_tail = offsets[_module_name].game_specific['zAnmManager_list_tail']
-    zAnmVm_sprite_id      = offsets[_module_name].game_specific['zAnmVm_sprite_id']
-    zAnmVm_rotation       = offsets[_module_name].game_specific['zAnmVm_rotation']
-    otter_anm_id          = offsets[_module_name].game_specific['otter_anm_id']
-
+    zAnmVm_rotation  = offsets[_module_name].game_specific['zAnmVm_rotation']
     zBulletManager_recent_graze_gains = offsets[_module_name].game_specific['zBulletManager_recent_graze_gains']
 
 elif game_id == 18:
@@ -398,6 +407,7 @@ elif game_id == 19:
     zGaugeManager_gauge_charge  = offsets[_module_name].game_specific['zGaugeManager_gauge_charge']
     zGaugeManager_gauge_fill    = offsets[_module_name].game_specific['zGaugeManager_gauge_fill']
     zAbilityManager_total_cards = offsets[_module_name].game_specific['zAbilityManager_total_cards']
+    zAnmManager_list_p2         = offsets[_module_name].game_specific['zAnmManager_list_p2']
     zGui_p2_bosstimer_s         = offsets[_module_name].game_specific['zGui_p2_bosstimer_s']
     zGui_p2_bosstimer_ms        = offsets[_module_name].game_specific['zGui_p2_bosstimer_ms']
     zGui_p2_bosstimer_drawn     = offsets[_module_name].game_specific['zGui_p2_bosstimer_drawn']
@@ -577,7 +587,7 @@ def read_string(offset, length, rel = False):
     return _read_memory(offset, length, rel).decode('utf-8', 'ignore').split('\x00', 1)[0]
 
 def read_zList(offset):
-    return {"entry": read_int(offset), "next": read_int(offset + 0x4), "prev": read_int(offset + 0x8)}
+    return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
 
 def tabulate(x, min_size=10):
     x_str = str(x)
@@ -823,6 +833,7 @@ zBulletManager = read_int(bullet_manager_pointer, rel=True)
 zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
 zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
+zAnmManager    = read_int(anm_manager_pointer, rel=True)
 zSpellCard     = read_int(spellcard_pointer, rel=True)
 zGui           = read_int(gui_pointer, rel=True)
 

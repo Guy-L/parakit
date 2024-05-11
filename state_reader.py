@@ -440,6 +440,35 @@ def extract_curve_laser(laser_ptr):
         'nodes': curve_nodes,
     }
 
+def find_anm_vm_by_id(anm_id, list_offset=zAnmManager_list):
+    current_anm_vm_list = {"entry": 0, "next": read_int(zAnmManager + list_offset)}
+
+    while current_anm_vm_list['next']:
+        current_anm_vm_list = read_zList(current_anm_vm_list['next'])
+        zAnmVm = current_anm_vm_list['entry']
+
+        if read_int(zAnmVm + zAnmVm_id) == anm_id:
+            return zAnmVm
+
+def extract_player_option_positions(player = zPlayer):
+    player_option_positions = []
+    player_option_array_start = player + zPlayer_option_array
+    player_option_array_end   = player_option_array_start + zPlayer_option_array_len * zPlayerOption_len
+
+    for player_option in range(player_option_array_start, player_option_array_end, zPlayerOption_len):
+        if read_int(player_option + zPlayerOption_active) != 0:
+            option_vm = None
+
+            if player != zPlayer:
+                option_vm = find_anm_vm_by_id(read_int(player_option + zPlayerOption_anm_id), zAnmManager_list_p2)
+            else:
+                option_vm = find_anm_vm_by_id(read_int(player_option + zPlayerOption_anm_id))
+
+            if option_vm:
+                player_option_positions.append((read_float(option_vm + zAnmVm_entity_pos), read_float(option_vm + zAnmVm_entity_pos + 0x4)))
+
+    return player_option_positions
+
 def extract_player_shots(player = zPlayer):
     player_shots = []
     player_shot_array_start = player + zPlayer_shots_array
@@ -574,32 +603,28 @@ def extract_game_state(frame_id = None, real_time = None):
         roaring_hyper_flags = read_int(hyper_flags, bytes = 1, rel=True)
 
         if roaring_hyper_flags & 2**1 != 0:
+            cur_hyper_type = read_int(hyper_type, rel=True)
+            otter_shield_angles = []
+
+            if cur_hyper_type == 2:
+                for otter_vm_i in range(3):
+                    otter_vm = find_anm_vm_by_id(read_int(zTokenManager + zTokenManager_otter_anm_ids + otter_vm_i * 0x4))
+                    otter_shield_angles.append(read_float(otter_vm + zAnmVm_rotation) - 0.29) #TODO magic constant away
+
             hyper = RoaringHyper(
-                type                  = read_int(hyper_type, rel=True),
-                duration              = read_int(hyper_duration, rel=True),
-                time_remaining        = read_int(hyper_time_remaining, rel=True),
-                reward_mode           = roaring_hyper_flags >> 4,
-                token_grab_time_bonus = read_int(hyper_token_time_bonus, rel=True),
-                currently_breaking    = roaring_hyper_flags & 2**2 != 0,
+                type                   = read_int(hyper_type, rel=True),
+                duration               = read_int(hyper_duration, rel=True),
+                time_remaining         = read_int(hyper_time_remaining, rel=True),
+                reward_mode            = roaring_hyper_flags >> 4,
+                token_grab_time_bonus  = read_int(hyper_token_time_bonus, rel=True),
+                otter_shield_angles    = otter_shield_angles,
+                currently_breaking     = roaring_hyper_flags & 2**2 != 0,
             )
-
-        current_anm_vm_list = read_zList(read_int(zAnmManager + zAnmManager_list_tail))
-        otter_angles = []
-
-        while current_anm_vm_list['prev']:
-            zAnmVm = current_anm_vm_list['entry']
-            if read_int(zAnmVm + zAnmVm_sprite_id) == otter_anm_id:
-                otter_angles.append(read_float(zAnmVm + zAnmVm_rotation) + math.pi/2) #zun angles are weird
-                if len(otter_angles) == 3: #this is actually necessary, every otter hyper spawns 3 new vms lol
-                    break
-
-            current_anm_vm_list = read_zList(current_anm_vm_list['prev'])
 
         game_specific = GameSpecificWBaWC(
             held_tokens                   = held_tokens,
             field_tokens                  = extract_animal_tokens() if requires_items else [],
             roaring_hyper                 = hyper,
-            otter_shield_angles           = otter_angles,
             extra_token_spawn_delay_timer = read_int(hyper_token_spawn_delay, rel=True),
             youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
             yacchie_recent_graze          = sum(read_int(zBulletManager + zBulletManager_recent_graze_gains + 0x4 * i) for i in range(20)),
@@ -678,6 +703,7 @@ def extract_game_state(frame_id = None, real_time = None):
                 player_hitbox_rad   = read_float(zPlayerP2 + zPlayer_hit_rad),
                 player_iframes      = read_int(zPlayerP2 + zPlayer_iframes),
                 player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
+                player_options_pos  = extract_player_option_positions(zPlayerP2),
                 player_shots        = extract_player_shots(zPlayerP2) if requires_player_shots else [],
                 bomb_state          = read_int(zBombP2 + zBomb_state),
                 bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
@@ -750,6 +776,7 @@ def extract_game_state(frame_id = None, real_time = None):
         player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
+        player_options_pos  = extract_player_option_positions(),
         player_shots        = extract_player_shots() if requires_player_shots else [],
         bomb_state          = read_int(zBomb + zBomb_state),
         bullets             = extract_bullets() if requires_bullets else [],
@@ -912,7 +939,7 @@ def print_game_state(gs: GameState):
         if gs.game_specific.roaring_hyper:
             hyper = gs.game_specific.roaring_hyper
             hyper_extend_desc = f"(+{hyper.token_grab_time_bonus}f for grabbing a token)" if not hyper.currently_breaking else "(broken)"
-            print(f"| WBaWC {hyper_types[hyper.type-1]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
+            print(f"| WBaWC {hyper_types[hyper.type]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
 
             hyper_rewards_desc = "1 Life Piece, 4 Random Animals"
             if hyper.reward_mode == 0:
@@ -923,10 +950,10 @@ def print_game_state(gs: GameState):
                 hyper_rewards_desc = "2 Bomb Piece, 1 Life Piece, 1 Power Item, 1 Point Item"
 
             if not hyper.currently_breaking:
-                print(f"| WBaWC {hyper_types[hyper.type-1]} Hyper Token Rewards: {hyper_rewards_desc}")
+                print(f"| WBaWC {hyper_types[hyper.type]} Hyper Token Rewards: {hyper_rewards_desc}")
 
             if hyper.type == 2:
-                print(f"| WBaWC Otter Hyper Shield Angles: {round(gs.game_specific.otter_shield_angles[0], 3)}, {round(gs.game_specific.otter_shield_angles[1], 3)}, {round(gs.game_specific.otter_shield_angles[2], 3)}")
+                print(f"| WBaWC Otter Hyper Shield Angles: {round(hyper.otter_shield_angles[0], 3)}, {round(hyper.otter_shield_angles[1], 3)}, {round(hyper.otter_shield_angles[2], 3)}")
 
         if gs.game_specific.youmu_charge_timer:
             print(f"| WBaWC Youmu Charge Timer: {gs.game_specific.youmu_charge_timer}f / 60f")

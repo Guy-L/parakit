@@ -20,7 +20,6 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * Faster inter-process reads
 * Built-in analyzers for dynamic entity plotting
 * All-game support
-* Player options data
 * Bomb data (more)
 * Damage sources
 * Cancel sources

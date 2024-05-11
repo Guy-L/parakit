@@ -452,8 +452,8 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
 
                     origin_x = laser.position[0]
                     origin_y = laser.position[1]
-                    end_x = origin_x + laser.length * np.cos(laser.angle)
-                    end_y = origin_y + laser.length * np.sin(laser.angle)
+                    end_x = origin_x + laser.length * math.cos(laser.angle)
+                    end_y = origin_y + laser.length * math.sin(laser.angle)
                     ax.plot([origin_x, end_x], [origin_y, end_y], linewidth=laser.width * laser_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0, alpha=(1 if laser.state==2 else 0.25))
 
                     if plot_laser_circles:
@@ -1001,22 +1001,22 @@ class AnalysisPlotWBaWC(AnalysisPlot):
             print("No animal tokens to plot.")
 
         if hyper and hyper.type == 2:
-            otter_angles = self.lastframe.game_specific.otter_shield_angles
-
+            otter_color = self.type_colors[1]
             ax.add_patch(plt.Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]),
                                     self.otter_distance, lw=self.otter_hitbox, zorder=-1,
-                                    fill=False, color=self.type_colors[1] + (0.3,)))
+                                    fill=False, color=otter_color + (0.3,)))
 
-            for angle in otter_angles:
-                otter_x = self.lastframe.player_position[0] + self.otter_distance * np.cos(angle)
-                otter_y = self.lastframe.player_position[1] + self.otter_distance * np.sin(angle)
+            for angle in hyper.otter_shield_angles:
+                otter_x = self.lastframe.player_position[0] + self.otter_distance * math.cos(angle)
+                otter_y = self.lastframe.player_position[1] + self.otter_distance * math.sin(angle)
 
-                ax.arrow(otter_x, otter_y, 5 * np.cos(angle + np.pi / 2), 5 * np.sin(angle + np.pi / 2),
-                         head_width=10, head_length=15, color=self.type_colors[1] + (0.8,))
-                ax.arrow(otter_x, otter_y, 15 * np.cos(angle - np.pi / 2), 15 * np.sin(angle - np.pi / 2),
-                         head_width=4, head_length=8, color=self.type_colors[1])
+                ax.arrow(otter_x, otter_y, 5 * math.cos(angle + math.pi / 2), 5 * math.sin(angle + math.pi / 2),
+                         head_width=8, head_length=12, color= (otter_color[0], otter_color[1]-0.15, otter_color[2], 0.8))
+                ax.arrow(otter_x, otter_y, 15 * math.cos(angle - math.pi / 2), 15 * math.sin(angle - math.pi / 2),
+                         head_width=4, head_length=8, color=otter_color)
 
-                ax.scatter(otter_x, otter_y, color=self.type_colors[1] + (self.normal_alpha,), s=self.otter_hitbox*2, linewidth=2)
+                ax.scatter(otter_x, otter_y, color=otter_color + (self.normal_alpha,), s=self.otter_hitbox*2, linewidth=2)
+                ax.add_patch(Circle((otter_x, otter_y), self.otter_hitbox, color=otter_color + (0.6,), fill=False))
 
         if not field_tokens and not (hyper and hyper.type == 2):
             return DONT_PLOT
