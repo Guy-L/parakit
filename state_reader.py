@@ -608,7 +608,7 @@ def extract_game_state(frame_id = None, real_time = None):
             if cur_hyper_type == 2:
                 for otter_vm_i in range(3):
                     otter_vm = find_anm_vm_by_id(read_int(zTokenManager + zTokenManager_otter_anm_ids + otter_vm_i * 0x4))
-                    otter_shield_angles.append(read_float(otter_vm + zAnmVm_rotation) - 0.29) #TODO magic constant away
+                    otter_shield_angles.append(read_float(otter_vm + zAnmVm_rotation) - (math.pi/9)) #game does this subtraction
 
             hyper = RoaringHyper(
                 type                   = read_int(hyper_type, rel=True),
