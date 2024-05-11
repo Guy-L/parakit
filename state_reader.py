@@ -8,7 +8,7 @@ import time
 import atexit
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_screenshots, requires_side2_pvp, only_game_world = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, only_game_world = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 infinite_print_updates = seqext_settings['infinite_print_updates']
@@ -215,9 +215,8 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
     return enemies
 
-#used to get special state info contained by the boss, like kyouko echo, okina power disable...
+#used to get special state info contained by the boss, like kyouko echo, okina season disable...
 def find_special_enemy_addr(special_func, enemy_manager = zEnemyManager):
-    enemies = []
     current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
 
     while current_enemy_list["next"]:
@@ -441,6 +440,27 @@ def extract_curve_laser(laser_ptr):
         'nodes': curve_nodes,
     }
 
+def extract_player_shots(player = zPlayer):
+    player_shots = []
+    player_shot_array_start = player + zPlayer_shots_array
+    player_shot_array_end   = player_shot_array_start + zPlayer_shots_array_len * zPlayerShot_len
+
+    for player_shot in range(player_shot_array_start, player_shot_array_end, zPlayerShot_len):
+        if read_int(player_shot + zPlayerShot_state) == 1:
+
+            player_shots.append(PlayerShot(
+                id          = player_shot,
+                position    = (read_float(player_shot + zPlayerShot_pos),    read_float(player_shot + zPlayerShot_pos + 0x4)),
+                velocity    = (read_float(player_shot + zPlayerShot_vel),    read_float(player_shot + zPlayerShot_vel + 0x4)),
+                hitbox      = (read_float(player_shot + zPlayerShot_hitbox), read_float(player_shot + zPlayerShot_hitbox + 0x4)),
+                speed       = read_float(player_shot + zPlayerShot_speed),
+                angle       = read_float(player_shot + zPlayerShot_angle),
+                damage      = read_int(player_shot + zPlayerShot_damage),
+                alive_timer = read_int(player_shot + zPlayerShot_timer) + 1,
+            ))
+
+    return player_shots
+
 def extract_spellcard(spellcard = zSpellCard):
     if read_int(spellcard + zSpellcard_indicator) == 0:
         return None
@@ -658,6 +678,7 @@ def extract_game_state(frame_id = None, real_time = None):
                 player_hitbox_rad   = read_float(zPlayerP2 + zPlayer_hit_rad),
                 player_iframes      = read_int(zPlayerP2 + zPlayer_iframes),
                 player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
+                player_shots        = extract_player_shots(zPlayerP2) if requires_player_shots else [],
                 bomb_state          = read_int(zBombP2 + zBomb_state),
                 bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
                 enemies             = extract_enemies(zEnemyManagerP2) if requires_enemies else [],
@@ -729,6 +750,7 @@ def extract_game_state(frame_id = None, real_time = None):
         player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
+        player_shots        = extract_player_shots() if requires_player_shots else [],
         bomb_state          = read_int(zBomb + zBomb_state),
         bullets             = extract_bullets() if requires_bullets else [],
         enemies             = extract_enemies() if requires_enemies else [],
@@ -1340,7 +1362,7 @@ if len(sys.argv) > 1:
             infinite = True
 
         elif arg == 'exact':
-            exact = True #overwrites options
+            exact = True #overwrites settings
 
         else:
             print(f"Error: Unrecognized argument '{arg}'.")

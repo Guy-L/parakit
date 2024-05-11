@@ -97,6 +97,19 @@ zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
 zPlayer_hit_rad = offsets[_module_name].player.zPlayer_hit_rad
 zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
 zPlayer_focused = offsets[_module_name].player.zPlayer_focused
+zPlayer_shots_array      = offsets[_module_name].player.zPlayer_shots_array
+zPlayer_shots_array_len  = offsets[_module_name].player.zPlayer_shots_array_len
+
+# Player Shots
+zPlayerShot_timer  = offsets[_module_name].player_shots.zPlayerShot_timer
+zPlayerShot_pos    = offsets[_module_name].player_shots.zPlayerShot_pos
+zPlayerShot_vel    = offsets[_module_name].player_shots.zPlayerShot_vel
+zPlayerShot_hitbox = offsets[_module_name].player_shots.zPlayerShot_hitbox
+zPlayerShot_speed  = offsets[_module_name].player_shots.zPlayerShot_speed
+zPlayerShot_angle  = offsets[_module_name].player_shots.zPlayerShot_angle
+zPlayerShot_state  = offsets[_module_name].player_shots.zPlayerShot_state
+zPlayerShot_damage = offsets[_module_name].player_shots.zPlayerShot_damage
+zPlayerShot_len    = offsets[_module_name].player_shots.zPlayerShot_len
 
 # Bomb
 bomb_pointer = offsets[_module_name].bomb.bomb_pointer
@@ -536,12 +549,14 @@ else:
 
 # Interface Method Definitions
 
-def get_rgb_screenshot(): #Note: fails if the window is inactive!
-    screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
+def get_rgb_screenshot(): #Note: fails if the window is not visible!
+    #screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
+    screenshot = pyautogui.screenshot(region=(_game_window.left, _game_window.top, _game_window.width, _game_window.height))
     return np.array(screenshot)
 
-def get_greyscale_screenshot(): #Note: fails if the window is inactive!
-    screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
+def get_greyscale_screenshot(): #Note: fails if the window is not visible!
+    #screenshot = pyautogui.screenshot(region=(_game_window.left+35, _game_window.top+42, _game_window.width-44, _game_window.height-47))
+    screenshot = pyautogui.screenshot(region=(_game_window.left, _game_window.top, _game_window.width, _game_window.height))
     rgb_screenshot = np.array(screenshot)
     grey_screenshot = cv2.cvtColor(rgb_screenshot, cv2.COLOR_BGR2GRAY) # can be saved with imwrite
 

@@ -19,6 +19,7 @@ extraction_settings = {
     'requires_enemies': True,
     'requires_items':   True,
     'requires_lasers':  True,
+    'requires_player_shots': True,
     'requires_screenshots': False,
 
     # See settings.md for more info

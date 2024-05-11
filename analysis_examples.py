@@ -424,8 +424,8 @@ class AnalysisPlotLineLasers(AnalysisPlot):
 
                     tail_x = laser.position[0]
                     tail_y = laser.position[1]
-                    head_x = tail_x + laser.length * np.cos(laser.angle)
-                    head_y = tail_y + laser.length * np.sin(laser.angle)
+                    head_x = tail_x + laser.length * math.cos(laser.angle)
+                    head_y = tail_y + laser.length * math.sin(laser.angle)
                     ax.plot([head_x, tail_x], [head_y, tail_y], linewidth=laser.width * laser_factor, color=pyplot_color(get_color(laser.sprite, laser.color)[0]), zorder=0)
 
                     if plot_laser_circles:
@@ -476,7 +476,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
 
     def __sigmoid_factor(self, x, left, right): #note: looks bad with small lasers (<15 nodes)
         shift = (self.smooth_steepness ** -1) 
-        return (1 / (1 + np.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + np.exp(self.smooth_steepness * (x - right + shift))))
+        return (1 / (1 + math.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + math.exp(self.smooth_steepness * (x - right + shift))))
 
     def plot(self, ax, side2):
         lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
@@ -489,20 +489,27 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
                     if not hasCurveLasers:
                         hasCurveLasers = True
 
+                    if plot_velocity:
+                        for node in laser.nodes:
+                            if node.speed:
+                                ax.arrow(node.position[0], node.position[1],
+                                         node.speed * math.cos(node.angle), node.speed * math.sin(node.angle),
+                                         head_width=4, head_length=8, color=(0,0,0,0.2))
+
                     if self.smooth:
                         sizes = [laser.width * laser_factor * self.__sigmoid_factor(node_i, 0, len(laser.nodes)) for node_i in range(len(laser.nodes))]
 
                         if self.has_points:
-                            x_coords = [nodes.position[0] for nodes in laser.nodes]
-                            y_coords = [nodes.position[1] for nodes in laser.nodes]
+                            x_coords = [node.position[0] for node in laser.nodes]
+                            y_coords = [node.position[1] for node in laser.nodes]
                             ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=sizes)
 
                         if self.has_line:
                             for i in range(len(laser.nodes) - 1): #i hate this
                                 ax.plot([laser.nodes[i].position[0], laser.nodes[i+1].position[0]], [laser.nodes[i].position[1], laser.nodes[i+1].position[1]], color=get_curve_color(laser.sprite, laser.color)[0], linewidth=(sizes[i]+sizes[i+1])/2)
                     else: 
-                        x_coords = [nodes.position[0] for nodes in laser.nodes]
-                        y_coords = [nodes.position[1] for nodes in laser.nodes]
+                        x_coords = [node.position[0] for node in laser.nodes]
+                        y_coords = [node.position[1] for node in laser.nodes]
 
                         if self.has_points:
                             ax.scatter(x_coords, y_coords, color=get_curve_color(laser.sprite, laser.color)[0], s=laser.width * laser_factor)
@@ -514,7 +521,41 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
             print(("(Player 2) " if side2 else "") + "No curvy lasers to plot.")
             return DONT_PLOT
 
-# Plot7: "Plot all the above at game scale (+player)" [only doesn't require screenshots]
+# Plot7: "Plot the player shot (and option) positions of the last frame at game scale (+player)" [only requires player shots]
+class AnalysisPlotPlayerShots(AnalysisPlot):
+    plot_title = 'Player Shot Scatter Plot'
+    show_damage = True
+
+    def plot(self, ax, side2):
+        player_options_pos = self.lastframe.game_specific.side2.player_options_pos if side2 else self.lastframe.player_options_pos
+        player_shots = self.lastframe.game_specific.side2.player_shots if side2 else self.lastframe.player_shots
+
+        ax.scatter([option_pos[0] for option_pos in player_options_pos], [option_pos[1] for option_pos in player_options_pos],
+                    s=75, facecolor=(0,0,0,0.1), marker='o')
+
+        if player_shots:
+            x_coords = [shot.position[0] for shot in player_shots]
+            y_coords = [shot.position[1] for shot in player_shots]
+            sizes = [shot.hitbox[1] for shot in player_shots]
+            ax.scatter(x_coords, y_coords, s=sizes, alpha=0.3, marker='^')
+
+            for shot in player_shots:
+                ax.add_patch(Rectangle(
+                    (shot.position[0] + shot.hitbox[1]/2 * math.cos(shot.angle - math.pi/2),
+                    shot.position[1] + shot.hitbox[1]/2 * math.sin(shot.angle - math.pi/2)),
+                    width = shot.hitbox[0], height = shot.hitbox[1], angle = math.degrees(shot.angle),
+                    edgecolor = (0, 0.25, 1, 0.15), linewidth=3, fill=False
+                ))
+
+                if self.show_damage:
+                    ax.text(shot.position[0], shot.position[1]+8,
+                        str(shot.damage), color='black', fontsize=5, ha='center', va='center')
+
+        else:
+            print(("(Player 2) " if side2 else "") + "No player shots to plot.")
+            return DONT_PLOT
+
+# Plot8: "Plot all the above at game scale (+player)" [only doesn't require screenshots]
 class AnalysisPlotAll(AnalysisPlot):
     plot_title = 'Game Entity Scatter Plot'
 
@@ -535,6 +576,7 @@ class AnalysisPlotAll(AnalysisPlot):
         elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False))
 
+        plottedPlayerShots = AnalysisPlotPlayerShots(self.lastframe).plot(ax, side2)
         plottedEnemies = AnalysisPlotEnemies(self.lastframe).plot(ax, side2)
         plottedItems = AnalysisPlotItems(self.lastframe).plot(ax, side2)
         plottedLines = AnalysisPlotLineLasers(self.lastframe).plot(ax, side2)
@@ -548,10 +590,10 @@ class AnalysisPlotAll(AnalysisPlot):
         elif game_id == 17:
             plottedGameSpecific = AnalysisPlotWBaWC(self.lastframe).plot(ax, side2)
 
-        if plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
+        if plottedPlayerShots == plottedBullets == plottedEnemies == plottedItems == plottedLines == plottedInfinites == plottedCurves == plottedGameSpecific == DONT_PLOT:
             return DONT_PLOT
 
-# Plot8: "Plot a heatmap of positions hit by bullets over time" [only requires bullets]
+# Plot9: "Plot a heatmap of positions hit by bullets over time" [only requires bullets]
 class AnalysisPlotBulletHeatmap(AnalysisPlot):
     circles = True #otherwise square (faster)
     max_count = 100 #prevents bullet spawn overshadowing everything, should be bigger for longer analyses
@@ -724,7 +766,7 @@ class AnalysisPrintBulletsASCII(Analysis):
 # Useful analyzers & templates for multiple games =======================
 # =======================================================================
 
-# Plot9: Plot bullets but obscure those that can't be grazed (or scoped in UDoALG)
+# Plot10: Plot bullets but obscure those that can't be grazed (or scoped in UDoALG)
 class AnalysisPlotGrazeableBullets(AnalysisPlot):
 
     @property
@@ -843,7 +885,7 @@ class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
             for enemy in enemies:
                 ax.add_patch(Ellipse(
                             (enemy.position[0], enemy.position[1]),
-                            width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
+                            width = enemy.hitbox[0], height = enemy.hitbox[1], angle = math.degrees(enemy.rotation),
                             facecolor = (0.5, 0, enemy.speedkill_cur_drop_amt/max_speedkill_drops if max_speedkill_drops > 0 else 1, 0.5 if enemy.no_hitbox else 1),
                             edgecolor = (0, 0, 0, 0.3), linewidth=3
                         ))

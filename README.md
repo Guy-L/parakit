@@ -21,8 +21,10 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * Built-in analyzers for dynamic entity plotting
 * All-game support
 * Player options data
-* Player projectile data
 * Bomb data (more)
+* Damage sources
+* Cancel sources
+* API collision check methods
 * Cross-run and cross-stage extraction
 * Better UX
 
@@ -135,7 +137,8 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 | `AnalysisPlotLineLasers` <br>Plots the line laser positions of the last frame. <br>*Uses lasers.* | <img alt="Shimmy non 4" src="https://github.com/Guy-L/parakit/assets/55163797/71adbb99-4724-427b-a190-0e11b96d0adf"> |
 | `AnalysisPlotInfiniteLasers` <br>Plots the telegraphed laser positions of the last frame. <br>*Uses lasers.* | <img alt="Megu Final" src="https://github.com/Guy-L/parakit/assets/55163797/f860e2bb-a00b-44ff-a759-aac3cb84968a"> |
 | `AnalysisPlotCurveLasers` <br>Plots the curvy laser positions of the last frame. <br>*Uses lasers.* | <img alt="Score Desire Eater" src="https://github.com/Guy-L/parakit/assets/55163797/f46e37d7-28dc-425b-88b9-c09c05fe2ba7"> |
-| `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="DDC St4 Final" src="https://github.com/Guy-L/parakit/assets/55163797/f7076cab-4bbb-42d9-be50-48069e103914"> |
+| `AnalysisPlotPlayerShots` <br>Plots the player shot positions of the last frame. <br>*Uses player shots.* | <img alt="Yatsuhashi midnon 1 w/ SakuyaA shots" src="https://github.com/Guy-L/parakit/assets/55163797/b4106047-3ed2-43af-adf7-bf80cf84c446"> |
+| `AnalysisPlotAll` <br>Runs all the above plotting analyzers. | <img alt="UDoALG Sanae vs Hisami" src="https://github.com/Guy-L/parakit/assets/55163797/b9bb4a57-55b3-458d-8f4e-e9f1a667bf7d"> |
 | `AnalysisPlotBulletHeatmap` <br>Creates and plots a heatmap of bullet positions across time. <br>*Uses bullets.* | <img alt="UM st5 fireballs enemies" src="https://github.com/Guy-L/parakit/assets/55163797/71c8e758-8c02-4278-9d12-9a42ae3f82e8"> |
 | `AnalysisPrintBulletsASCII` <br>Renders the bullet positions as ASCII art in the terminal. <br>*Uses bullets.* | <img alt="Seki Ascii" src="https://github.com/Guy-L/parakit/assets/55163797/fae9f00a-36dd-4576-bac6-04bd9b438050"> |
 | `AnalysisPlotGrazeableBullets` <br>Plots the bullet positions with ungrazeable bullets obscured. Also obscures unscopeable bullets in UDoALG, as the two are equivalent. <br>*Uses bullets.* | <img alt="Narumi spell 1" src="https://github.com/Guy-L/parakit/assets/55163797/ee571ca8-9d82-4afa-9512-39356d645f77"> |

@@ -20,7 +20,7 @@ class Bullet:
     scale: float #set to 1 in pre-DDC for convenience
     hitbox_radius: float
     iframes: int
-    is_active: bool
+    is_active: bool #true if not in spawn/despawn anim
     is_grazeable: bool
     alive_timer: int
     bullet_type: int
@@ -115,9 +115,20 @@ class CurveNode:
 @dataclass
 class CurveLaser(Laser):
     #start_pos: stored as laser pos
-    max_length: int 
+    max_length: int
     distance: float
-    nodes: List[CurveNode]   
+    nodes: List[CurveNode]
+
+@dataclass
+class PlayerShot:
+    id: int
+    position: Tuple[float, float]
+    velocity: Tuple[float, float]
+    hitbox: Tuple[float, float]
+    speed: float
+    angle: float
+    damage: int
+    alive_timer: int
 
 @dataclass
 class Spellcard:
@@ -184,7 +195,7 @@ class SeasonDroppingEnemy(Enemy):
 # Unfinished Dream of All Living Ghost
 @dataclass
 class CanGenItemsTimerBullet(Bullet):
-    can_gen_items_timer: int #set to 0 when grazed/scoped, tikcs up when not
+    can_gen_items_timer: int #set to 0 when grazed/scoped, ticks up otherwise
     #bullet can be grazed/scoped for items again at 60f (stored in bullet.is_grazeable)
 
 # ================================================
@@ -207,7 +218,7 @@ class AnimalToken:
     id: int
     type: int #meaning: token_types[type]
     position: Tuple[float, float]
-    base_velocity: Tuple[float, float]
+    base_velocity: Tuple[float, float] #wont reflect slowdown by player proximity
     being_grabbed: bool
     can_switch: bool
     slowed_by_player: bool
@@ -249,6 +260,7 @@ class P2Side:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    player_shots: List[PlayerShot]
     bomb_state: int
     bullets: List[Bullet]
     enemies: List[Enemy]
@@ -402,6 +414,7 @@ class GameState:
     player_hitbox_rad: float
     player_iframes: int
     player_focused: bool
+    player_shots: List[PlayerShot]
     bomb_state: int
     bullets: List[Bullet]
     enemies: List[Enemy]

@@ -59,6 +59,20 @@ class PlayerOffsets:
     zPlayer_hit_rad: int
     zPlayer_iframes: int
     zPlayer_focused: int
+    zPlayer_shots_array: int
+    zPlayer_shots_array_len: int
+
+@dataclass
+class PlayerShotOffsets:
+    zPlayerShot_timer: int
+    zPlayerShot_pos: int
+    zPlayerShot_speed: int
+    zPlayerShot_angle: int
+    zPlayerShot_vel: int
+    zPlayerShot_state: int
+    zPlayerShot_damage: int
+    zPlayerShot_hitbox: int
+    zPlayerShot_len: int
 
 @dataclass
 class BombOffsets:
@@ -235,6 +249,7 @@ class Offset:
     statics: StaticsOffsets
     statics_untracked: UntrackedStaticsOffsets
     player: PlayerOffsets
+    player_shots: PlayerShotOffsets
     bomb: BombOffsets
     bullets: BulletOffsets
     enemies: EnemyOffsets
@@ -359,6 +374,19 @@ offsets = {
             zPlayer_hit_rad = 0x620,
             zPlayer_iframes = 0x14688,
             zPlayer_focused = 0x14840,
+            zPlayer_shots_array      = 0x6a0,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x1c,
+            zPlayerShot_pos    = 0x2c,
+            zPlayerShot_speed  = 0x44,
+            zPlayerShot_angle  = 0x48,
+            zPlayerShot_vel    = 0x60,
+            zPlayerShot_state  = 0x70,
+            zPlayerShot_damage = 0x84,
+            zPlayerShot_hitbox = 0x88,
+            zPlayerShot_len    = 0x9c,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xc2170,
@@ -578,6 +606,19 @@ offsets = {
             zPlayer_hit_rad = 0x648,
             zPlayer_iframes = 0x182c4,
             zPlayer_focused = 0x184b0,
+            zPlayer_shots_array      = 0x6c8,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x1c,
+            zPlayerShot_pos    = 0x54,
+            zPlayerShot_speed  = 0x6c,
+            zPlayerShot_angle  = 0x70,
+            zPlayerShot_vel    = 0x88,
+            zPlayerShot_state  = 0x98,
+            zPlayerShot_damage = 0xac,
+            zPlayerShot_hitbox = 0xb0,
+            zPlayerShot_len    = 0xd0,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xdb52c,
@@ -782,6 +823,19 @@ offsets = {
             zPlayer_hit_rad = 0x2bfc8,
             zPlayer_iframes = 0x16284,
             zPlayer_focused = 0x16240,
+            zPlayer_shots_array      = 0xd88,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x10,
+            zPlayerShot_pos    = 0x48,
+            zPlayerShot_speed  = 0x60,
+            zPlayerShot_angle  = 0x64,
+            zPlayerShot_vel    = 0x7c,
+            zPlayerShot_state  = 0x8c,
+            zPlayerShot_damage = 0x9c,
+            zPlayerShot_hitbox = 0xa0,
+            zPlayerShot_len    = 0xc0,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xe9a68,
@@ -987,6 +1041,19 @@ offsets = {
             zPlayer_hit_rad = 0x2c748,
             zPlayer_iframes = 0x1663c,
             zPlayer_focused = 0x165c8,
+            zPlayer_shots_array      = 0x1110,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x10,
+            zPlayerShot_pos    = 0x48,
+            zPlayerShot_speed  = 0x60,
+            zPlayerShot_angle  = 0x64,
+            zPlayerShot_vel    = 0x7c,
+            zPlayerShot_state  = 0x8c,
+            zPlayerShot_damage = 0x9c,
+            zPlayerShot_hitbox = 0xa0,
+            zPlayerShot_len    = 0xc0,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xa6da8,
@@ -1202,6 +1269,19 @@ offsets = {
             zPlayer_hit_rad = 0x18ffc,
             zPlayer_iframes = 0x18e7c,
             zPlayer_focused = 0x18dd0,
+            zPlayer_shots_array      = 0x1110,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x10,
+            zPlayerShot_pos    = 0x48,
+            zPlayerShot_speed  = 0x60,
+            zPlayerShot_angle  = 0x64,
+            zPlayerShot_vel    = 0x7c,
+            zPlayerShot_state  = 0x8c,
+            zPlayerShot_damage = 0x9c,
+            zPlayerShot_hitbox = 0xa0,
+            zPlayerShot_len    = 0xe0,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xb7688,
@@ -1422,6 +1502,19 @@ offsets = {
             zPlayer_hit_rad = 0x4799c,
             zPlayer_iframes = 0x47778,
             zPlayer_focused = 0x476cc,
+            zPlayer_shots_array      = 0x1570,
+            zPlayer_shots_array_len  = 0x200,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x10,
+            zPlayerShot_pos    = 0x48,
+            zPlayerShot_speed  = 0x60,
+            zPlayerShot_angle  = 0x64,
+            zPlayerShot_vel    = 0x7c,
+            zPlayerShot_state  = 0x8c,
+            zPlayerShot_damage = 0x9c,
+            zPlayerShot_hitbox = 0xa0,
+            zPlayerShot_len    = 0xf8,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0xcf2b8,
@@ -1632,6 +1725,19 @@ offsets = {
             zPlayer_hit_rad = 0x20c4,
             zPlayer_iframes = 0x2078,
             zPlayer_focused = 0x2070,
+            zPlayer_shots_array      = 0x22f8,
+            zPlayer_shots_array_len  = 0x100,
+        ),
+        player_shots = PlayerShotOffsets(
+            zPlayerShot_timer  = 0x1c,
+            zPlayerShot_pos    = 0x54,
+            zPlayerShot_speed  = 0x6c,
+            zPlayerShot_angle  = 0x70,
+            zPlayerShot_vel    = 0x8c,
+            zPlayerShot_state  = 0x9c,
+            zPlayerShot_damage = 0xac,
+            zPlayerShot_hitbox = 0xb0,
+            zPlayerShot_len    = 0x128,
         ),
         bomb = BombOffsets(
             bomb_pointer = 0x1ae48c,
@@ -1895,6 +2001,19 @@ offsets = {
 #            zPlayer_hit_rad = None,
 #            zPlayer_iframes = None,
 #            zPlayer_focused = None,
+#            zPlayer_shots_array      = None,
+#            zPlayer_shots_array_len  = None,
+#        ),
+#        player_shots = PlayerShotOffsets(
+#            zPlayerShot_timer  = None,
+#            zPlayerShot_pos    = None,
+#            zPlayerShot_speed  = None,
+#            zPlayerShot_angle  = None,
+#            zPlayerShot_vel    = None,
+#            zPlayerShot_state  = None,
+#            zPlayerShot_damage = None,
+#            zPlayerShot_hitbox = None,
+#            zPlayerShot_len    = None,
 #        ),
 #        bomb = BombOffsets(
 #            bomb_pointer = None,

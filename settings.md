@@ -21,6 +21,7 @@ Disable extraction of entities not required for your analysis to reduce lag (esp
 | **`requires_enemies`**<br>(bool) | If enabled, extracted states will contain enemy data. | `True` |
 | **`requires_items`**<br>(bool) | If enabled, extracted states will contain item data. | `True` |
 | **`requires_lasers`**<br>(bool) | If enabled, extracted states will contain laser data. | `True` |
+| **`requires_player_shots`**<br>(bool) | If enabled, extracted states will contain player shot data. | `True` |
 | **`requires_screenshots`**<br>(bool) | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
 | **`requires_side2_pvp`**<br>(bool) | If enabled, extracted states will contain P2 (right side of the screen) data in PvP danmaku games. | `True` |
 | **`only_game_world`**<br>(bool) | If enabled, prevents accidentally starting extraction when there is no loaded game world. Also affects sequence extraction, but "not in game world" is one of its termination conditions anyways. | `True` |
