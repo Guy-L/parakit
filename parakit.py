@@ -32,8 +32,16 @@ if not os.path.isfile(os.path.join(_venv_path, 'pyvenv.cfg')):
     print("Please give us a moment to finish setting up.\nIt should take about a minute.\n")
     print("If it seems to do no progress at all for a while, try pressing Enter. Python's weird.")
 
-_pip_exe = os.path.join(_venv_path, 'bin', 'pip') if platform.system() != 'Windows' else os.path.join(_venv_path, 'Scripts', 'pip')
-_python_exe = os.path.join(_venv_path, 'bin', 'python') if platform.system() != 'Windows' else os.path.join(_venv_path, 'Scripts', 'python')
+if os.path.exists(os.path.join(_venv_path, 'Scripts')): #Windows
+    _pip_exe = os.path.join(_venv_path, 'Scripts', 'pip')
+    _python_exe = os.path.join(_venv_path, 'Scripts', 'python')
+elif os.path.exists(os.path.join(_venv_path, 'bin')): #Unix
+    _pip_exe = os.path.join(_venv_path, 'bin', 'pip')
+    _python_exe = os.path.join(_venv_path, 'bin', 'python')
+else:
+    print("Setup error: Python created an unusual or broken virtual environment.")
+    print("Try updating to the latest Python version.")
+    input_exit()
 
 #Install missing required packages in the venv
 def get_installed_packages(venv_path):
