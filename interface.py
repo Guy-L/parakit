@@ -828,6 +828,10 @@ def _random_player():
         apply_action_int(action)
 
 # Step 5 - Initial reads used by extraction context
+if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_mode, rel=True)] != 'Game World on Screen':
+    print("Error: Game world not loaded.")
+    exit()
+
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
 difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
