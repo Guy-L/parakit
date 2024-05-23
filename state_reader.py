@@ -1314,6 +1314,29 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.items)} items total]')
                 break
 
+    if gs.player_shots and singlext_settings['show_player_shots']:
+        counter = 0
+
+        print("\nList of player shots:")
+        print("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer")
+        for shot in gs.player_shots:
+            description = "• "
+            description += tabulate(f"({round(shot.position[0], 1)}, {round(shot.position[1], 1)})", 17)
+            description += tabulate(f"({round(shot.velocity[0], 1)}, {round(shot.velocity[1], 1)})", 17)
+            description += tabulate(f"({round(shot.hitbox[0], 1)}, {round(shot.hitbox[1], 1)})", 16)
+            description += tabulate(round(shot.speed, 1), 8)
+            description += tabulate(round(shot.angle, 2), 8)
+            description += tabulate(shot.damage, 8)
+            description += tabulate(shot.alive_timer, 8)
+
+            print(description)
+
+            counter += 1
+            if counter >= singlext_settings['list_print_limit']:
+                print(f'• ... [{len(gs.player_shots)} shots total]')
+                break
+
+
 def print_untracked_vars():
     print("[Bonus] Untracked values:")
     print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")

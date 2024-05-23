@@ -32,6 +32,7 @@ extraction_settings = {
 singlext_settings = {
     'show_untracked': False,
     'show_enemy_drops': False,
+    'show_player_shots': False,
     'list_print_limit': 30,
 }
 
