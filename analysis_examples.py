@@ -247,12 +247,17 @@ class AnalysisItemCollectionDynamic(AnalysisDynamic):
 class AnalysisPlot(Analysis, ABC):
     plot_title = 'DEFAULT PLOT TITLE' #to be customized
     lastframe = None
+    photo_mode = False
+    photo_mode_folder = "screenshots"
+    photo_mode_frequency = 5
 
     def __init__(self, state: GameState = None):
         self.lastframe = state
 
     def step(self, state: GameState):
         self.lastframe = state #if sequence, use last frame
+        if self.photo_mode and state.seq_frame_id % self.photo_mode_frequency == 0:
+            self.done()
 
     @abstractmethod
     def plot(self, ax, side2):
@@ -307,7 +312,12 @@ class AnalysisPlot(Analysis, ABC):
             plt.title(self.plot_title)
             if self.plot(axarr[0], False) != DONT_PLOT:
                 axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_size, marker='X')
-                plt.show()
+
+                if self.photo_mode:
+                    plt.savefig(self.photo_mode_folder + '/' + str(self.lastframe.seq_frame_id) + '.png')
+
+                else:
+                    plt.show()
 
 # Plot1: "Plot the bullet positions of the last frame at game scale (+player)" [only requires bullets]
 class AnalysisPlotBullets(AnalysisPlot):
