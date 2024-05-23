@@ -1371,6 +1371,7 @@ def print_untracked_vars():
 def on_exit():
     if game_process.is_running:
         game_process.resume()
+atexit.register(on_exit)
 
 def parse_frame_count(expr):
     unit = expr[-1:]
@@ -1390,8 +1391,6 @@ def parse_frame_count(expr):
             return None
 
     return frame_count
-
-atexit.register(on_exit)
 
 print("================================")
 

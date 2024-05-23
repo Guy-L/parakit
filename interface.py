@@ -506,18 +506,27 @@ color16       = [_black, _dark_red, _red, _purple, _pink, _dark_blue, _blue, _da
 curve_sprites = ['Standard', 'Thunder', 'Grapevine'] #not worth setting per-game
 
 # ==========================================================
-# Step 1 - Get the game process
-game_process = None
+# Step 1 - Get the game process & window
+_windows = {}
+for window in gw.getAllWindows():
+    pid = ctypes.c_ulong()
+    ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
+    _windows[pid.value] = window
 
-for process in psutil.process_iter(['pid', 'name']):
+game_process = None
+_game_window = None
+for process in psutil.process_iter(['pid', 'name', 'status']):
     if process.info['name'] and process.info['name'].lower() == _module_name:
-        game_process = process
-        break
+        if process.info['status'] == psutil.STATUS_RUNNING and process.pid in _windows:
+            game_process = process
+            _game_window = _windows[process.pid]
+            break
 
 if game_process:
     print(f'Found the {_module_name} game process with PID: {game_process.pid}')
+    print(f'Found the game window: {_game_window}')
 else:
-    print('Interface error: Game process not found')
+    print('Interface error: Game process & window not found')
     print(f'Make sure the selected game ({_game}) is open\nor change your selection in settings.py.')
     exit()
 
@@ -543,24 +552,6 @@ else:
 _PROCESS_VM_READ = 0x0010
 _PROCESS_QUERY_INFORMATION = 0x0400
 _process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
-
-# Step 4 - Get the game window
-_game_window = None
-
-for window in gw.getAllWindows():
-    pid = ctypes.c_ulong()
-    ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
-
-    if pid.value == game_process.pid:
-        _game_window = window
-        break
-
-if _game_window:
-    print(f'Found the game window: {_game_window}')
-else:
-    print('Interface error: Game window not found')
-    exit()
-
 
 # Interface Method Definitions
 
