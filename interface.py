@@ -292,6 +292,7 @@ if game_id == 13:
     spirit_manager_pointer       = offsets[_module_name].game_specific['spirit_manager_pointer']
     zSpiritManager_array         = offsets[_module_name].game_specific['zSpiritManager_array']
     zSpiritManager_array_len     = offsets[_module_name].game_specific['zSpiritManager_array_len']
+    zSpiritManager_spawn_total   = offsets[_module_name].game_specific['zSpiritManager_spawn_total']
     zSpiritManager_chain_timer   = offsets[_module_name].game_specific['zSpiritManager_chain_timer']
     zSpiritManager_chain_counter = offsets[_module_name].game_specific['zSpiritManager_chain_counter']
     zSpiritItem_type  = offsets[_module_name].game_specific['zSpiritItem_type']

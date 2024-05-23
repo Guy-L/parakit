@@ -555,14 +555,15 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 )
 
         game_specific = GameSpecificTD(
-            life_piece_req = life_piece_req,
-            trance_active  = read_int(trance_state, rel=True) != 0,
-            trance_meter   = read_int(trance_meter, rel=True),
-            chain_timer    = read_int(zSpiritManager + zSpiritManager_chain_timer),
-            chain_counter  = read_int(zSpiritManager + zSpiritManager_chain_counter),
-            spirit_items   = extract_spirit_items() if requires_items else [],
-            kyouko_echo    = kyouko_echo,
-            youmu_charge_timer = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
+            life_piece_req          = life_piece_req,
+            trance_active           = read_int(trance_state, rel=True) != 0,
+            trance_meter            = read_int(trance_meter, rel=True),
+            spawned_spirit_count    = read_int(zSpiritManager + zSpiritManager_spawn_total),
+            chain_timer             = read_int(zSpiritManager + zSpiritManager_chain_timer),
+            chain_counter           = read_int(zSpiritManager + zSpiritManager_chain_counter),
+            spirit_items            = extract_spirit_items() if requires_items else [],
+            kyouko_echo             = kyouko_echo,
+            youmu_charge_timer      = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
             miko_final_logic_active = bool(find_special_enemy_addr(miko_final_func))
         )
 

@@ -302,6 +302,7 @@ class GameSpecificTD(GameSpecific):
     chain_timer: int #[0, 60] frames
     chain_counter: int #>9 greys spawn
     spirit_items: List[SpiritItem]
+    spawned_spirit_count: int #next spirit spawns to the left if odd, to the right otherwise; applies to all spirits
     kyouko_echo: Union[RectangleEcho, CircleEcho]
     youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
     miko_final_logic_active: bool

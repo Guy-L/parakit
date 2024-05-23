@@ -587,6 +587,7 @@ offsets = {
             'spirit_manager_pointer': 0xc22a4,
             'zSpiritManager_array': 0x14,
             'zSpiritManager_array_len': 0x100,
+            'zSpiritManager_spawn_total': 0x8820,
             'zSpiritManager_chain_timer': 0x8828,
             'zSpiritManager_chain_counter': 0x8838,
             'zSpiritItem_state': 0x0, #0 = free, 1 = used/active
