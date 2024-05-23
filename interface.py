@@ -56,6 +56,7 @@ if not _module_name or game_id == 0:
 # ==========================================================
 # Game logic groups
 uses_rank = [6, 7, 19]
+uses_pivot_angle = [14, 15, 16, 17, 18]
 has_enemy_score_reward = [6, 7, 8, 9, 10, 11]
 has_charging_youmu = [13, 17]
 has_bullet_delay = [14, 14.3, 18.5]
@@ -153,6 +154,7 @@ zEnemy_vel             = offsets[_module_name].enemies.zEnemy_vel
 zEnemy_hurtbox         = offsets[_module_name].enemies.zEnemy_hurtbox
 zEnemy_hitbox          = offsets[_module_name].enemies.zEnemy_hitbox
 zEnemy_rotation        = offsets[_module_name].enemies.zEnemy_rotation
+zEnemy_anm_vm_id       = offsets[_module_name].enemies.zEnemy_anm_vm_id
 zEnemy_anm_page        = offsets[_module_name].enemies.zEnemy_anm_page
 zEnemy_anm_id          = offsets[_module_name].enemies.zEnemy_anm_id
 zEnemy_timer           = offsets[_module_name].enemies.zEnemy_timer
@@ -245,6 +247,7 @@ global_timer          = offsets[_module_name].ascii.global_timer
 # ANM
 anm_manager_pointer = offsets[_module_name].anm.anm_manager_pointer
 zAnmManager_list    = offsets[_module_name].anm.zAnmManager_list
+zAnmVm_rotation_z   = offsets[_module_name].anm.zAnmVm_rotation_z
 zAnmVm_id           = offsets[_module_name].anm.zAnmVm_id
 zAnmVm_entity_pos   = offsets[_module_name].anm.zAnmVm_entity_pos
 

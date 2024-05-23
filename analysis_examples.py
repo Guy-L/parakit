@@ -361,31 +361,43 @@ class AnalysisPlotEnemies(AnalysisPlot):
                     ))
 
                 if enemy.is_rectangle:
-                    ax.add_patch(Rectangle( #plot rectangular enemy hitbox
-                        (enemy.position[0]-enemy.hitbox[0]/2, enemy.position[1]-enemy.hitbox[1]/2),
-                        width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
-                        facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
-                        edgecolor = (0, 0, 0, 0.3), linewidth=3
-                    ))
+                    if game_id not in uses_pivot_angle:
+                        ax.add_patch(Rectangle( #plot rectangular enemy hitbox
+                            (enemy.position[0] - enemy.hitbox[0]/2, enemy.position[1] - enemy.hitbox[1]/2), rotation_point='center',
+                            width = enemy.hitbox[0], height = enemy.hitbox[1], angle = math.degrees(enemy.rotation),
+                            facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
+                            edgecolor = (0, 0, 0, 0.3), linewidth=3
+                        ))
 
-                    if plot_enemy_hurtbox and not enemy.no_hurtbox:
+                    else: #the reason this looks foul is because it is (fixed by UDoALG!)
+                        pivotX = enemy.position[0] - math.sin(enemy.pivot_angle + math.pi/2) * enemy.hitbox[1] / 2
+                        pivotY = enemy.position[1] + math.cos(enemy.pivot_angle + math.pi/2) * enemy.hitbox[1] / 2
+
+                        ax.add_patch(Rectangle( #plot rectangular enemy hitbox
+                            (pivotX - enemy.hitbox[0] / 2, pivotY),
+                            width = enemy.hitbox[0], height = enemy.hitbox[1],
+                            transform = Affine2D().rotate_deg_around(pivotX, pivotY, math.degrees(enemy.rotation - math.pi/2)) + ax.transData,
+                            facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
+                            edgecolor = (0, 0, 0, 0.3), linewidth=3
+                        ))
+
+                    if plot_enemy_hurtbox and not enemy.no_hurtbox and game_id != 13:
                         ax.add_patch(Rectangle( #plot rectangular enemy hurtbox
-                            (enemy.position[0]-enemy.hurtbox[0]/2, enemy.position[1]-enemy.hurtbox[1]/2),
-                            width = enemy.hurtbox[0], height = enemy.hurtbox[1], angle = np.degrees(enemy.rotation),
+                            (enemy.position[0] - enemy.hurtbox[0]/2, enemy.position[1] - enemy.hurtbox[1]/2), rotation_point='center',
+                            width = enemy.hurtbox[0], height = enemy.hurtbox[1], angle = math.degrees(enemy.rotation),
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
+
                 else:
-                    ax.add_patch(Ellipse( #plot circular enemy hitbox
-                        (enemy.position[0], enemy.position[1]),
-                        width = enemy.hitbox[0], height = enemy.hitbox[1], angle = np.degrees(enemy.rotation),
+                    ax.add_patch(Circle( #plot circular enemy hitbox
+                        (enemy.position[0], enemy.position[1]), radius = enemy.hitbox[0]/2,
                         facecolor = (color_rgb[0], color_rgb[1], color_rgb[2], 0.5 if enemy.no_hitbox else 1),
                         edgecolor = (0, 0, 0, 0.3), linewidth=3
                     ))
 
-                    if plot_enemy_hurtbox and not enemy.no_hurtbox:
-                        ax.add_patch(Ellipse( #plot circular enemy hurtbox
-                            (enemy.position[0], enemy.position[1]),
-                            width = enemy.hurtbox[0], height = enemy.hurtbox[1], angle = np.degrees(enemy.rotation),
+                    if plot_enemy_hurtbox and not enemy.no_hurtbox and game_id != 13:
+                        ax.add_patch(Circle( #plot circular enemy hurtbox
+                            (enemy.position[0], enemy.position[1]), radius = enemy.hurtbox[0]/2,
                             edgecolor = (0, 0, 1, 0.2 if enemy.no_hitbox else 0.5), linewidth=1.5, fill = False
                         ))
 
@@ -394,6 +406,76 @@ class AnalysisPlotEnemies(AnalysisPlot):
                              enemy.velocity[0], enemy.velocity[1],
                              head_width=4, head_length=8, color=(0,0,0,0.2))
 
+                if game_id == 13: #TD Hurtbox Sign 「Gates of Hell」
+                    #Abandon all hope (of understanding) ye who enter
+                    #Step 1: Get a list of every roughly unique angle of active player shots
+                    unique_shot_angles = []
+                    similarity_tresh = 0.01
+                    #enm_radius_tresh = max(enemy.hurtbox[0]/2, enemy.hurtbox[1]/2)*1.5
+
+                    for shot in self.lastframe.player_shots:
+                        #if math.dist((enemy.position[0], enemy.position[1]), (shot.position[0], shot.position[1])) < enm_radius_tresh:
+                        unique = True
+
+                        for angle in unique_shot_angles:
+                            if abs(shot.angle - angle) < similarity_tresh:
+                                unique = False
+                                break
+
+                        if unique:
+                            unique_shot_angles.append(shot.angle)
+
+                    #If no player shots were found, add a dummy angle
+                    if not unique_shot_angles:
+                        unique_shot_angles.append(0)
+
+                    #Step 2: Define method to highlight hurtboxes when hovering on linked markers (only happens once)
+                    markers = []
+
+                    if not any(callback[1] == 'motion_notify_event' for callback in ax.figure.canvas.callbacks.callbacks):
+                        def highlight_rectangle(rect):
+                            rect.set_edgecolor((0, 0, 1, 1))
+                            rect.set_linewidth(3)
+
+                        def revert_rectangle(rect):
+                            rect.set_edgecolor((0, 0, 1, 0.1 + (1 / len(unique_shot_angles)) * (0.1 if enemy.no_hitbox else 0.4)))
+                            rect.set_linewidth(1.5)
+
+                        def handle_hover(event):
+                            if event.inaxes == ax:
+                                for i, marker in enumerate(markers):
+                                    cont = any(line.contains(event)[0] for line in marker[0])
+                                    if cont:
+                                        highlight_rectangle(markers[i][1])
+                                    else:
+                                        revert_rectangle(markers[i][1])
+                                ax.figure.canvas.draw_idle()
+
+                        ax.figure.canvas.mpl_connect('motion_notify_event', handle_hover)
+
+                    #Step 3: Plot enemy hurtboxes that apply to each angle + hoverable markers
+                    for angle in unique_shot_angles:
+                        hurtbox_width = abs(enemy.hurtbox[0] * math.cos(angle) + enemy.hurtbox[1] * math.sin(angle))
+                        hurtbox_height = abs(enemy.hurtbox[0] * math.sin(angle) - enemy.hurtbox[1] * math.cos(angle))
+
+                        hurtbox = Rectangle(
+                            (enemy.position[0]-hurtbox_width/2, enemy.position[1]-hurtbox_height/2), rotation_point='center',
+                            width = hurtbox_width, height = hurtbox_height, angle = math.degrees(angle),
+                            edgecolor = (0, 0, 1, 0.1 + (1/len(unique_shot_angles))*(0.1 if enemy.no_hitbox else 0.4)),
+                            linewidth=1.5, fill = False
+                        )
+
+                        lines = []
+                        line_length = 50
+                        for shot in self.lastframe.player_shots:
+                            if abs(shot.angle - angle) < similarity_tresh:
+                                line_x = [shot.position[0], shot.position[0] + line_length * math.cos(angle)]
+                                line_y = [shot.position[1], shot.position[1] + line_length * math.sin(angle)]
+                                line, = ax.plot(line_x, line_y, label=f'Angle {math.degrees(angle)}', color=(0,0,0,0))
+                                lines.append(line)
+
+                        markers.append((lines, hurtbox))
+                        ax.add_patch(hurtbox)
 
         else:
             print(("(Player 2) " if side2 else "") + "No enemies to plot.")

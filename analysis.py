@@ -40,13 +40,14 @@ class AnalysisTemplate(Analysis):
 #(note: put your custom analysis under these lines so you can use 'em)
 from settings import pyplot_settings
 from interface import save_screenshot, terminate, get_color, get_curve_color, get_item_type
-from interface import enemy_anms, world_width, world_height, color16, np
+from interface import enemy_anms, world_width, world_height, color16, np, uses_pivot_angle
 from interface import zItemState_autocollect, zItemState_attracted, subshot
 from scipy.ndimage import uniform_filter
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib.patches import Ellipse, Circle, Rectangle
+from matplotlib.transforms import Affine2D
 import math
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore

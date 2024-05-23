@@ -67,7 +67,7 @@ class PlayerOffsets:
 @dataclass
 class PlayerOptionOffsets:
     zPlayerOption_active: int
-    zPlayerOption_anm_id: int
+    zPlayerOption_anm_id: int #(IDs of VMs)
     zPlayerOption_len: int
 
 @dataclass
@@ -118,6 +118,7 @@ class EnemyOffsets:
     zEnemy_hurtbox: int
     zEnemy_hitbox: int
     zEnemy_rotation: int
+    zEnemy_anm_vm_id: int #"anm_vm_ids"
     zEnemy_anm_page: int #"anm_slot_0_index"
     zEnemy_anm_id: int #"anm_slot_0_script"
     zEnemy_timer: int
@@ -206,6 +207,7 @@ class AsciiOffsets:
 class AnmOffsets:
     anm_manager_pointer: int
     zAnmManager_list: int
+    zAnmVm_rotation_z : int
     zAnmVm_id: int
     zAnmVm_entity_pos: int
 
@@ -445,7 +447,8 @@ offsets = {
             zEnemy_vel             = 0x11ec + 0x78,
             zEnemy_hurtbox         = 0x11ec + 0x110,
             zEnemy_hitbox          = 0x11ec + 0x118,
-            zEnemy_rotation        = 0x11ec + 0x20, #unsure if in game (seems to be set to 0 every frame?)
+            zEnemy_rotation        = None, #stored in ANM VM z-rotation
+            zEnemy_anm_vm_id       = 0x11ec + 0x120,
             zEnemy_anm_page        = 0x11ec + 0x264,
             zEnemy_anm_id          = 0x11ec + 0x268,
             zEnemy_timer           = 0x11ec + 0x2bc,
@@ -526,6 +529,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0xdc688,
             zAnmManager_list    = 0xf48208,
+            zAnmVm_rotation_z   = 0x50,
             zAnmVm_id           = 0x530,
             zAnmVm_entity_pos   = 0x574,
         ),
@@ -692,6 +696,7 @@ offsets = {
             zEnemy_hurtbox         = 0x11f0 + 0x110,
             zEnemy_hitbox          = 0x11f0 + 0x118,
             zEnemy_rotation        = 0x11f0 + 0x120,
+            zEnemy_anm_vm_id       = 0x11f0 + 0x124,
             zEnemy_anm_page        = 0x11f0 + 0x268,
             zEnemy_anm_id          = 0x11f0 + 0x26c,
             zEnemy_timer           = 0x11f0 + 0x2c0,
@@ -772,6 +777,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0xf56cc,
             zAnmManager_list    = 0xfe8208,
+            zAnmVm_rotation_z   = 0x50,
             zAnmVm_id           = 0x540,
             zAnmVm_entity_pos   = 0x59c,
         ),
@@ -923,6 +929,7 @@ offsets = {
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
+            zEnemy_anm_vm_id       = 0x120c + 0x124,
             zEnemy_anm_page        = 0x120c + 0x268,
             zEnemy_anm_id          = 0x120c + 0x26c,
             zEnemy_timer           = 0x120c + 0x2c0,
@@ -1003,6 +1010,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0x103c18,
             zAnmManager_list    = 0xdc,
+            zAnmVm_rotation_z   = 0x4c,
             zAnmVm_id           = 0x544,
             zAnmVm_entity_pos   = 0x5ec,
         ),
@@ -1155,6 +1163,7 @@ offsets = {
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
+            zEnemy_anm_vm_id       = 0x120c + 0x124,
             zEnemy_anm_page        = 0x120c + 0x268,
             zEnemy_anm_id          = 0x120c + 0x26c,
             zEnemy_timer           = 0x120c + 0x2d4,
@@ -1235,6 +1244,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0xc0f48,
             zAnmManager_list    = 0xdc,
+            zAnmVm_rotation_z   = 0x40,
             zAnmVm_id           = 0x538,
             zAnmVm_entity_pos   = 0x5e0,
         ),
@@ -1397,6 +1407,7 @@ offsets = {
             zEnemy_hurtbox         = 0x120c + 0x110,
             zEnemy_hitbox          = 0x120c + 0x118,
             zEnemy_rotation        = 0x120c + 0x120,
+            zEnemy_anm_vm_id       = 0x120c + 0x124,
             zEnemy_anm_page        = 0x120c + 0x268,
             zEnemy_anm_id          = 0x120c + 0x26c,
             zEnemy_timer           = 0x120c + 0x2d4,
@@ -1477,6 +1488,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0x109a20,
             zAnmManager_list    = 0x6dc,
+            zAnmVm_rotation_z   = 0x40,
             zAnmVm_id           = 0x538,
             zAnmVm_entity_pos   = 0x5e4,
         ),
@@ -1640,6 +1652,7 @@ offsets = {
             zEnemy_hurtbox         = 0x122c + 0x110,
             zEnemy_hitbox          = 0x122c + 0x118,
             zEnemy_rotation        = 0x122c + 0x120,
+            zEnemy_anm_vm_id       = 0x122c + 0x124,
             zEnemy_anm_page        = 0x122c + 0x268,
             zEnemy_anm_id          = 0x122c + 0x26c,
             zEnemy_timer           = 0x122c + 0x2d4,
@@ -1720,6 +1733,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0x11f65c,
             zAnmManager_list    = 0x6f0,
+            zAnmVm_rotation_z   = 0x44,
             zAnmVm_id           = 0x544,
             zAnmVm_entity_pos   = 0x5f0,
         ),
@@ -1877,6 +1891,7 @@ offsets = {
             zEnemy_hurtbox         = 0x1230 + 0x120,
             zEnemy_hitbox          = 0x1230 + 0x128,
             zEnemy_rotation        = 0x1230 + 0x130,
+            zEnemy_anm_vm_id       = 0x1230 + 0x134,
             zEnemy_anm_page        = 0x1230 + 0x278,
             zEnemy_anm_id          = 0x1230 + 0x27c,
             zEnemy_timer           = 0x1230 + 0x2e4,
@@ -1957,6 +1972,7 @@ offsets = {
         anm = AnmOffsets(
             anm_manager_pointer = 0x1ae3ac,
             zAnmManager_list    = 0x724,
+            zAnmVm_rotation_z   = 0x44,
             zAnmVm_id           = 0x4d8,
             zAnmVm_entity_pos   = 0x614,
         ),
@@ -2168,6 +2184,7 @@ offsets = {
 #            zEnemy_hurtbox         = None,
 #            zEnemy_hitbox          = None,
 #            zEnemy_rotation        = None,
+#            zEnemy_anm_vm_id       = None,
 #            zEnemy_anm_page        = None,
 #            zEnemy_anm_id          = None,
 #            zEnemy_timer           = None,
@@ -2247,6 +2264,7 @@ offsets = {
 #        anm = AnmOffsets(
 #            anm_manager_pointer = None,
 #            zAnmManager_list    = None,
+#            zAnmVm_rotation_z   = None,
 #            zAnmVm_id           = None,
 #            zAnmVm_entity_pos   = None,
 #        ),

@@ -119,7 +119,10 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
         zEnemyEclSubName = ""
         if game_id >= switch_to_serializable_ecl:
-            zEnemyEclSubName = ecl_sub_names[read_int(zEnemy + zEnemy_ecl_ref)]
+            enemy_sub_id = read_int(zEnemy + zEnemy_ecl_ref) #may be -1 for spawning enemies
+
+            if enemy_sub_id in range(len(ecl_sub_names)):
+                zEnemyEclSubName = ecl_sub_names[enemy_sub_id]
 
         else:
             cur_instr_addr = read_int(zEnemy + zEnemy_ecl_ref)
@@ -131,6 +134,15 @@ def extract_enemies(enemy_manager = zEnemyManager):
 
             if enemy_sub_id:
                 zEnemyEclSubName = ecl_sub_names[enemy_sub_id]
+
+        if enemy_manager != zEnemyManager:
+            enemy_vm = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id), zAnmManager_list_p2)
+        else:
+            enemy_vm = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id))
+
+        #filter invisible enemies that weren't filtered earlier
+        if not enemy_vm:
+            continue
 
         enemy = {
             'id':           zEnemy,
@@ -146,7 +158,8 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'is_rectangle': zEnemyFlags & zEnemyFlags_is_rectangle != 0,
             'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
             'subboss_id':   read_int(zEnemy + zEnemy_subboss_id, signed=True),
-            'rotation':     read_float(zEnemy + zEnemy_rotation),
+            'rotation':     read_float(zEnemy + zEnemy_rotation) if game_id != 13 else read_float(enemy_vm + zAnmVm_rotation_z),
+            'pivot_angle':  read_float(enemy_vm + zAnmVm_rotation_z) if game_id in uses_pivot_angle else 0,
             'ecl_sub_name': zEnemyEclSubName,
             'anm_page':     read_int(zEnemy + zEnemy_anm_page),
             'anm_id':       read_int(zEnemy + zEnemy_anm_id),
@@ -474,7 +487,7 @@ def extract_player_shots(player = zPlayer):
     player_shot_array_end   = player_shot_array_start + zPlayer_shots_array_len * zPlayerShot_len
 
     for player_shot in range(player_shot_array_start, player_shot_array_end, zPlayerShot_len):
-        if read_int(player_shot + zPlayerShot_state) == 1:
+        if read_int(player_shot + zPlayerShot_state) == 1: #0 = inactive, 1 = active, 2 = destroy anim
 
             player_shots.append(PlayerShot(
                 id          = player_shot,
@@ -501,7 +514,7 @@ def extract_spellcard(spellcard = zSpellCard):
         capture_bonus = spell_capture_bonus,
     )
 
-def extract_game_state(frame_id = None, real_time = None):
+def extract_game_state(frame_id = 0, real_time = 0):
     game_specific = None
 
     if game_id == 13:
