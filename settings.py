@@ -24,7 +24,6 @@ extraction_settings = {
 
     # See settings.md for more info
     'requires_side2_pvp': True,
-    'only_game_world': True,
 }
 
 # Single-State Extraction Settings

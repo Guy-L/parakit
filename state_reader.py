@@ -8,7 +8,7 @@ import time
 import atexit
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, only_game_world = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 infinite_print_updates = seqext_settings['infinite_print_updates']
@@ -1394,10 +1394,6 @@ def parse_frame_count(expr):
 atexit.register(on_exit)
 
 print("================================")
-
-if only_game_world and read_int(game_mode, rel=True) != 7:
-    print("Error: Game world not loaded (only_game_world set to True).")
-    exit()
 
 infinite = False
 frame_count = 0
