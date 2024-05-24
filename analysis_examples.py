@@ -417,7 +417,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
                              head_width=4, head_length=8, color=(0,0,0,0.2))
 
                 if game_id == 13: #TD Hurtbox Sign 「Gates of Hell」
-                    #Abandon all hope (of understanding) ye who enter
+                    #Abandon all hope (of understanding) ye who enters here
                     #Step 1: Get a list of every roughly unique angle of active player shots
                     unique_shot_angles = []
                     similarity_tresh = 0.01

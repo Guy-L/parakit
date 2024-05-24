@@ -281,7 +281,7 @@ if game_id in has_bullet_intangible:
     bullet_typedef_len     = offsets[_module_name].game_specific['bullet_typedef_len']
 
 if game_id in has_charging_youmu:
-    zPlayer_youmu_charge = offsets[_module_name].game_specific['zPlayer_youmu_charge']
+    zPlayer_youmu_charge_timer = offsets[_module_name].game_specific['zPlayer_youmu_charge_timer']
 
 if game_id == 13:
     trance_meter = offsets[_module_name].game_specific['trance_meter']
@@ -396,6 +396,8 @@ elif game_id == 18:
     zCard_name        = offsets[_module_name].game_specific['zCard_name_ptr_ptr']
     zCard_flags       = offsets[_module_name].game_specific['zCard_flags']
     zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
+    zPlayer_sakuya_knives_angle  = offsets[_module_name].game_specific['zPlayer_sakuya_knives_angle']
+    zPlayer_sakuya_knives_spread = offsets[_module_name].game_specific['zPlayer_sakuya_knives_spread']
     asylum_func = offsets[_module_name].game_specific['asylum_func']
 
 elif game_id == 19:

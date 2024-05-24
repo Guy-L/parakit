@@ -601,7 +601,7 @@ offsets = {
             'inv_square_echo_func': 0x4224b0,
             'circle_echo_func': 0x4228b0,
             'miko_final_func': 0x422d60,
-            'zPlayer_youmu_charge': 0x146a4,
+            'zPlayer_youmu_charge_timer': 0x146a4,
             'zEnemy_f0_echo_x1': 0x11ec + 0x298, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f1_echo_x2': 0x11ec + 0x29c, #if useful in multiple games, add to Enemy offset spec
             'zEnemy_f2_echo_y1': 0x11ec + 0x2a0, #if useful in multiple games, add to Enemy offset spec
@@ -1562,7 +1562,7 @@ offsets = {
             'hyper_flags': 0xb5ac4,
 
             'zAnmVm_rotation': 0x40,
-            'zPlayer_youmu_charge': 0x19084,
+            'zPlayer_youmu_charge_timer': 0x19084,
             'zBulletManager_recent_graze_gains': 0x58,
         }
     ),
@@ -1802,6 +1802,8 @@ offsets = {
             'zCard_name_ptr_ptr': 0x4c,
             'zCard_flags': 0x50,
             'zCard_counter': 0x54, #used by Centipede & Lily
+            'zPlayer_sakuya_knives_angle': 0x4790c,
+            'zPlayer_sakuya_knives_spread': 0x47910,
             'asylum_func': 0x438d90,
         }
     ),

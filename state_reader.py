@@ -563,7 +563,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
             chain_counter           = read_int(zSpiritManager + zSpiritManager_chain_counter),
             spirit_items            = extract_spirit_items() if requires_items else [],
             kyouko_echo             = kyouko_echo,
-            youmu_charge_timer      = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
+            youmu_charge_timer      = read_int(zPlayer + zPlayer_youmu_charge_timer, signed=True),
             miko_final_logic_active = bool(find_special_enemy_addr(miko_final_func))
         )
 
@@ -639,7 +639,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
             field_tokens                  = extract_animal_tokens() if requires_items else [],
             roaring_hyper                 = hyper,
             extra_token_spawn_delay_timer = read_int(hyper_token_spawn_delay, rel=True),
-            youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge, signed=True),
+            youmu_charge_timer            = read_int(zPlayer + zPlayer_youmu_charge_timer, signed=True),
             yacchie_recent_graze          = sum(read_int(zBulletManager + zBulletManager_recent_graze_gains + 0x4 * i) for i in range(20)),
         )
 
@@ -688,6 +688,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
             centipede_multiplier = centipede_multiplier,
             active_cards         = active_cards,
             asylum_logic_active  = bool(find_special_enemy_addr(asylum_func)),
+            sakuya_knives_angle  = -read_float(zPlayer + zPlayer_sakuya_knives_angle),
+            sakuya_knives_spread = read_float(zPlayer + zPlayer_sakuya_knives_spread),
         )
 
     elif game_id == 19:

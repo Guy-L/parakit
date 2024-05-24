@@ -364,6 +364,8 @@ class GameSpecificUM(GameSpecific):
     centipede_multiplier: Optional[float] #[1.0, 1.8]
     active_cards: List[ActiveCard]
     asylum_logic_active: bool
+    sakuya_knives_angle: float #[~0.79, ~2.34] (higher = farther left, lower = farther right, 1.57 = middle)
+    sakuya_knives_spread: float #[~-0.3, ~1.03] (lower = more concentrated, higher = more spread)
 
 # Unfinished Dream of All Living Ghost
 @dataclass
