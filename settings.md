@@ -2,21 +2,13 @@
 
 # Settings Documentation
 
-## Game Interfacing Settings
-Settings for the script responsible for interfacing with the game (reading, writing, inputs, screenshots...).
-
-| Name / Type | Description | Default |
-|-|-|-|
-| **`termination_key`**<br>(string) | If pressed, interrupts any waiting for the next game frame and returns an error (used to terminate sequence extraction early). | `'F6'` |
-| **`game`**<br>(string) | Select the game here; can be the full name, acronym, `th##` or just the game number. **Fully supported games**: TD, DDC, LoLK, HSiFS, WBaWC, UM, UDoALG | `'No game selected'` |
-
 ## General Extraction Settings
 Settings for reading and analyzing game states; used by both single-state and sequence extraction.
 Disable extraction of entities not required for your analysis to reduce lag (especially screenshots).
 
 | Name / Type | Description | Default |
 |-|-|-|
-| **`analyzer`**<br>(string) | Name of an analysis class (e.g. `'AnalysisMostBulletsFrame'`) in `analysis.py`. Sample analyses to get started and plot various entities can be found in `analysis_examples.py`.| `'AnalysisTemplate'` |
+| **`analyzer`**<br>(string) | Name of the analysis class to be ran (e.g. `'AnalysisMostBulletsFrame'`) in `analysis.py`. Sample analyses to get started and plot various entities can be found in `analysis_examples.py`.| `'AnalysisTemplate'` |
 | **`requires_bullets`**<br>(bool) | If enabled, extracted states will contain bullet data. | `True` |
 | **`requires_enemies`**<br>(bool) | If enabled, extracted states will contain enemy data. | `True` |
 | **`requires_items`**<br>(bool) | If enabled, extracted states will contain item data. | `True` |
@@ -24,6 +16,14 @@ Disable extraction of entities not required for your analysis to reduce lag (esp
 | **`requires_player_shots`**<br>(bool) | If enabled, extracted states will contain player shot data. | `True` |
 | **`requires_screenshots`**<br>(bool) | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
 | **`requires_side2_pvp`**<br>(bool) | If enabled, extracted states will contain P2 (right side of the screen) data in PvP danmaku games. | `True` |
+
+## Game Interfacing Settings
+Settings for the script responsible for interfacing with the game (reading, writing, inputs, screenshots...).
+
+| Name / Type | Description | Default |
+|-|-|-|
+| **`termination_key`**<br>(string) | If pressed, interrupts any waiting for the next game frame and returns an error (used to terminate sequence extraction early). | `'F6'` |
+| **`tiebreaker_game`**<br>(string) | Selects which game will be targetted when multiple games are open. Can be the full name, acronym, `th##` or just the game number. **Possible games**: TD, DDC, LoLK, HSiFS, WBaWC, UM, UDoALG | `''` |
 
 ## Single-State Extraction Settings
 Settings for single-state extraction, in which the current state of the game is extracted and printed.

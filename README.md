@@ -45,11 +45,13 @@ pip install -r requirements.txt
 ```
 
 
-## Running
+## Running ParaKit
+**You can simply run ParaKit by opening `parakit.py`.**
 
-Edit `settings.py` to select the target game and analyzer. <br>**Documentation explaining every available setting can be found [here](./settings.md).**
+To select the analyzer you wish to run, open `settings.py` and change the value of `analyzer`.
+**Documentation explaining every available setting can be found [here](./settings.md).**
 
-**You can simply run the program by opening `parakit.py`.**<br>If you're going to use the program a lot, open a terminal window in the project's folder and run:
+If you're going to use the program a lot, open a terminal window in the project's folder and run:
 
 ```bash
 py parakit.py

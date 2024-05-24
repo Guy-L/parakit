@@ -13,49 +13,98 @@ import keyboard
 import struct
 import random  
 
-# Step 0 - Get the target module name and other settings
+# Step 1 - Find valid game processes & windows
 _game_main_modules = {
-    #('6', 'th6', 'th06', 'th06.exe', 'eosd', 'teosd', 'embodiment of scarlet devil'): 'th06.exe',
-    #('7', 'th7', 'th07', 'th07.exe', 'pcb', 'perfect cherry blossom'): 'th07.exe',
-    #('8', 'th8', 'th08', 'th08.exe', 'in', 'imperishable night'): 'th08.exe',
-    #('9', 'th9', 'th09', 'th09.exe', 'pofv', 'phantasmagoria of flower view'): 'th09.exe',
-    #('9.5', 'th9.5', 'th095', 'th095.exe', 'stb', 'shoot the bullet'): 'th095.exe',
-    #('10', 'th10', 'th10.exe', 'mof', 'mountain of faith'): 'th10.exe',
-    #('11', 'th11', 'th11.exe', 'sa', 'subterranean animism'): 'th11.exe',
-    #('12', 'th12', 'th12.exe', 'ufo', 'undefined fantastic object'): 'th12.exe',
-    #('12.5', 'th12.5', 'th125', 'th125.exe', 'ds', 'double spoiler'): 'th125.exe',
-    #('12.8', 'th12.8', 'th128', 'th128.exe', 'gfw', 'great fairy wars'): 'th128.exe',
-    ('13', 'th13', 'th13.exe', 'td', 'ten desires'): 'th13.exe',
-    ('14', 'th14', 'th14.exe', 'ddc', 'double dealing character'): 'th14.exe',
-    #('14.3', 'th14.3', 'th143', 'th143.exe', 'isc', 'impossible spell card'): 'th143.exe',
-    ('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'): 'th15.exe',
-    ('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'): 'th16.exe',
-    #('16.5', 'th16.5', 'th165', 'th165.exe', 'vd', 'violet detector'): 'th165.exe',
-    ('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'): 'th17.exe',
-    ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'): 'th18.exe',
-    #('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'): 'th185.exe',
-    ('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'): 'th19.exe',
+    #'th06.exe':  ('6', 'th6', 'th06', 'th06.exe', 'eosd', 'teosd', 'embodiment of scarlet devil'),
+    #'th07.exe':  ('7', 'th7', 'th07', 'th07.exe', 'pcb', 'perfect cherry blossom'),
+    #'th08.exe':  ('8', 'th8', 'th08', 'th08.exe', 'in', 'imperishable night'),
+    #'th09.exe':  ('9', 'th9', 'th09', 'th09.exe', 'pofv', 'phantasmagoria of flower view'),
+    #'th095.exe': ('9.5', 'th9.5', 'th095', 'th095.exe', 'stb', 'shoot the bullet'),
+    #'th10.exe':  ('10', 'th10', 'th10.exe', 'mof', 'mountain of faith'),
+    #'th11.exe':  ('11', 'th11', 'th11.exe', 'sa', 'subterranean animism'),
+    #'th12.exe':  ('12', 'th12', 'th12.exe', 'ufo', 'undefined fantastic object'),
+    #'th125.exe': ('12.5', 'th12.5', 'th125', 'th125.exe', 'ds', 'double spoiler'),
+    #'th128.exe': ('12.8', 'th12.8', 'th128', 'th128.exe', 'gfw', 'great fairy wars'),
+    'th13.exe':  ('13', 'th13', 'th13.exe', 'td', 'ten desires'),
+    'th14.exe':  ('14', 'th14', 'th14.exe', 'ddc', 'double dealing character'),
+    #'th143.exe': ('14.3', 'th14.3', 'th143', 'th143.exe', 'isc', 'impossible spell card'),
+    'th15.exe':  ('15', 'th15', 'th15.exe', 'lolk', 'legacy of lunatic kingdom'),
+    'th16.exe':  ('16', 'th16', 'th16.exe', 'hsifs', 'hidden star in four seasons'),
+    #'th165.exe': ('16.5', 'th16.5', 'th165', 'th165.exe', 'vd', 'violet detector'),
+    'th17.exe':  ('17', 'th17', 'th17.exe', 'wbawc', 'wily beast and weakest creature'),
+    'th18.exe':  ('18', 'th18', 'th18.exe', 'um', 'unconnected marketeers'),
+    #'th185.exe': ('18.5', 'th18.5', 'th185.exe', 'hbm', 'hundredth bullet market'),
+    'th19.exe':  ('19', 'th19', 'th19.exe', 'udoalg', 'unfinished dream of all living ghost'),
 }
 
-_game = _settings['game']
-_termination_key = _settings['termination_key']
+# Windows are found *before* knowing the game process in order to filter out zombie processes
+_windows = {}
+for window in gw.getAllWindows():
+    pid = ctypes.c_ulong()
+    ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
+    _windows[pid.value] = window
 
-_module_name = ''
-game_id = 0
-for keys, module_name in _game_main_modules.items():
-    if str(_game).lower().strip() in keys:
-        _module_name = module_name
-        game_id = float(keys[0])
-        print(f"Interface: Target module '{_module_name}'.")
+valid_game_processes = []
+valid_game_windows = []
+for process in psutil.process_iter(['pid', 'name', 'status']):
+    if process.info['name'] and process.info['name'] in _game_main_modules.keys():
+        if process.info['status'] == psutil.STATUS_RUNNING and process.pid in _windows:
+            valid_game_processes.append(process)
+            valid_game_windows.append(_windows[process.pid])
+
+if not valid_game_processes:
+    print('Interface error: No valid game process found.')
+    print(f'Make sure the game is open.')
+    exit()
+
+
+# Step 2 - Select the desired game (break tie if multiple games are open)
+_valid_game_i = 0
+_tiebreaker = _settings['tiebreaker_game']
+if _tiebreaker and isinstance(_tiebreaker, str) and len(valid_game_processes) > 1:
+    print(f'Tiebreaker: Multiple games are open; {_tiebreaker} will be selected if found (otherwise will select first).')
+    for i in range(len(valid_game_processes)):
+        if _tiebreaker.lower().strip() in _game_main_modules[valid_game_processes[i].info['name']]:
+            _valid_game_i = i
+            break
+
+game_process = valid_game_processes[_valid_game_i]
+_game_window = valid_game_windows[_valid_game_i]
+_module_name = game_process.info['name']
+game_id = int(_game_main_modules[_module_name][0])
+
+print(f'Found the {_module_name} game process with PID: {game_process.pid}')
+print(f'Found the game window: {_game_window}')
+
+
+# Step 3 - Get the selected process's base address
+_base_address = None
+_module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, game_process.pid)
+_module_list = win32process.EnumProcessModules(_module_handle)
+
+for module in _module_list:
+    module_info = win32process.GetModuleFileNameEx(_module_handle, module)
+
+    if _module_name in module_info.lower():
+        _base_address = module
         break
 
-if not _module_name or game_id == 0:
-    print(f"Interface error: Unknown game specifier '{_game}'.")
+if _base_address is not None:
+    print(f'Base address of the process main module: {hex(_base_address)}')
+else:
+    print('Interface error: Module base address not found')
     exit()
+
+
+# Step 4 - Open the process handle
+_PROCESS_VM_READ = 0x0010
+_PROCESS_QUERY_INFORMATION = 0x0400
+_process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
+
 
 # ==========================================================
 # Game logic groups
-uses_rank = [6, 7, 19]
+uses_rank = [6, 7, 8, 10, 19]
 uses_pivot_angle = [14, 15, 16, 17, 18]
 has_enemy_score_reward = [6, 7, 8, 9, 10, 11]
 has_charging_youmu = [13, 17]
@@ -507,54 +556,6 @@ color8        = [_black, _red, _pink, _blue, _cyan, _green, _yellow, _white]
 color16       = [_black, _dark_red, _red, _purple, _pink, _dark_blue, _blue, _dark_cyan, _cyan, _dark_green, _green, _lime, _dark_yellow, _yellow, _orange, _white]
 curve_sprites = ['Standard', 'Thunder', 'Grapevine'] #not worth setting per-game
 
-# ==========================================================
-# Step 1 - Get the game process & window
-_windows = {}
-for window in gw.getAllWindows():
-    pid = ctypes.c_ulong()
-    ctypes.windll.user32.GetWindowThreadProcessId(window._hWnd, ctypes.byref(pid))
-    _windows[pid.value] = window
-
-game_process = None
-_game_window = None
-for process in psutil.process_iter(['pid', 'name', 'status']):
-    if process.info['name'] and process.info['name'].lower() == _module_name:
-        if process.info['status'] == psutil.STATUS_RUNNING and process.pid in _windows:
-            game_process = process
-            _game_window = _windows[process.pid]
-            break
-
-if game_process:
-    print(f'Found the {_module_name} game process with PID: {game_process.pid}')
-    print(f'Found the game window: {_game_window}')
-else:
-    print('Interface error: Game process & window not found')
-    print(f'Make sure the selected game ({_game}) is open\nor change your selection in settings.py.')
-    exit()
-
-# Step 2 - Get the process's base address
-_base_address = None
-_module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, game_process.pid)
-_module_list = win32process.EnumProcessModules(_module_handle)
-
-for module in _module_list:
-    module_info = win32process.GetModuleFileNameEx(_module_handle, module)
-
-    if _module_name in module_info.lower():
-        _base_address = module
-        break
-
-if _base_address is not None:
-    print(f'Base address of the process main module: {hex(_base_address)}')
-else:
-    print('Interface error: Module base address not found')
-    exit()
-
-# Step 3 - Open a process handle
-_PROCESS_VM_READ = 0x0010
-_PROCESS_QUERY_INFORMATION = 0x0400
-_process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
-
 # Interface Method Definitions
 
 def get_rgb_screenshot(): #Note: fails if the window is not visible!
@@ -696,7 +697,7 @@ def eval_termination_conditions(need_active):
         return "Non-run game state detected"
     elif not game_process.is_running():
         return "Game was closed" #bugged, but not worth fixing (edge case)
-    elif keyboard.is_pressed(_termination_key):
+    elif keyboard.is_pressed(_settings['termination_key']):
         return "User pressed termination key"
     elif auto_termination:
         return "Automatic termination triggered by analysis step"

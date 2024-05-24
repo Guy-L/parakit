@@ -1,12 +1,3 @@
-# Game Interfacing Settings
-interface_settings = {
-    'termination_key': 'F6',
-
-    # Select the game here; can be full name, acronym, th## or just the game number.
-    # Supported games: TD, DDC, LoLK, HSiFS, WBaWC, UM, UDoALG
-    'game': 'No game selected'
-}
-
 # General Extraction Settings
 extraction_settings = {
 
@@ -21,13 +12,17 @@ extraction_settings = {
     'requires_lasers':  True,
     'requires_player_shots': True,
     'requires_screenshots': False,
-
-    # See settings.md for more info
     'requires_side2_pvp': True,
 }
 
-# Single-State Extraction Settings
+# Game Interfacing Settings
 # See settings.md for more info.
+interface_settings = {
+    'termination_key': 'F6',
+    'tiebreaker_game': '',
+}
+
+# Single-State Extraction Settings
 singlext_settings = {
     'show_untracked': False,
     'show_enemy_drops': False,
