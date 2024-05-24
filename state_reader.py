@@ -1451,9 +1451,9 @@ if frame_count < 2 and not infinite: #Single-State Extraction
 
 else: #State Sequence Extraction
     if infinite:
-        print(f"Extracting frames until termination (infinite mode){' (exact mode)' if exact else ''}.")
+        print(f"Extracting until termination (infinite mode){' (exact mode)' if exact else ''}.")
     else:
-        print(f"Extracting {frame_count} frames{' (exact mode)' if exact else ''}.")
+        print(f"Extracting for {frame_count} frames{' (exact mode)' if exact else ''}.")
 
     if seqext_settings['auto_unpause']:
         unpause_game()
@@ -1474,9 +1474,9 @@ else: #State Sequence Extraction
         frame_timestamp = read_int(stage_timer)
         if infinite:
             if infinite_print_updates:
-                print(f"Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+                print(f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
         else:
-            print(f"[{int(100*frame_counter/frame_count)}%] Extracting frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+            print(f"[{int(100*frame_counter/frame_count)}%] Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
 
         if exact:
             game_process.suspend()

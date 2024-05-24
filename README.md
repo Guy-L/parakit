@@ -109,17 +109,17 @@ State extraction over time can be a computationally heavy process, and the `exac
 
 You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<br>If you do, feel free to send a feature request to the developers.
 
-## Examples
+## Sample Outputs
 
-### Single State Extraction
+<b>Single State Extraction</b>
+A single frame's state is extracted and supplied to the selected analyzer to draw results from. The terminal output will display some information from the extracted game state, including basic state data, game-specific data, and data about the active entities in the game world. Note that the information presented in this mode is but an arbitrary sample, and that extracted states contain much more data not displayed here (see `game_entities.py`).
+<img alt="single state extraction in wbawc" src="https://github.com/Guy-L/parakit/assets/55163797/c8fe5bcf-c606-450f-adea-f66d293b2f50" width="600px">
 
-<img alt="single state extraction" src="https://cdn.discordapp.com/attachments/522639011295002626/1140864996348280952/image.png" width="600px">
+<b>Sequence Extraction</b>
+The analyzer will be supplied the game state extracted from each frame and will present its results once the extraction process is complete. The terminal output simply displays the extraction's progress. Note that extraction is paused while the game is paused, and that its duration can be infinite (in this case, the user should terminate it by pressing the termination key which defaults to `F6`; some analyzers may also terminate it automatically).
+<img alt="analysis over 20 frames" src="https://github.com/Guy-L/parakit/assets/55163797/e80d3190-1a7f-455e-be95-3db40e8140d4" width="300px">
 
-### Sequence Extraction over 50 frames:
-
-<img alt="analysis over 50 frames" src="https://i.imgur.com/voSiS0I.png" width="300px">
-
-### Prebuilt Analyzers
+## Built-In Analyzers
 
 | Name / Description | Screenshot(s) |
 |--|--|
