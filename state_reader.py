@@ -194,9 +194,9 @@ def extract_enemies(enemy_manager = zEnemyManager):
             enemies.append(WeightedEnemy(**enemy))
 
         elif game_id == 16:
-            bonus_timer = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_timer)
-            max_time = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_max_time)
-            min_count = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_min_count)
+            bonus_timer = read_int(zEnemy + zEnemy_season_drop + zSeasonDrop_timer)
+            max_time = read_int(zEnemy + zEnemy_season_drop + zSeasonDrop_max_time)
+            min_count = read_int(zEnemy + zEnemy_season_drop + zSeasonDrop_min_count)
 
             if enemy['drops'] and not enemy['no_hurtbox']:
                 base_season_drop_count = enemy['drops'][16]
@@ -219,8 +219,8 @@ def extract_enemies(enemy_manager = zEnemyManager):
             enemy['season_drop_timer'] = bonus_timer
             enemy['season_drop_max_time'] = max_time
             enemy['season_drop_min_count'] = min_count
-            enemy['damage_per_season_drop'] = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_damage_for_drop)
-            enemy['damage_taken_for_season_drops'] = read_int(zEnemy + zEnemy_data + zEnemy_season_drop + zSeasonDrop_total_damage)
+            enemy['damage_per_season_drop'] = read_int(zEnemy + zEnemy_season_drop + zSeasonDrop_damage_for_drop)
+            enemy['damage_taken_for_season_drops'] = read_int(zEnemy + zEnemy_season_drop + zSeasonDrop_total_damage)
 
             enemies.append(SeasonDroppingEnemy(**enemy))
 
@@ -672,7 +672,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 type          = card_type,
                 charge        = card_charge, 
                 charge_max    = card_charge_max,
-                internal_name = read_string(read_int(read_int(zCard + zCard_name)), 15),
+                internal_name = read_string(read_int(read_int(zCard + zCard_name_ptr_ptr)), 15),
                 selected      = zCard == selected_active,
                 in_use        = read_int(zCard + zCard_flags) & 2**5 != 0,
             ))

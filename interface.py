@@ -77,7 +77,21 @@ print(f'Found the {_module_name} game process with PID: {game_process.pid}')
 print(f'Found the game window: {_game_window}')
 
 
-# Step 3 - Get the selected process's base address
+# Step 3 - Unpack offsets from selected game into namespace
+for offset_category in offsets[_module_name].__dict__.values():
+    for name, val in (offset_category.items() if isinstance(offset_category, dict) else offset_category.__dict__.items()):
+        if 'zEnemyData_' in name:
+            globals()[name.replace('Data', '')] = (zEnemy_data + val if val != None else val)
+        elif any(classname in name for classname in ['zLaserLine_', 'zLaserInfinite_', 'zLaserCurve_', 'zLaserBeam_']):
+            globals()[name] = (zLaserBaseClass_len + val if val != None else val)
+        elif 'zSupervisor_' in name:
+            globals()[name.replace('zSupervisor_', '')] = (supervisor_addr + val if val != None else val)
+        else:
+            globals()[name] = val
+del offsets #be kind to your namespace :)
+
+
+# Step 4 - Get the selected process's base address
 _base_address = None
 _module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, game_process.pid)
 _module_list = win32process.EnumProcessModules(_module_handle)
@@ -96,7 +110,7 @@ else:
     exit()
 
 
-# Step 4 - Open the process handle
+# Step 5 - Open the process handle
 _PROCESS_VM_READ = 0x0010
 _PROCESS_QUERY_INFORMATION = 0x0400
 _process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
@@ -113,420 +127,6 @@ has_bullet_intangible = [16, 16.5]
 has_boss_timer_drawn_if_indic_zero = [19]
 has_ability_cards = [18, 18.5, 19]
 switch_to_serializable_ecl = 15 #first game where enemies store sub_id + offset within the sub as opposed to instruction pointers
-
-# ==========================================================
-# Offset object unpacking
-
-# Statics
-score         = offsets[_module_name].statics.score
-graze         = offsets[_module_name].statics.graze
-piv           = offsets[_module_name].statics.piv
-power         = offsets[_module_name].statics.power
-lives         = offsets[_module_name].statics.lives
-life_pieces   = offsets[_module_name].statics.life_pieces
-bombs         = offsets[_module_name].statics.bombs
-bomb_pieces   = offsets[_module_name].statics.bomb_pieces
-stage_chapter = offsets[_module_name].statics.stage_chapter
-rank          = offsets[_module_name].statics.rank
-input         = offsets[_module_name].statics.input
-rng           = offsets[_module_name].statics.rng
-pause_state   = offsets[_module_name].statics.pause_state
-
-# Untracked Statics
-game_speed = offsets[_module_name].statics_untracked.game_speed
-visual_rng = offsets[_module_name].statics_untracked.visual_rng
-character  = offsets[_module_name].statics_untracked.character
-subshot    = offsets[_module_name].statics_untracked.subshot
-difficulty = offsets[_module_name].statics_untracked.difficulty
-stage      = offsets[_module_name].statics_untracked.stage
-continues  = offsets[_module_name].statics_untracked.continues
-
-# Player
-player_pointer  = offsets[_module_name].player.player_pointer
-zPlayer_pos     = offsets[_module_name].player.zPlayer_pos
-zPlayer_hit_rad = offsets[_module_name].player.zPlayer_hit_rad
-zPlayer_iframes = offsets[_module_name].player.zPlayer_iframes
-zPlayer_focused = offsets[_module_name].player.zPlayer_focused
-zPlayer_option_array     = offsets[_module_name].player.zPlayer_option_array
-zPlayer_option_array_len = offsets[_module_name].player.zPlayer_option_array_len
-zPlayer_shots_array      = offsets[_module_name].player.zPlayer_shots_array
-zPlayer_shots_array_len  = offsets[_module_name].player.zPlayer_shots_array_len
-
-# Player Options
-zPlayerOption_active = offsets[_module_name].player_options.zPlayerOption_active
-zPlayerOption_anm_id = offsets[_module_name].player_options.zPlayerOption_anm_id
-zPlayerOption_len    = offsets[_module_name].player_options.zPlayerOption_len
-
-# Player Shots
-zPlayerShot_timer  = offsets[_module_name].player_shots.zPlayerShot_timer
-zPlayerShot_pos    = offsets[_module_name].player_shots.zPlayerShot_pos
-zPlayerShot_vel    = offsets[_module_name].player_shots.zPlayerShot_vel
-zPlayerShot_hitbox = offsets[_module_name].player_shots.zPlayerShot_hitbox
-zPlayerShot_speed  = offsets[_module_name].player_shots.zPlayerShot_speed
-zPlayerShot_angle  = offsets[_module_name].player_shots.zPlayerShot_angle
-zPlayerShot_state  = offsets[_module_name].player_shots.zPlayerShot_state
-zPlayerShot_damage = offsets[_module_name].player_shots.zPlayerShot_damage
-zPlayerShot_len    = offsets[_module_name].player_shots.zPlayerShot_len
-
-# Bomb
-bomb_pointer = offsets[_module_name].bomb.bomb_pointer
-zBomb_state  = offsets[_module_name].bomb.zBomb_state
-
-# Bullets
-bullet_manager_pointer = offsets[_module_name].bullets.bullet_manager_pointer
-zBulletManager_list    = offsets[_module_name].bullets.zBulletManager_list
-zBullet_flags          = offsets[_module_name].bullets.zBullet_flags
-zBullet_iframes        = offsets[_module_name].bullets.zBullet_iframes
-zBullet_pos            = offsets[_module_name].bullets.zBullet_pos
-zBullet_velocity       = offsets[_module_name].bullets.zBullet_velocity
-zBullet_speed          = offsets[_module_name].bullets.zBullet_speed
-zBullet_angle          = offsets[_module_name].bullets.zBullet_angle
-zBullet_hitbox_radius  = offsets[_module_name].bullets.zBullet_hitbox_radius
-zBullet_scale          = offsets[_module_name].bullets.zBullet_scale
-zBullet_state          = offsets[_module_name].bullets.zBullet_state
-zBullet_timer          = offsets[_module_name].bullets.zBullet_timer
-zBullet_type           = offsets[_module_name].bullets.zBullet_type
-zBullet_color          = offsets[_module_name].bullets.zBullet_color
-
-zBulletFlags_grazed    = offsets[_module_name].associations.zBulletFlags_grazed
-
-# Enemies
-enemy_manager_pointer  = offsets[_module_name].enemies.enemy_manager_pointer
-zEnemyManager_ecl_file = offsets[_module_name].enemies.zEnemyManager_ecl_file
-zEnemyManager_list     = offsets[_module_name].enemies.zEnemyManager_list
-zEclFile_sub_count     = offsets[_module_name].enemies.zEclFile_sub_count
-zEclFile_subroutines   = offsets[_module_name].enemies.zEclFile_subroutines
-zEnemy_ecl_ref         = offsets[_module_name].enemies.zEnemy_ecl_ref
-zEnemy_data            = offsets[_module_name].enemies.zEnemy_data
-zEnemy_pos             = offsets[_module_name].enemies.zEnemy_pos
-zEnemy_vel             = offsets[_module_name].enemies.zEnemy_vel
-zEnemy_hurtbox         = offsets[_module_name].enemies.zEnemy_hurtbox
-zEnemy_hitbox          = offsets[_module_name].enemies.zEnemy_hitbox
-zEnemy_rotation        = offsets[_module_name].enemies.zEnemy_rotation
-zEnemy_anm_vm_id       = offsets[_module_name].enemies.zEnemy_anm_vm_id
-zEnemy_anm_page        = offsets[_module_name].enemies.zEnemy_anm_page
-zEnemy_anm_id          = offsets[_module_name].enemies.zEnemy_anm_id
-zEnemy_timer           = offsets[_module_name].enemies.zEnemy_timer
-zEnemy_movement_bounds = offsets[_module_name].enemies.zEnemy_movement_bounds
-zEnemy_score_reward    = offsets[_module_name].enemies.zEnemy_score_reward
-zEnemy_hp              = offsets[_module_name].enemies.zEnemy_hp
-zEnemy_hp_max          = offsets[_module_name].enemies.zEnemy_hp_max
-zEnemy_drops           = offsets[_module_name].enemies.zEnemy_drops
-zEnemy_iframes         = offsets[_module_name].enemies.zEnemy_iframes
-zEnemy_flags           = offsets[_module_name].enemies.zEnemy_flags
-zEnemy_subboss_id      = offsets[_module_name].enemies.zEnemy_subboss_id
-zEnemy_special_func    = offsets[_module_name].enemies.zEnemy_special_func
-
-zEnemyFlags_no_hurtbox     = offsets[_module_name].associations.zEnemyFlags_no_hurtbox
-zEnemyFlags_no_hitbox      = offsets[_module_name].associations.zEnemyFlags_no_hitbox
-zEnemyFlags_invincible     = offsets[_module_name].associations.zEnemyFlags_invincible
-zEnemyFlags_intangible     = offsets[_module_name].associations.zEnemyFlags_intangible
-zEnemyFlags_is_grazeable   = offsets[_module_name].associations.zEnemyFlags_is_grazeable
-zEnemyFlags_is_rectangle   = offsets[_module_name].associations.zEnemyFlags_is_rectangle
-zEnemyFlags_has_move_limit = offsets[_module_name].associations.zEnemyFlags_has_move_limit
-zEnemyFlags_is_boss        = offsets[_module_name].associations.zEnemyFlags_is_boss
-
-# Items
-item_manager_pointer   = offsets[_module_name].items.item_manager_pointer
-zItemManager_array     = offsets[_module_name].items.zItemManager_array
-zItemManager_array_len = offsets[_module_name].items.zItemManager_array_len
-zItem_state  = offsets[_module_name].items.zItem_state
-zItem_type   = offsets[_module_name].items.zItem_type
-zItem_pos    = offsets[_module_name].items.zItem_pos
-zItem_vel    = offsets[_module_name].items.zItem_vel
-zItem_timer  = offsets[_module_name].items.zItem_timer
-zItem_len    = offsets[_module_name].items.zItem_len
-
-zItemState_autocollect = offsets[_module_name].associations.zItemState_autocollect
-zItemState_attracted   = offsets[_module_name].associations.zItemState_attracted
-
-# Laser (Base)
-laser_manager_pointer   = offsets[_module_name].laser_base.laser_manager_pointer
-zLaserManager_list      = offsets[_module_name].laser_base.zLaserManager_list
-zLaserBaseClass_state   = offsets[_module_name].laser_base.zLaserBaseClass_state
-zLaserBaseClass_type    = offsets[_module_name].laser_base.zLaserBaseClass_type
-zLaserBaseClass_timer   = offsets[_module_name].laser_base.zLaserBaseClass_timer
-zLaserBaseClass_offset  = offsets[_module_name].laser_base.zLaserBaseClass_offset
-zLaserBaseClass_angle   = offsets[_module_name].laser_base.zLaserBaseClass_angle
-zLaserBaseClass_length  = offsets[_module_name].laser_base.zLaserBaseClass_length
-zLaserBaseClass_width   = offsets[_module_name].laser_base.zLaserBaseClass_width
-zLaserBaseClass_speed   = offsets[_module_name].laser_base.zLaserBaseClass_speed
-zLaserBaseClass_iframes = offsets[_module_name].laser_base.zLaserBaseClass_iframes
-zLaserBaseClass_sprite  = offsets[_module_name].laser_base.zLaserBaseClass_sprite
-zLaserBaseClass_color   = offsets[_module_name].laser_base.zLaserBaseClass_color
-
-# Laser (Line)
-zLaserLine_start_pos  = offsets[_module_name].laser_line.zLaserLine_start_pos
-zLaserLine_mgr_angle  = offsets[_module_name].laser_line.zLaserLine_mgr_angle
-zLaserLine_max_length = offsets[_module_name].laser_line.zLaserLine_max_length
-zLaserLine_mgr_speed  = offsets[_module_name].laser_line.zLaserLine_mgr_speed
-zLaserLine_distance   = offsets[_module_name].laser_line.zLaserLine_distance
-
-# Laser (Infinite)
-zLaserInfinite_start_pos    = offsets[_module_name].laser_infinite.zLaserInfinite_start_pos
-zLaserInfinite_velocity     = offsets[_module_name].laser_infinite.zLaserInfinite_velocity
-zLaserInfinite_mgr_angle    = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_angle
-zLaserInfinite_angle_vel    = offsets[_module_name].laser_infinite.zLaserInfinite_angle_vel
-zLaserInfinite_final_len    = offsets[_module_name].laser_infinite.zLaserInfinite_final_len
-zLaserInfinite_mgr_len      = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_len
-zLaserInfinite_final_width  = offsets[_module_name].laser_infinite.zLaserInfinite_final_width
-zLaserInfinite_mgr_speed    = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_speed
-zLaserInfinite_start_time   = offsets[_module_name].laser_infinite.zLaserInfinite_start_time
-zLaserInfinite_expand_time  = offsets[_module_name].laser_infinite.zLaserInfinite_expand_time
-zLaserInfinite_active_time  = offsets[_module_name].laser_infinite.zLaserInfinite_active_time
-zLaserInfinite_shrink_time  = offsets[_module_name].laser_infinite.zLaserInfinite_shrink_time
-zLaserInfinite_mgr_distance = offsets[_module_name].laser_infinite.zLaserInfinite_mgr_distance
-
-# Laser (Curve)
-zLaserCurve_max_length = offsets[_module_name].laser_curve.zLaserCurve_max_length
-zLaserCurve_distance   = offsets[_module_name].laser_curve.zLaserCurve_distance
-zLaserCurve_array      = offsets[_module_name].laser_curve.zLaserCurve_array
-
-# Curve Node
-zLaserCurveNode_pos   = offsets[_module_name].laser_curve_node.zLaserCurveNode_pos
-zLaserCurveNode_vel   = offsets[_module_name].laser_curve_node.zLaserCurveNode_vel
-zLaserCurveNode_angle = offsets[_module_name].laser_curve_node.zLaserCurveNode_angle
-zLaserCurveNode_speed = offsets[_module_name].laser_curve_node.zLaserCurveNode_speed
-zLaserCurveNode_size  = offsets[_module_name].laser_curve_node.zLaserCurveNode_size
-
-# Ascii 
-ascii_manager_pointer = offsets[_module_name].ascii.ascii_manager_pointer
-global_timer          = offsets[_module_name].ascii.global_timer
-
-# ANM
-anm_manager_pointer = offsets[_module_name].anm.anm_manager_pointer
-zAnmManager_list    = offsets[_module_name].anm.zAnmManager_list
-zAnmVm_rotation_z   = offsets[_module_name].anm.zAnmVm_rotation_z
-zAnmVm_id           = offsets[_module_name].anm.zAnmVm_id
-zAnmVm_entity_pos   = offsets[_module_name].anm.zAnmVm_entity_pos
-
-# Spell Card
-spellcard_pointer    = offsets[_module_name].spell_card.spellcard_pointer
-zSpellcard_indicator = offsets[_module_name].spell_card.zSpellcard_indicator
-zSpellcard_id        = offsets[_module_name].spell_card.zSpellcard_id
-zSpellcard_bonus     = offsets[_module_name].spell_card.zSpellcard_bonus
-
-# GUI
-gui_pointer          = offsets[_module_name].gui.gui_pointer
-zGui_bosstimer_s     = offsets[_module_name].gui.zGui_bosstimer_s
-zGui_bosstimer_ms    = offsets[_module_name].gui.zGui_bosstimer_ms
-zGui_bosstimer_drawn = offsets[_module_name].gui.zGui_bosstimer_drawn
-
-# Game Thread
-game_thread_pointer = offsets[_module_name].game_thread.game_thread_pointer
-stage_timer         = offsets[_module_name].game_thread.stage_timer
-
-# Supervisor
-supervisor_addr = offsets[_module_name].supervisor.supervisor_addr
-game_mode       = offsets[_module_name].supervisor.game_mode
-rng_seed        = offsets[_module_name].supervisor.rng_seed
-
-# Game-specific
-if game_id in has_bullet_delay:
-    zBullet_ex_delay_timer = offsets[_module_name].game_specific['zBullet_ex_delay_timer']
-
-if game_id in has_bullet_intangible:
-    bullet_typedefs_radius = offsets[_module_name].game_specific['bullet_typedefs_radius']
-    bullet_typedef_len     = offsets[_module_name].game_specific['bullet_typedef_len']
-
-if game_id in has_charging_youmu:
-    zPlayer_youmu_charge_timer = offsets[_module_name].game_specific['zPlayer_youmu_charge_timer']
-
-if game_id == 13:
-    trance_meter = offsets[_module_name].game_specific['trance_meter']
-    trance_state = offsets[_module_name].game_specific['trance_state']
-    extend_count = offsets[_module_name].game_specific['extend_count']
-    spirit_types = offsets[_module_name].game_specific['spirit_types']
-
-    spirit_manager_pointer       = offsets[_module_name].game_specific['spirit_manager_pointer']
-    zSpiritManager_array         = offsets[_module_name].game_specific['zSpiritManager_array']
-    zSpiritManager_array_len     = offsets[_module_name].game_specific['zSpiritManager_array_len']
-    zSpiritManager_spawn_total   = offsets[_module_name].game_specific['zSpiritManager_spawn_total']
-    zSpiritManager_chain_timer   = offsets[_module_name].game_specific['zSpiritManager_chain_timer']
-    zSpiritManager_chain_counter = offsets[_module_name].game_specific['zSpiritManager_chain_counter']
-    zSpiritItem_type  = offsets[_module_name].game_specific['zSpiritItem_type']
-    zSpiritItem_state = offsets[_module_name].game_specific['zSpiritItem_state']
-    zSpiritItem_pos   = offsets[_module_name].game_specific['zSpiritItem_pos']
-    zSpiritItem_vel   = offsets[_module_name].game_specific['zSpiritItem_vel']
-    zSpiritItem_timer = offsets[_module_name].game_specific['zSpiritItem_timer']
-    zSpiritItem_len   = offsets[_module_name].game_specific['zSpiritItem_len']
-    square_echo_func     = offsets[_module_name].game_specific['square_echo_func']
-    inv_square_echo_func = offsets[_module_name].game_specific['inv_square_echo_func']
-    circle_echo_func     = offsets[_module_name].game_specific['circle_echo_func']
-    miko_final_func      = offsets[_module_name].game_specific['miko_final_func']
-    zEnemy_f0_echo_x1    = offsets[_module_name].game_specific['zEnemy_f0_echo_x1']
-    zEnemy_f1_echo_x2    = offsets[_module_name].game_specific['zEnemy_f1_echo_x2']
-    zEnemy_f2_echo_y1    = offsets[_module_name].game_specific['zEnemy_f2_echo_y1']
-    zEnemy_f3_echo_y2    = offsets[_module_name].game_specific['zEnemy_f3_echo_y2']
-    zEnemy_spirit_time_max  = offsets[_module_name].game_specific['zEnemy_spirit_time_max']
-    zEnemy_max_spirit_count = offsets[_module_name].game_specific['zEnemy_max_spirit_count']
-
-elif game_id == 14:
-    bonus_count        = offsets[_module_name].game_specific['bonus_count']
-    seija_anm_pointer  = offsets[_module_name].game_specific['seija_anm_pointer']
-    seija_flip_x       = offsets[_module_name].game_specific['seija_flip_x']
-    seija_flip_y       = offsets[_module_name].game_specific['seija_flip_y']
-    zPlayer_scale      = offsets[_module_name].game_specific['zPlayer_scale']
-    sukuna_penult_func = offsets[_module_name].game_specific['sukuna_penult_func']
-
-elif game_id == 15:
-    time_in_chapter = offsets[_module_name].game_specific['time_in_chapter']
-    chapter_graze   = offsets[_module_name].game_specific['chapter_graze']
-    chapter_enemy_weight_spawned   = offsets[_module_name].game_specific['chapter_enemy_weight_spawned']
-    chapter_enemy_weight_destroyed = offsets[_module_name].game_specific['chapter_enemy_weight_destroyed']
-    pointdevice_resets_total       = offsets[_module_name].game_specific['pointdevice_resets_total']
-    pointdevice_resets_chapter     = offsets[_module_name].game_specific['pointdevice_resets_chapter']
-    modeflags            = offsets[_module_name].game_specific['modeflags']
-    zBomb_reisen_shields = offsets[_module_name].game_specific['zBomb_reisen_shields']
-    zEnemy_weight        = offsets[_module_name].game_specific['zEnemy_weight']
-    zBullet_graze_timer  = offsets[_module_name].game_specific['zBullet_graze_timer']
-    zItemManager_graze_slowdown_factor = offsets[_module_name].game_specific['zItemManager_graze_slowdown_factor']
-    graze_inferno_func = offsets[_module_name].game_specific['graze_inferno_func']
-
-elif game_id == 16:
-    next_extend_score_index = offsets[_module_name].game_specific['next_extend_score_index']
-    extend_scores_maingame  = offsets[_module_name].game_specific['extend_scores_maingame']
-    extend_scores_extra     = offsets[_module_name].game_specific['extend_scores_extra']
-    zEnemy_season_drop      = offsets[_module_name].game_specific['zEnemy_season_drop']
-    zSeasonDrop_timer       = offsets[_module_name].game_specific['zSeasonDrop_timer']
-    zSeasonDrop_max_time    = offsets[_module_name].game_specific['zSeasonDrop_max_time']
-    zSeasonDrop_min_count   = offsets[_module_name].game_specific['zSeasonDrop_min_count']
-    zSeasonDrop_damage_for_drop = offsets[_module_name].game_specific['zSeasonDrop_damage_for_drop']
-    zSeasonDrop_total_damage    = offsets[_module_name].game_specific['zSeasonDrop_total_damage']
-    snowman_func = offsets[_module_name].game_specific['snowman_func']
-
-    zPlayer_season_level    = offsets[_module_name].game_specific['zPlayer_season_level']
-    season_power            = offsets[_module_name].game_specific['season_power']
-    season_power_thresholds = offsets[_module_name].game_specific['season_power_thresholds']
-    season_disable_func     = offsets[_module_name].game_specific['season_disable_func']
-
-    season_bomb_ptr = offsets[_module_name].game_specific['season_bomb_ptr']
-    zBomb_timer     = offsets[_module_name].game_specific['zBomb_timer']
-
-elif game_id == 17:
-    token_types                 = offsets[_module_name].game_specific['token_types']
-    held_token_array            = offsets[_module_name].game_specific['held_token_array']
-    token_manager_pointer       = offsets[_module_name].game_specific['token_manager_pointer']
-    zTokenManager_list          = offsets[_module_name].game_specific['zTokenManager_list']
-    zTokenManager_otter_anm_ids = offsets[_module_name].game_specific['zTokenManager_otter_anm_ids']
-    zToken_type         = offsets[_module_name].game_specific['zToken_type']
-    zToken_pos          = offsets[_module_name].game_specific['zToken_pos']
-    zToken_base_vel     = offsets[_module_name].game_specific['zToken_base_vel']
-    zToken_alive_timer  = offsets[_module_name].game_specific['zToken_alive_timer']
-    zToken_switch_timer = offsets[_module_name].game_specific['zToken_switch_timer']
-    zToken_flags        = offsets[_module_name].game_specific['zToken_flags']
-
-    hyper_types             = offsets[_module_name].game_specific['hyper_types']
-    hyper_token_spawn_delay = offsets[_module_name].game_specific['hyper_token_spawn_delay']
-    hyper_time_remaining    = offsets[_module_name].game_specific['hyper_time_remaining']
-    hyper_duration          = offsets[_module_name].game_specific['hyper_duration']
-    hyper_type              = offsets[_module_name].game_specific['hyper_type']
-    hyper_token_time_bonus  = offsets[_module_name].game_specific['hyper_token_time_bonus']
-    hyper_flags             = offsets[_module_name].game_specific['hyper_flags']
-
-    zAnmVm_rotation  = offsets[_module_name].game_specific['zAnmVm_rotation']
-    zBulletManager_recent_graze_gains = offsets[_module_name].game_specific['zBulletManager_recent_graze_gains']
-
-elif game_id == 18:
-    funds = offsets[_module_name].game_specific['funds']
-    card_nicknames = offsets[_module_name].game_specific['card_nicknames']
-
-    zBulletManager_cancel_counter   = offsets[_module_name].game_specific['zBulletManager_cancel_counter']
-    ability_manager_pointer         = offsets[_module_name].game_specific['ability_manager_pointer']
-    zAbilityManager_list            = offsets[_module_name].game_specific['zAbilityManager_list']
-    zAbilityManager_total_cards     = offsets[_module_name].game_specific['zAbilityManager_total_cards']
-    zAbilityManager_total_actives   = offsets[_module_name].game_specific['zAbilityManager_total_actives']
-    zAbilityManager_total_equipmt   = offsets[_module_name].game_specific['zAbilityManager_total_equipmt']
-    zAbilityManager_total_passive   = offsets[_module_name].game_specific['zAbilityManager_total_passive']
-    zAbilityManager_selected_active = offsets[_module_name].game_specific['zAbilityManager_selected_active']
-    zCard_type        = offsets[_module_name].game_specific['zCard_type']
-    zCard_charge      = offsets[_module_name].game_specific['zCard_charge']
-    zCard_charge_max  = offsets[_module_name].game_specific['zCard_charge_max']
-    zCard_name        = offsets[_module_name].game_specific['zCard_name_ptr_ptr']
-    zCard_flags       = offsets[_module_name].game_specific['zCard_flags']
-    zCard_counter     = offsets[_module_name].game_specific['zCard_counter']
-    zPlayer_sakuya_knives_angle  = offsets[_module_name].game_specific['zPlayer_sakuya_knives_angle']
-    zPlayer_sakuya_knives_spread = offsets[_module_name].game_specific['zPlayer_sakuya_knives_spread']
-    asylum_func = offsets[_module_name].game_specific['asylum_func']
-
-elif game_id == 19:
-    zPlayer_hitstun_status      = offsets[_module_name].game_specific['zPlayer_hitstun_status']
-    zPlayer_shield_status       = offsets[_module_name].game_specific['zPlayer_shield_status']
-    zPlayer_last_combo_hits     = offsets[_module_name].game_specific['zPlayer_last_combo_hits']
-    zPlayer_current_combo_hits  = offsets[_module_name].game_specific['zPlayer_current_combo_hits']
-    zPlayer_current_combo_chain = offsets[_module_name].game_specific['zPlayer_current_combo_chain']
-    zBullet_can_gen_items_timer = offsets[_module_name].game_specific['zBullet_can_gen_items_timer']
-    zBullet_can_gen_items       = offsets[_module_name].game_specific['zBullet_can_gen_items']
-    zEnemyManager_pattern_count = offsets[_module_name].game_specific['zEnemyManager_pattern_count']
-    zItemManager_spawn_total    = offsets[_module_name].game_specific['zItemManager_spawn_total']
-    zGaugeManager_charging_bool = offsets[_module_name].game_specific['zGaugeManager_charging_bool']
-    zGaugeManager_gauge_charge  = offsets[_module_name].game_specific['zGaugeManager_gauge_charge']
-    zGaugeManager_gauge_fill    = offsets[_module_name].game_specific['zGaugeManager_gauge_fill']
-    zAbilityManager_total_cards = offsets[_module_name].game_specific['zAbilityManager_total_cards']
-    zAnmManager_list_p2         = offsets[_module_name].game_specific['zAnmManager_list_p2']
-    zGui_p2_bosstimer_s         = offsets[_module_name].game_specific['zGui_p2_bosstimer_s']
-    zGui_p2_bosstimer_ms        = offsets[_module_name].game_specific['zGui_p2_bosstimer_ms']
-    zGui_p2_bosstimer_drawn     = offsets[_module_name].game_specific['zGui_p2_bosstimer_drawn']
-    zAi_story_mode_pointer      = offsets[_module_name].game_specific['zAi_story_mode_pointer']
-    zStoryAi_fight_phase        = offsets[_module_name].game_specific['zStoryAi_fight_phase']
-    zStoryAi_progress_meter     = offsets[_module_name].game_specific['zStoryAi_progress_meter']
-
-    gauge_manager_pointer   = offsets[_module_name].game_specific['gauge_manager_pointer']
-    ability_manager_pointer = offsets[_module_name].game_specific['ability_manager_pointer']
-
-    p2_bullet_manager_pointer  = offsets[_module_name].game_specific['p2_bullet_manager_pointer']
-    p2_player_pointer          = offsets[_module_name].game_specific['p2_player_pointer']
-    p2_bomb_pointer            = offsets[_module_name].game_specific['p2_bomb_pointer']
-    p2_enemy_manager_pointer   = offsets[_module_name].game_specific['p2_enemy_manager_pointer']
-    p2_item_manager_pointer    = offsets[_module_name].game_specific['p2_item_manager_pointer']
-    p2_spellcard_pointer       = offsets[_module_name].game_specific['p2_spellcard_pointer']
-    p2_laser_manager_pointer   = offsets[_module_name].game_specific['p2_laser_manager_pointer']
-    p2_gauge_manager_pointer   = offsets[_module_name].game_specific['p2_gauge_manager_pointer']
-    p2_ability_manager_pointer = offsets[_module_name].game_specific['p2_ability_manager_pointer']
-    p2_ai_pointer              = offsets[_module_name].game_specific['p2_ai_pointer']
-
-    charge_attack_threshold = offsets[_module_name].game_specific['charge_attack_threshold']
-    skill_attack_threshold  = offsets[_module_name].game_specific['skill_attack_threshold']
-    ex_attack_threshold     = offsets[_module_name].game_specific['ex_attack_threshold']
-    boss_attack_threshold   = offsets[_module_name].game_specific['boss_attack_threshold']
-    ex_attack_level   = offsets[_module_name].game_specific['ex_attack_level']
-    boss_attack_level = offsets[_module_name].game_specific['boss_attack_level']
-    lives_max = offsets[_module_name].game_specific['lives_max']
-    pvp_wins  = offsets[_module_name].game_specific['pvp_wins']
-
-    p2_input    = offsets[_module_name].game_specific['p2_input']
-    p2_shottype = offsets[_module_name].game_specific['p2_shottype']
-    p2_power    = offsets[_module_name].game_specific['p2_power']
-    p2_charge_attack_threshold = offsets[_module_name].game_specific['p2_charge_attack_threshold']
-    p2_skill_attack_threshold  = offsets[_module_name].game_specific['p2_skill_attack_threshold']
-    p2_ex_attack_threshold     = offsets[_module_name].game_specific['p2_ex_attack_threshold']
-    p2_boss_attack_threshold   = offsets[_module_name].game_specific['p2_boss_attack_threshold']
-    p2_ex_attack_level   = offsets[_module_name].game_specific['p2_ex_attack_level']
-    p2_boss_attack_level = offsets[_module_name].game_specific['p2_boss_attack_level']
-    p2_lives       = offsets[_module_name].game_specific['p2_lives']
-    p2_lives_max   = offsets[_module_name].game_specific['p2_lives_max']
-    p2_bombs       = offsets[_module_name].game_specific['p2_bombs']
-    p2_bomb_pieces = offsets[_module_name].game_specific['p2_bomb_pieces']
-    p2_graze       = offsets[_module_name].game_specific['p2_graze']
-    p2_pvp_wins    = offsets[_module_name].game_specific['p2_pvp_wins']
-
-    pvp_timer_start = offsets[_module_name].game_specific['pvp_timer_start']
-    pvp_timer       = offsets[_module_name].game_specific['pvp_timer']
-    rank_max        = offsets[_module_name].game_specific['rank_max']
-
-# Associations
-bullet_types   = offsets[_module_name].associations.bullet_types
-enemy_anms     = offsets[_module_name].associations.enemy_anms
-item_types     = offsets[_module_name].associations.item_types
-pause_states   = offsets[_module_name].associations.pause_states
-game_modes     = offsets[_module_name].associations.game_modes
-characters     = offsets[_module_name].associations.characters
-subshots       = offsets[_module_name].associations.subshots
-difficulties   = offsets[_module_name].associations.difficulties
-life_piece_req = offsets[_module_name].associations.life_piece_req
-bomb_piece_req = offsets[_module_name].associations.bomb_piece_req
-world_width    = offsets[_module_name].associations.world_width
-world_height   = offsets[_module_name].associations.world_height
 
 # Tweak graph colors here
 _gold        = ('Gold',        (255, 215, 0))
@@ -556,6 +156,8 @@ color8        = [_black, _red, _pink, _blue, _cyan, _green, _yellow, _white]
 color16       = [_black, _dark_red, _red, _purple, _pink, _dark_blue, _blue, _dark_cyan, _cyan, _dark_green, _green, _lime, _dark_yellow, _yellow, _orange, _white]
 curve_sprites = ['Standard', 'Thunder', 'Grapevine'] #not worth setting per-game
 
+
+# ==========================================================
 # Interface Method Definitions
 
 def get_rgb_screenshot(): #Note: fails if the window is not visible!
@@ -821,7 +423,8 @@ def _random_player():
                     cur_frame+1])))
         apply_action_int(action)
 
-# Step 5 - Initial reads used by extraction context
+
+# Step 6 - Initial reads used by extraction context
 if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_mode, rel=True)] != 'Game World on Screen':
     print("Error: Game world not loaded.")
     exit()
