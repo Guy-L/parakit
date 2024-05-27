@@ -508,7 +508,7 @@ class AnalysisPlotItems(AnalysisPlot):
 
             x_coords = [item.position[0] for item in items]
             y_coords = [item.position[1] for item in items]
-            colors = [item_color(get_item_type(item.item_type)) for item in items]
+            colors = [item_color(get_item_type(item.item_type), self.lastframe.env.subshot) for item in items]
             sizes = [item_size(get_item_type(item.item_type)) for item in items]
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, marker='*')

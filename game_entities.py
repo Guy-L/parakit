@@ -7,8 +7,7 @@ import numpy as np
 # All-game entities ==============================
 # ================================================
 # Note: IDs are unique numbers you can use to track
-#  an entity during its lifetime (their address in
-#  memory).
+#  an entity during its lifetime.
 
 @dataclass
 class Bullet:
@@ -136,6 +135,38 @@ class PlayerShot:
 class Spellcard:
     spell_id: int
     capture_bonus: int
+
+# ================================================
+# Environment data ===============================
+# ================================================
+# Note: RunEnvironment variables are only
+# extracted once in sequence extraction.
+@dataclass
+class RunEnvironment:
+    difficulty: int #meaning: difficulties[difficulty]
+    character: int #meaning: characters[character]
+    subshot: int #meaning: subshots[subshot]
+    stage: int
+
+@dataclass
+class GameConstants:
+    deathbomb_window_frames: int #can change in UM
+    poc_line_height: int #can change in UM
+    life_piece_req: int #can change in TD
+    bomb_piece_req: int
+    world_width: int
+    world_height: int
+
+# ================================================
+# Game specific environment data =================
+# ================================================
+@dataclass
+class RunEnvironmentUDoALG(RunEnvironment):
+    card_count: int
+    charge_attack_threshold: int #to compare against gauge_charge; c1
+    charge_skill_threshold: int #to compare against gauge_charge; c2
+    ex_attack_threshold: int #to compare against gauge_charge; c3
+    boss_attack_threshold: int #to compare against gauge_charge; c4
 
 # ================================================
 # Game specific game entities ====================
@@ -283,6 +314,7 @@ class P2Side:
     ex_attack_level: int
     boss_attack_level: int
     pvp_wins: int
+    env: RunEnvironmentUDoALG
 
 # ================================================
 # `game_specific` schemas ========================
@@ -296,7 +328,6 @@ class GameSpecific(ABC):
 # Ten Desires
 @dataclass
 class GameSpecificTD(GameSpecific):
-    life_piece_req: int
     trance_active: bool
     trance_meter: int #[0, 600], doubles as remaining frame counter for trances (600 frames = 10s)
     chain_timer: int #[0, 60] frames
@@ -403,6 +434,7 @@ class GameState:
     seq_real_time: Optional[float]
     pause_state: int
     game_mode: int
+    game_speed: float #usually 1
     score: int
     lives: int
     life_pieces: int #set to 0 in pre-SA + UDoALG for convenience
@@ -416,6 +448,7 @@ class GameState:
     rank: int
     input: int
     rng: int
+    continues: int
     player_position: Tuple[float, float]
     player_hitbox_rad: float
     player_iframes: int
@@ -430,3 +463,5 @@ class GameState:
     lasers: List[Laser]
     screen: Optional[np.ndarray]
     game_specific: GameSpecific
+    constants: GameConstants
+    env: RunEnvironment

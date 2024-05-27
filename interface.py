@@ -1,5 +1,6 @@
 from settings import interface_settings as _settings
 from offsets import offsets
+from game_entities import *
 import pygetwindow as gw
 import pyautogui
 import psutil
@@ -431,10 +432,6 @@ if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_m
 
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
-difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
-character = read_int(character, rel=True) #not in states but useful for analysis
-subshot = read_int(subshot, rel=True) #not in states but useful for analysis
-poc_line_height = 148 if marisa_lower_poc_line and characters[character] == 'Marisa' else 128
 
 zPlayer        = read_int(player_pointer, rel=True)
 zBomb          = read_int(bomb_pointer, rel=True)
@@ -488,3 +485,42 @@ for enemy_manager in ((zEnemyManager, zEnemyManagerP2) if 'zBulletManagerP2' in 
         ecl_sub_starts.append(read_int(subroutines + 0x4 + 0x8 * i))
 
     ecl_sub_arrs[enemy_manager] = (ecl_sub_names, ecl_sub_starts)
+
+
+run_environment = RunEnvironment(
+    difficulty = read_int(difficulty, rel=True),
+    character = read_int(character, rel=True),
+    subshot = read_int(subshot, rel=True),
+    stage = read_int(stage, rel=True),
+)
+
+game_constants = GameConstants(
+    deathbomb_window_frames = deathbomb_window_frames,
+    poc_line_height         = 148 if marisa_lower_poc_line and characters[run_environment.character] == 'Marisa' else 128,
+    life_piece_req          = life_piece_req,
+    bomb_piece_req          = bomb_piece_req,
+    world_width             = world_width,
+    world_height            = world_height,
+)
+
+if game_id == 19:
+    run_environment = RunEnvironmentUDoALG(
+        **run_environment.__dict__,
+        card_count              = read_int(zAbilityManager + zAbilityManager_total_cards),
+        charge_attack_threshold = read_int(charge_attack_threshold, rel=True),
+        charge_skill_threshold  = read_int(skill_attack_threshold, rel=True),
+        ex_attack_threshold     = read_int(ex_attack_threshold, rel=True),
+        boss_attack_threshold   = read_int(boss_attack_threshold, rel=True),
+    )
+
+    p2_run_environment = RunEnvironmentUDoALG(
+        difficulty = run_environment.difficulty,
+        character  = read_int(p2_shottype, rel=True),
+        subshot    = 0,
+        stage      = run_environment.stage,
+        card_count              = read_int(zAbilityManagerP2 + zAbilityManager_total_cards),
+        charge_attack_threshold = read_int(p2_charge_attack_threshold, rel=True),
+        charge_skill_threshold  = read_int(p2_skill_attack_threshold, rel=True),
+        ex_attack_threshold     = read_int(p2_ex_attack_threshold, rel=True),
+        boss_attack_threshold   = read_int(p2_boss_attack_threshold, rel=True),
+    )

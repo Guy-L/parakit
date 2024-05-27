@@ -28,7 +28,9 @@ from typing import List, Dict, Tuple, Optional
 
 @dataclass
 class StaticsOffsets:
+    game_speed: int
     score: int
+    continues: int
     graze: int
     piv: int
     power: int
@@ -39,18 +41,16 @@ class StaticsOffsets:
     stage_chapter: int
     rank: int
     input: int
-    rng: int
+    visual_rng: int #not extracted
+    replay_rng: int
     pause_state: int
 
 @dataclass
-class UntrackedStaticsOffsets:
-    game_speed: int
-    visual_rng: int
+class EnvironmentOffsets:
     character: int
     subshot: int
     difficulty: int
     stage: int
-    continues: int
 
 @dataclass
 class PlayerOffsets:
@@ -237,7 +237,7 @@ class GameThreadOffsets:
 class SupervisorOffsets:
     supervisor_addr: int
     zSupervisor_game_mode: int #to relate to the game modes dict in Associations
-    zSupervisor_rng_seed: int #based on time when game was launched; never changes
+    zSupervisor_rng_seed: int #based on time when game was launched; never changes; not extracted
 
 @dataclass
 class Associations:
@@ -270,7 +270,7 @@ class Associations:
 @dataclass
 class Offset:
     statics: StaticsOffsets
-    statics_untracked: UntrackedStaticsOffsets
+    environment: EnvironmentOffsets
     player: PlayerOffsets
     player_options: PlayerOptionOffsets
     player_shots: PlayerShotOffsets
@@ -371,7 +371,9 @@ offsets = {
     #=============================================================
     'th13.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xc0a28,
             score         = 0xbe7c0,
+            continues     = 0xbe7c8,
             graze         = 0xbe7d0,
             piv           = 0xbe7dc,
             power         = 0xbe7e8,
@@ -382,17 +384,15 @@ offsets = {
             stage_chapter = 0xbe824,
             rank          = 0xbe7cc,
             input         = 0xe4c08,
-            rng           = 0xdc324,
+            visual_rng    = 0xdc31c,
+            replay_rng    = 0xdc324,
             pause_state   = 0xdf120,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xc0a28,
-            visual_rng      = 0xdc31c,
+        environment = EnvironmentOffsets(
             character       = 0xbe7b8,
             subshot         = 0xbe7bc,
             difficulty      = 0xbe7c4,
             stage           = 0xbe81c,
-            continues       = 0xbe7c8,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xc22c4,
@@ -594,6 +594,7 @@ offsets = {
             'trance_meter': 0xbe808,
             'trance_state': 0xbe80c,
             'extend_count': 0xbe7fc,
+            'life_piece_reqs': [8, 10, 12, 15, 18, 20, 25],
             'spirit_types': ['LifeP.', 'Blue', 'BombP.', 'Gray'],
             'spirit_manager_pointer': 0xc22a4,
             'zSpiritManager_array': 0x14,
@@ -625,7 +626,9 @@ offsets = {
     #=============================================================
     'th14.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xd8f58,
             score         = 0xf5830,
+            continues     = 0xf5838,
             graze         = 0xf5840,
             piv           = 0xf584c,
             power         = 0xf5858,
@@ -636,17 +639,15 @@ offsets = {
             stage_chapter = 0xf58ac,
             rank          = 0xf583c,
             input         = 0xd6a90,
-            rng           = 0xdb510,
+            visual_rng    = 0xdb508,
+            replay_rng    = 0xdb510,
             pause_state   = 0xf7ac8,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xd8f58,
-            visual_rng      = 0xdb508,
+        environment = EnvironmentOffsets(
             character       = 0xf5828,
             subshot         = 0xf582c,
             difficulty      = 0xf5834,
             stage           = 0xf58a4,
-            continues       = 0xf5838,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xdb67c,
@@ -863,7 +864,9 @@ offsets = {
     #=============================================================
     'th15.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xe73e8,
             score         = 0xe740c,
+            continues     = 0xe7414,
             graze         = 0xe741c,
             piv           = 0xe7434,
             power         = 0xe7440,
@@ -874,17 +877,15 @@ offsets = {
             stage_chapter = 0xe73f8,
             rank          = 0xe7418,
             input         = 0xe6f28,
-            rng           = 0xe9a48,
+            replay_rng    = 0xe9a48,
+            visual_rng    = 0xe9a40,
             pause_state   = 0x11bc60,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xe73e8,
-            visual_rng      = 0xe9a40,
+        environment = EnvironmentOffsets(
             character       = 0xe7404,
             subshot         = 0xe7408,
             difficulty      = 0xe7410,
             stage           = 0xe73f0,
-            continues       = 0xe7414,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xe9bb8,
@@ -1102,7 +1103,9 @@ offsets = {
     #=============================================================
     'th16.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xa5788,
             score         = 0xa57b0,
+            continues     = 0xa57b8,
             graze         = 0xa57c0,
             piv           = 0xa57d8,
             power         = 0xa57e4,
@@ -1113,17 +1116,15 @@ offsets = {
             stage_chapter = 0xa5798,
             rank          = 0xa57bc,
             input         = 0xa52c8,
-            rng           = 0xa6d88,
+            visual_rng    = 0xa6d80,
+            replay_rng    = 0xa6d88,
             pause_state   = 0xd9d90,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xa5788,
-            visual_rng      = 0xa6d80,
+        environment = EnvironmentOffsets(
             character       = 0xa57a4,
             subshot         = 0xa57ac,
             difficulty      = 0xa57b4,
             stage           = 0xa5790,
-            continues       = 0xa57b8,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xa6ef8,
@@ -1351,7 +1352,9 @@ offsets = {
     #=============================================================
     'th17.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xb5918,
             score         = 0xb59fc,
+            continues     = 0xb5a04,
             graze         = 0xb5a0c,
             piv           = 0xb5a24,
             power         = 0xb5a30,
@@ -1362,17 +1365,15 @@ offsets = {
             stage_chapter = 0xb59e4,
             rank          = 0xb5a08,
             input         = 0xb3448,
-            rng           = 0xb7668,
+            visual_rng    = 0xb7660,
+            replay_rng    = 0xb7668,
             pause_state   = 0x124778,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xb5918,
-            visual_rng      = 0xb7660,
+        environment = EnvironmentOffsets(
             character       = 0xb59f4,
             subshot         = 0xb59f8,
             difficulty      = 0xb5a00,
             stage           = 0xb59dc,
-            continues       = 0xb5a04,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xb77d0,
@@ -1601,7 +1602,9 @@ offsets = {
     #=============================================================
     'th18.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0xccbf0,
             score         = 0xcccfc,
+            continues     = 0xccd04,
             graze         = 0xccd0c,
             piv           = 0xccd24,
             power         = 0xccd38,
@@ -1612,17 +1615,15 @@ offsets = {
             stage_chapter = 0xccce4,
             rank          = 0xccd08,
             input         = 0xca428,
-            rng           = 0xcf288,
+            visual_rng    = 0xcf280,
+            replay_rng    = 0xcf288,
             pause_state   = 0x16ad00,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0xccbf0,
-            visual_rng      = 0xcf280,
+        environment = EnvironmentOffsets(
             character       = 0xcccf4,
             subshot         = 0xcccf8,
             difficulty      = 0xccd00,
             stage           = 0xcccdc,
-            continues       = 0xccd04,
         ),
         player = PlayerOffsets(
             player_pointer   = 0xcf410,
@@ -1849,7 +1850,9 @@ offsets = {
     #=============================================================
     'th19.exe': Offset(
         statics = StaticsOffsets(
+            game_speed    = 0x1a356c,
             score         = 0x207910,
+            continues     = 0x207a9c,
             graze         = 0x20798c,
             piv           = 0x207918, #note: unsure, should always be 0
             power         = 0x207924,
@@ -1860,17 +1863,15 @@ offsets = {
             stage_chapter = 0x2082cc,
             rank          = 0x207aa0,
             input         = 0x200aec,
-            rng           = 0x1ae420,
+            visual_rng    = 0x1ae410,
+            replay_rng    = 0x1ae420,
             pause_state   = 0x20b210,
         ),
-        statics_untracked = UntrackedStaticsOffsets(
-            game_speed      = 0x1a356c,
-            visual_rng      = 0x1ae410,
+        environment = EnvironmentOffsets(
             character       = 0x20791c,
             subshot         = 0x207920,
             difficulty      = 0x207a90,
             stage           = 0x2082c0,
-            continues       = 0x207a9c,
         ),
         player = PlayerOffsets(
             player_pointer   = 0x1ae474,
@@ -2147,7 +2148,9 @@ offsets = {
 #
 #    'thXX.exe': Offset(
 #        statics = StaticsOffsets(
+#            game_speed    = None,
 #            score         = None,
+#            continues     = None,
 #            graze         = None,
 #            piv           = None,
 #            power         = None,
@@ -2158,17 +2161,15 @@ offsets = {
 #            stage_chapter = None,
 #            rank          = None,
 #            input         = None,
-#            rng           = None,
+#            visual_rng    = None,
+#            replay_rng    = None,
 #            pause_state   = None,
 #        ),
-#        statics_untracked = UntrackedStaticsOffsets(
-#            game_speed      = None,
-#            visual_rng      = None,
+#        environment = EnvironmentOffsets(
 #            character       = None,
 #            subshot         = None,
 #            difficulty      = None,
 #            stage           = None,
-#            continues       = None,
 #        ),
 #        player = PlayerOffsets(
 #            player_pointer   = None,

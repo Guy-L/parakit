@@ -32,7 +32,6 @@ Performed if `ingame_duration` is unspecified or less than 2.
 
 | Name / Type | Description | Default |
 |-|-|-|
-| **`show_untracked`**<br>(bool) | If enabled, prints additional state data (difficulty, character, visual RNG...) deemed not worth tracking for sequence extraction due to either not changing often or being irrelevant. | `False` |
 | **`show_enemy_drops`**<br>(bool) | If enabled, a second line listing enemy drops will be added to enemy lines (when applicable). | `False` |
 | **`show_player_shots`**<br>(bool) | If enabled, the player shot data table will be displayed. | `False` |
 | **`list_print_limit`**<br>(int) | Maximum number of lines in an entity list to be printed before being cut off. | `30` |

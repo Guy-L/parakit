@@ -1,6 +1,5 @@
 from settings import extraction_settings, singlext_settings, seqext_settings
 from interface import *
-from game_entities import *
 import analysis_examples as analysis #(includes analysis.py analyzers)
 import sys
 import math
@@ -518,9 +517,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
     game_specific = None
 
     if game_id == 13:
-        global life_piece_req
-        life_piece_reqs = [8, 10, 12, 15, 18, 20, 25]
-        life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
+        game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
 
         kyouko = None
         echo_func = 0x0
@@ -555,7 +552,6 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 )
 
         game_specific = GameSpecificTD(
-            life_piece_req          = life_piece_req,
             trance_active           = read_int(trance_state, rel=True) != 0,
             trance_meter            = read_int(trance_meter, rel=True),
             spawned_spirit_count    = read_int(zSpiritManager + zSpiritManager_spawn_total),
@@ -644,11 +640,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         )
 
     elif game_id == 18:
-        global deathbomb_window_frames
-        deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
-
-        global poc_line_height
-        poc_line_height = int(read_float(zPlayer + zPlayer_poc_line_height))
+        game_constants.deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
+        game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
 
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
@@ -744,6 +737,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 ex_attack_level     = read_int(p2_ex_attack_level, rel=True),
                 boss_attack_level   = read_int(p2_boss_attack_level, rel=True),
                 pvp_wins            = read_int(p2_pvp_wins, rel=True),
+                env                 = p2_run_environment,
             )
 
         game_specific = GameSpecificUDoALG(
@@ -780,6 +774,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
         seq_real_time       = real_time,
         pause_state         = read_int(pause_state, rel=True),
         game_mode           = read_int(game_mode, rel=True),
+        game_speed          = read_float(game_speed, rel=True),
         score               = read_int(score, rel=True) * 10,
         lives               = read_int(lives, rel=True, signed=True),
         life_pieces         = read_int(life_pieces, rel=True) if life_pieces else 0,
@@ -792,14 +787,15 @@ def extract_game_state(frame_id = 0, real_time = 0):
         spellcard           = extract_spellcard(),
         rank                = read_int(rank, rel=True),
         input               = read_int(input, rel=True),
-        rng                 = read_int(rng, rel=True),
+        rng                 = read_int(replay_rng, rel=True),
+        continues           = read_int(continues, rel=True),
         player_position     = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
         player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
         player_iframes      = read_int(zPlayer + zPlayer_iframes),
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
         player_options_pos  = extract_player_option_positions(),
         player_shots        = extract_player_shots() if requires_player_shots else [],
-        player_deathbomb_f  = max(0, deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
+        player_deathbomb_f  = max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
         bomb_state          = read_int(zBomb + zBomb_state),
         bullets             = extract_bullets() if requires_bullets else [],
         enemies             = extract_enemies() if requires_enemies else [],
@@ -807,6 +803,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         lasers              = extract_lasers() if requires_lasers else [],
         screen              = get_rgb_screenshot() if requires_screenshots else None,
         game_specific       = game_specific,
+        constants           = game_constants,
+        env                 = run_environment,
     )
 
     return gs
@@ -818,11 +816,11 @@ def print_game_state(gs: GameState):
 
     # Basic resources
     basic_resources = f"| {gs.lives} lives"
-    if life_piece_req != None:
-        basic_resources += f" ({gs.life_pieces}/{life_piece_req} pieces)"
+    if gs.constants.life_piece_req != None:
+        basic_resources += f" ({gs.life_pieces}/{gs.constants.life_piece_req} pieces)"
     basic_resources += f"; {gs.bombs} bombs"
-    if bomb_piece_req != None:
-        basic_resources += f" ({gs.bomb_pieces}/{bomb_piece_req} pieces)"
+    if gs.constants.bomb_piece_req != None:
+        basic_resources += f" ({gs.bomb_pieces}/{gs.constants.bomb_piece_req} pieces)"
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
     # Player status
@@ -1348,38 +1346,6 @@ def print_game_state(gs: GameState):
                 print(f'• ... [{len(gs.player_shots)} shots total]')
                 break
 
-
-def print_untracked_vars():
-    print("[Bonus] Untracked values:")
-    print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")
-    print(f"| Game Speed: {read_float(game_speed, rel=True)}")
-    print(f"| Visual RNG: {read_int(visual_rng, rel=True)}")
-    print(f"| Character: {characters[character]}")
-
-    if 'p2_shottype' in globals():
-        print(f"| P2 Character: {characters[read_int(p2_shottype, rel=True)]}")
-    else:
-        print(f"| Sub-Shot: {subshots[subshot]}")
-
-    print(f"| Difficulty: {difficulties[difficulty]}")
-    print(f"| Stage #: {read_int(stage, rel=True)}")
-    print(f"| Continues: {read_int(continues, rel=True)}")
-
-    if game_id == 19:
-        print(f"| UDoALG Max Rank: {read_int(rank_max, rel=True)}")
-
-        print(f"\n| UDoALG P1 Card Count: {read_int(zAbilityManager + zAbilityManager_total_cards)}")
-        print(f"| UDoALG P1 Charge Attack Threshold: {read_int(charge_attack_threshold, rel=True)}")
-        print(f"| UDoALG P1 Charge Skill Threshold: {read_int(skill_attack_threshold, rel=True)}")
-        print(f"| UDoALG P1 Ex Attack Threshold: {read_int(ex_attack_threshold, rel=True)}")
-        print(f"| UDoALG P1 Boss Attack Threshold: {read_int(boss_attack_threshold, rel=True)}")
-
-        print(f"\n| UDoALG P2 Card Count: {read_int(zAbilityManagerP2 + zAbilityManager_total_cards)}")
-        print(f"| UDoALG P2 Charge Attack Threshold: {read_int(p2_charge_attack_threshold, rel=True)}")
-        print(f"| UDoALG P2 Charge Skill Threshold: {read_int(p2_skill_attack_threshold, rel=True)}")
-        print(f"| UDoALG P2 Ex Attack Threshold: {read_int(p2_ex_attack_threshold, rel=True)}")
-        print(f"| UDoALG P2 Boss Attack Threshold: {read_int(p2_boss_attack_threshold, rel=True)}")
-
 def on_exit():
     if game_process.is_running:
         game_process.resume()
@@ -1454,10 +1420,6 @@ if frame_count < 2 and not infinite: #Single-State Extraction
 
     print("================================")
     analysis.done()
-
-    if singlext_settings['show_untracked']:
-        print("\n================================")
-        print_untracked_vars()
 
 else: #State Sequence Extraction
     if infinite:
