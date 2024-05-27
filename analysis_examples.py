@@ -276,6 +276,13 @@ class AnalysisPlot(Analysis, ABC):
             ax.set_xlim(-world_width/2, world_width/2)
             ax.set_ylim(0, world_height)
             ax.invert_yaxis()
+
+            margin = 1 #for drawing world bounds off-screen (useful when panning graphs)
+            ax.plot([-world_width/2 - margin, world_width/2 + margin],   [-margin, -margin], color='gray')
+            ax.plot([-world_width/2 - margin, world_width/2 + margin],   [world_height+margin, world_height+margin], color='gray')
+            ax.plot([-world_width/2 - margin, -world_width/2 - margin],  [-margin, world_height+margin], color='gray')
+            ax.plot([world_width/2 + margin,  world_width/2 + margin],   [-margin, world_height+margin], color='gray')
+
         fig.canvas.setWindowTitle(self.plot_title)
 
         if len(axarr) == 2: #PvP game
