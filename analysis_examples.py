@@ -494,6 +494,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
 # Plot3: "Plot the item positions of the last frame at game scale (+player)" [only requires items]
 class AnalysisPlotItems(AnalysisPlot):
     plot_title = 'Item Scatter Plot'
+    show_poc_line = True
 
     def plot(self, ax, side2):
         items = self.lastframe.game_specific.side2.items if side2 else self.lastframe.items
@@ -512,6 +513,9 @@ class AnalysisPlotItems(AnalysisPlot):
             sizes = [item_size(get_item_type(item.item_type)) for item in items]
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, marker='*')
+            if self.show_poc_line:
+                poc_height = self.lastframe.constants.poc_line_height
+                ax.plot([-world_width/2, world_width/2], [poc_height, poc_height], color=(0.3,0,0,0.08))
 
         else:
             print(("(Player 2) " if side2 else "") + "No items to plot.")
