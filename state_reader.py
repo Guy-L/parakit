@@ -812,7 +812,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
 def print_game_state(gs: GameState):
     #======================================
     # Consistent prints ===================
-    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}")
+    shottype = characters[gs.env.character] + ('' if subshots[gs.env.subshot] == 'N/A' else "-" + subshots[gs.env.subshot])
+    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}; {shottype} {difficulties[gs.env.difficulty]} Stage {gs.env.stage}")
 
     # Basic resources
     basic_resources = f"| {gs.lives} lives"
@@ -1065,19 +1066,36 @@ def print_game_state(gs: GameState):
         print(f"| UDoALG Combo Hits: {gs.game_specific.current_combo_hits}")
         print(f"| UDoALG Item Spawn Total: {gs.game_specific.item_spawn_total}")
 
+        thresholds = [gs.env.charge_attack_threshold, gs.env.charge_skill_threshold, gs.env.ex_attack_threshold, gs.env.boss_attack_threshold]
+        names = ["attack", "skill", "ex", "boss"]
+        charge_met = ""
+        fill_met = ""
+
+        for t in range(len(thresholds)):
+            if gs.game_specific.gauge_charge >= thresholds[t]:
+                charge_met = names[t]
+            if gs.game_specific.gauge_fill >= thresholds[t]:
+                fill_met += names[t] + ", "
+
+        if charge_met:
+            charge_met = f"(release will send {charge_met})"
+        if fill_met:
+            fill_met = f"(can send {fill_met.rstrip(', ')})"
+
         if gs.game_specific.gauge_charging:
-            print(f"| UDoALG Gauge Charge: {gs.game_specific.gauge_charge} / {gs.game_specific.gauge_fill}")
-        print(f"| UDoALG Gauge Fill: {gs.game_specific.gauge_fill} / 2500")
-        print(f"| UDoALG Attack Levels: Lv{gs.game_specific.ex_attack_level + 1} Ex, Lv{gs.game_specific.boss_attack_level + 1} Boss")
+            print(f"| UDoALG Gauge Charge: {gs.game_specific.gauge_charge} / {gs.game_specific.gauge_fill} {charge_met}")
+
+        print(f"| UDoALG Gauge Fill: {gs.game_specific.gauge_fill} / 2500 {fill_met}")
+        print(f"| UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.game_specific.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.game_specific.boss_attack_level + 1})")
 
         if gs.game_specific.pvp_timer_start:
             print(f"| UDoALG PvP Timer: {round(gs.game_specific.pvp_timer/60)} / {round(gs.game_specific.pvp_timer_start/60)}")
 
         if gs.game_specific.story_fight_phase != None and gs.game_specific.story_progress_meter != None:
-            print(f"| UDoALG Story Mode Fight Phase {gs.game_specific.story_fight_phase} Progress: {gs.game_specific.story_progress_meter}")
+            print(f"| UDoALG Story Mode Fight Phase {gs.game_specific.story_fight_phase} Progress Meter: {gs.game_specific.story_progress_meter}")
 
         if gs.game_specific.side2:
-            print("| UDoALG P2 side data included in state.")
+            print(f"| UDoALG P2 ({characters[gs.game_specific.side2.env.character]}) side data included in state.")
 
     #======================================
     # Game entity prints (all optional) ===
