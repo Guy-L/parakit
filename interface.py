@@ -432,7 +432,9 @@ if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_m
 global_timer += read_int(ascii_manager_pointer, rel=True)
 stage_timer += read_int(game_thread_pointer, rel=True)
 difficulty = read_int(difficulty, rel=True) #not in states but useful for extraction/analysis
+character = read_int(character, rel=True) #not in states but useful for analysis
 subshot = read_int(subshot, rel=True) #not in states but useful for analysis
+poc_line_height = 148 if marisa_lower_poc_line and characters[character] == 'Marisa' else 128
 
 zPlayer        = read_int(player_pointer, rel=True)
 zBomb          = read_int(bomb_pointer, rel=True)

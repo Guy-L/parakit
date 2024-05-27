@@ -647,6 +647,9 @@ def extract_game_state(frame_id = 0, real_time = 0):
         global deathbomb_window_frames
         deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
 
+        global poc_line_height
+        poc_line_height = int(read_float(zPlayer + zPlayer_poc_line_height))
+
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
         centipede_multiplier = None
@@ -1351,7 +1354,7 @@ def print_untracked_vars():
     print(f"| RNG Seed: {read_int(rng_seed, rel=True)}")
     print(f"| Game Speed: {read_float(game_speed, rel=True)}")
     print(f"| Visual RNG: {read_int(visual_rng, rel=True)}")
-    print(f"| Character: {characters[read_int(character, rel=True)]}")
+    print(f"| Character: {characters[character]}")
 
     if 'p2_shottype' in globals():
         print(f"| P2 Character: {characters[read_int(p2_shottype, rel=True)]}")

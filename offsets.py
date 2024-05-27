@@ -261,6 +261,7 @@ class Associations:
     zItemState_autocollect: int
     zItemState_attracted: int
     deathbomb_window_frames: int
+    marisa_lower_poc_line: int
     life_piece_req: int
     bomb_piece_req: int
     world_width: int
@@ -583,6 +584,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = False,
             life_piece_req = None, #changes based on extend_count
             bomb_piece_req = 8,
             world_width    = usual_world_width,
@@ -836,6 +838,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = True,
             life_piece_req = 3,
             bomb_piece_req = 8,
             world_width    = usual_world_width,
@@ -1073,6 +1076,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = True,
             life_piece_req = 3,
             bomb_piece_req = 5,
             world_width    = usual_world_width,
@@ -1311,6 +1315,7 @@ offsets = {
             zItemState_autocollect  = 4,
             zItemState_attracted    = 5,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = True,
             life_piece_req = None, #note: not in this game
             bomb_piece_req = 5,
             world_width    = usual_world_width,
@@ -1559,6 +1564,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = True,
             life_piece_req = 3,
             bomb_piece_req = 3,
             world_width    = usual_world_width,
@@ -1808,6 +1814,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = None, #changes, see zPlayer_deathbomb_window
+            marisa_lower_poc_line   = False,
             life_piece_req = 3,
             bomb_piece_req = 3,
             world_width    = usual_world_width,
@@ -1831,6 +1838,7 @@ offsets = {
             'zCard_flags': 0x50,
             'zCard_counter': 0x54, #used by Centipede & Lily
             'zPlayer_deathbomb_window': 0x47908, #15 with Tewi card, 8 otherwise
+            'zPlayer_poc_line_height': 0x47998, #224 with Kanako card, 128 otherwise
             'zPlayer_sakuya_knives_angle': 0x4790c,
             'zPlayer_sakuya_knives_spread': 0x47910,
             'asylum_func': 0x438d90,
@@ -2054,6 +2062,7 @@ offsets = {
             zItemState_autocollect  = 3,
             zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
+            marisa_lower_poc_line   = False,
             life_piece_req = None, #note: not in this game
             bomb_piece_req = 3,
             world_width    = 296,
@@ -2350,6 +2359,7 @@ offsets = {
 #            zItemState_autocollect  = None,
 #            zItemState_attracted    = None,
 #            deathbomb_window_frames = None,
+#            marisa_lower_poc_line   = None,
 #            life_piece_req = None,
 #            bomb_piece_req = None,
 #            world_width    = None,
