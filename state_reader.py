@@ -644,6 +644,9 @@ def extract_game_state(frame_id = 0, real_time = 0):
         )
 
     elif game_id == 18:
+        global deathbomb_window_frames
+        deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
+
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
         centipede_multiplier = None
@@ -793,6 +796,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
         player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
         player_options_pos  = extract_player_option_positions(),
         player_shots        = extract_player_shots() if requires_player_shots else [],
+        player_deathbomb_f  = max(0, deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
         bomb_state          = read_int(zBomb + zBomb_state),
         bullets             = extract_bullets() if requires_bullets else [],
         enemies             = extract_enemies() if requires_enemies else [],
@@ -801,7 +805,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
         screen              = get_rgb_screenshot() if requires_screenshots else None,
         game_specific       = game_specific,
     )
-    
+
     return gs
 
 def print_game_state(gs: GameState):
@@ -837,7 +841,10 @@ def print_game_state(gs: GameState):
     if gs.spellcard:
         print(f"| Spell #{gs.spellcard.spell_id+1}; SCB: {gs.spellcard.capture_bonus if gs.spellcard.capture_bonus > 0 else 'Failed'}")
 
-    if gs.bomb_state > 0:
+    if gs.player_deathbomb_f:
+        print(f"| Deathbomb window: {gs.player_deathbomb_f} frames left")
+
+    if gs.bomb_state:
         print(f"| Bomb active (state: {gs.bomb_state})")
 
     #======================================

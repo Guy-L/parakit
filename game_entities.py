@@ -422,6 +422,7 @@ class GameState:
     player_focused: bool
     player_options_pos: List[Tuple[float, float]]
     player_shots: List[PlayerShot]
+    player_deathbomb_f: int #starts at deathbomb_window_frames (usually 8) on hit and goes down to 0, can db if non-0
     bomb_state: int
     bullets: List[Bullet]
     enemies: List[Enemy]
