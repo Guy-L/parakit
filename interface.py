@@ -48,7 +48,7 @@ valid_game_processes = []
 valid_game_windows = []
 for process in psutil.process_iter(['pid', 'name', 'status']):
     if process.info['name'] and process.info['name'] in _game_main_modules.keys():
-        if process.info['status'] == psutil.STATUS_RUNNING and process.pid in _windows:
+        if process.info['status'] != psutil.STATUS_ZOMBIE and process.pid in _windows:
             valid_game_processes.append(process)
             valid_game_windows.append(_windows[process.pid])
 

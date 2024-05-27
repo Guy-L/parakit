@@ -329,7 +329,7 @@ class AnalysisPlotBullets(AnalysisPlot):
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
             y_coords = [bullet.position[1] for bullet in bullets]
-            colors = [pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]) for bullet in bullets]
+            colors = [pyplot_color(get_color(bullet.type, bullet.color)[0]) for bullet in bullets]
             sizes = [bullet.scale**2.5 * bullet.hitbox_radius * bullet_factor for bullet in bullets]
 
             alphas = []
@@ -805,7 +805,7 @@ def plot_bullets_pg(scatter, bullets):
             {
                 'pos': bullet.position,
                 'size': (bullet.scale**1.2) * bullet.hitbox_radius,
-                'brush': get_color(bullet.bullet_type, bullet.color)[1] + (25 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 255,)
+                'brush': get_color(bullet.type, bullet.color)[1] + (25 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay) else 255,)
             }
             for bullet in bullets
         ])
@@ -816,7 +816,7 @@ def plot_enemies_pg(scatter, enemies):
             {
                 'pos': bullet.position,
                 'size': (bullet.scale**1.2) * bullet.hitbox_radius,
-                'brush': get_color(bullet.bullet_type, bullet.color)[1]
+                'brush': get_color(bullet.type, bullet.color)[1]
             }
             for bullet in bullets
         ])
@@ -871,9 +871,9 @@ class AnalysisPrintBulletsASCII(Analysis):
                 for bullet in self.lastframe.bullets:
                     if math.dist((ingame_x, ingame_y), bullet.position) < self.radius:
 
-                        if bullet.bullet_type == 20:
+                        if bullet.type == 20:
                             line += "☺"
-                        elif bullet.bullet_type >= 38 and bullet.bullet_type <= 41:
+                        elif bullet.type >= 38 and bullet.type <= 41:
                             line += "♪"
                         else:
                             line += "•"
@@ -917,7 +917,7 @@ class AnalysisPlotGrazeableBullets(AnalysisPlot):
                     colors.append('black')
                 else:
                     alphas.append(1)
-                    colors.append(pyplot_color(get_color(bullet.bullet_type, bullet.color)[0]))
+                    colors.append(pyplot_color(get_color(bullet.type, bullet.color)[0]))
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 40, color=(0.5, 1, 0.5, 0.75), fill=False))

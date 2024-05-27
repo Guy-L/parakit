@@ -51,7 +51,7 @@ def extract_bullets(bullet_manager = zBulletManager):
             'is_active':     read_int(zBullet + zBullet_state, 2) == 1,
             'is_grazeable':  read_int(zBullet + zBullet_flags) & zBulletFlags_grazed == 0,
             'alive_timer':   read_int(zBullet + zBullet_timer),
-            'bullet_type':   bullet_type,
+            'type':          bullet_type,
             'color':         bullet_color,
         }
 
@@ -1099,11 +1099,11 @@ def print_game_state(gs: GameState):
             description += tabulate(round(bullet.angle, 2), 8)
             description += tabulate(round(bullet.hitbox_radius, 1), 8)
             description += tabulate(bullet.alive_timer, 7)
-            description += tabulate(get_color(bullet.bullet_type, bullet.color)[0], 13)
+            description += tabulate(get_color(bullet.type, bullet.color)[0], 13)
 
             #account for mono-color sprites
-            bullet_type = bullet_types[bullet.bullet_type][0]
-            if bullet_types[bullet.bullet_type][1] == 0:
+            bullet_type = bullet_types[bullet.type][0]
+            if bullet_types[bullet.type][1] == 0:
                 bullet_type = bullet_type.split(' ')[1]
 
             description += tabulate(bullet_type, 15)

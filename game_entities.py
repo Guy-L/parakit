@@ -23,8 +23,8 @@ class Bullet:
     is_active: bool #true if not in spawn/despawn anim
     is_grazeable: bool
     alive_timer: int
-    bullet_type: int
-    color: int
+    type: int #meaning: bullet_types[type][0]
+    color: int #meaning: get_color(type, color)[0]
 
 @dataclass #a rectangle, used by bosses
 class EnemyMovementLimit:
@@ -61,7 +61,7 @@ class Enemy:
 @dataclass
 class Item:
     id: int
-    state: int
+    state: int #compare again zItemState_autocollect & zItemState_attracted
     item_type: int #meaning: item_types[item_type]
     position: Tuple[float, float]
     velocity: Tuple[float, float]
@@ -70,8 +70,8 @@ class Item:
 @dataclass 
 class Laser:
     id: int
-    state: int
-    laser_type: int
+    state: int #if telegraph: telegraph=3, expand=4, active=2, shrink=5
+    laser_type: int #line=0, telegraph=1, curve=2, beam=3
     alive_timer: int
     position: Tuple[float, float]
     angle: float
@@ -79,8 +79,8 @@ class Laser:
     width: float
     speed: float
     iframes: int
-    sprite: int
-    color: int
+    sprite: int #meaning: bullet_types[sprite][0] for line/infinite, curve_sprites[sprite] for curve
+    color: int #meaning: get_color(sprite, color)[0]
 
 @dataclass
 class LineLaser(Laser):
