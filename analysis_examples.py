@@ -310,10 +310,10 @@ class AnalysisPlot(Analysis, ABC):
             if game_id == 14:
                 player_size *= self.lastframe.player_scale
 
-                if self.lastframe.seija_flip[0] == -1:
+                if self.lastframe.seija_flip[0] == 1:
                     axarr[0].invert_xaxis()
 
-                if self.lastframe.seija_flip[1] == -1:
+                if self.lastframe.seija_flip[1] == 1:
                     axarr[0].invert_yaxis()
 
             plt.title(self.plot_title)

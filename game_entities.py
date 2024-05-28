@@ -384,7 +384,7 @@ class GameStateTD(GameState):
 class GameStateDDC(GameState):
     bonus_count: int #increases with non-2.0 bonuses, life piece at every multiple of 5
     player_scale: float #[1, 3]
-    seija_flip: Tuple[float, float] #[-1, 1] for x and y
+    seija_flip: Tuple[float, float] #[0, 1] for x and y (0 = normal, 1 = fully flipped)
     sukuna_penult_logic_active: bool
 
 # Legacy of Lunatic Kingdom

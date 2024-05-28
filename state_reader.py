@@ -611,7 +611,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
             **state_base,
             bonus_count  = read_int(bonus_count, rel=True),
             player_scale = read_float(zPlayer + zPlayer_scale),
-            seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
+            seija_flip   = ((-read_float(ddcSeijaAnm + seija_flip_x) + 1)/2, (-read_float(ddcSeijaAnm + seija_flip_y) + 1)/2),
             sukuna_penult_logic_active = bool(find_special_enemy_addr(sukuna_penult_func)),
         )
 
@@ -897,11 +897,11 @@ def print_game_state(gs: GameState):
             bonus_cycle_desc = " (bomb piece for next bonus < 2.0)"
         print(f"| DDC Bonus Cycle: {gs.bonus_count%5}{bonus_cycle_desc}")
 
-        if gs.seija_flip[0] != 1:
-            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.seija_flip[0]+1)/2, 2)}%")
+        if gs.seija_flip[0]:
+            print(f"| DDC Seija Horizontal Flip: {round(100*gs.seija_flip[0], 2)}%")
 
-        if gs.seija_flip[1] != 1:
-            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.seija_flip[1]+1)/2, 2)}%")
+        if gs.seija_flip[1]:
+            print(f"| DDC Seija Vertical Flip: {round(100*gs.seija_flip[1], 2)}%")
 
         if gs.player_scale > 1:
             print(f"| DDC Player Scale: grew {round(gs.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.player_scale, 2)})")
