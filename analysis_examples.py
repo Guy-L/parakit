@@ -264,7 +264,7 @@ class AnalysisPlot(Analysis, ABC):
         pass #custom plot behavior to be implemented
 
     def done(self):
-        if hasattr(self.lastframe.game_specific, 'side2') and self.lastframe.game_specific.side2:
+        if hasattr(self.lastframe, 'side2') and self.lastframe.side2:
             fig, axarr = plt.subplots(1, 2, figsize=((world_width/45) * plot_scale, 5.6 * plot_scale))
         else:
             fig, ax = plt.subplots(figsize=((world_width/80) * plot_scale, 5.6 * plot_scale))
@@ -301,19 +301,19 @@ class AnalysisPlot(Analysis, ABC):
                     axarr[1].axis('off')
                 else:
                     axarr[1].set_title('Player 2')
-                    axarr[1].scatter(self.lastframe.game_specific.side2.player_position[0], self.lastframe.game_specific.side2.player_position[1], color='maroon', s=25*self.lastframe.game_specific.side2.player_hitbox_rad, marker='X')
+                    axarr[1].scatter(self.lastframe.side2.player_position[0], self.lastframe.side2.player_position[1], color='maroon', s=25*self.lastframe.side2.player_hitbox_rad, marker='X')
 
                 plt.show()
 
         else:
             player_size = self.lastframe.player_hitbox_rad
             if game_id == 14:
-                player_size *= self.lastframe.game_specific.player_scale
+                player_size *= self.lastframe.player_scale
 
-                if self.lastframe.game_specific.seija_flip[0] == -1:
+                if self.lastframe.seija_flip[0] == -1:
                     axarr[0].invert_xaxis()
 
-                if self.lastframe.game_specific.seija_flip[1] == -1:
+                if self.lastframe.seija_flip[1] == -1:
                     axarr[0].invert_yaxis()
 
             plt.title(self.plot_title)
@@ -331,7 +331,7 @@ class AnalysisPlotBullets(AnalysisPlot):
     plot_title = 'Bullet Scatter Plot'
 
     def plot(self, ax, side2):
-        bullets = self.lastframe.game_specific.side2.bullets if side2 else self.lastframe.bullets
+        bullets = self.lastframe.side2.bullets if side2 else self.lastframe.bullets
 
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
@@ -364,7 +364,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
     plot_title = 'Enemy Scatter Plot'
 
     def plot(self, ax, side2):
-        enemies = self.lastframe.game_specific.side2.enemies if side2 else self.lastframe.enemies
+        enemies = self.lastframe.side2.enemies if side2 else self.lastframe.enemies
 
         if enemies:
             for enemy in enemies:
@@ -504,7 +504,7 @@ class AnalysisPlotItems(AnalysisPlot):
     show_poc_line = True
 
     def plot(self, ax, side2):
-        items = self.lastframe.game_specific.side2.items if side2 else self.lastframe.items
+        items = self.lastframe.side2.items if side2 else self.lastframe.items
 
         if items:
             if plot_velocity:
@@ -533,7 +533,7 @@ class AnalysisPlotLineLasers(AnalysisPlot):
     plot_title = 'Line Laser Plot'
 
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.side2.lasers if side2 else self.lastframe.lasers
         hasLineLasers = False
 
         if lasers:
@@ -566,7 +566,7 @@ class AnalysisPlotInfiniteLasers(AnalysisPlot):
     plot_title = 'Telegraphed Laser Plot'
     
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.side2.lasers if side2 else self.lastframe.lasers
         hasInfiniteLasers = False
 
         if lasers:
@@ -610,7 +610,7 @@ class AnalysisPlotCurveLasers(AnalysisPlot):
         return (1 / (1 + math.exp(-self.smooth_steepness * (x - left - shift)))) * (1 / (1 + math.exp(self.smooth_steepness * (x - right + shift))))
 
     def plot(self, ax, side2):
-        lasers = self.lastframe.game_specific.side2.lasers if side2 else self.lastframe.lasers
+        lasers = self.lastframe.side2.lasers if side2 else self.lastframe.lasers
         hasCurveLasers = False
 
         if lasers:
@@ -658,8 +658,8 @@ class AnalysisPlotPlayerShots(AnalysisPlot):
     show_damage = True
 
     def plot(self, ax, side2):
-        player_options_pos = self.lastframe.game_specific.side2.player_options_pos if side2 else self.lastframe.player_options_pos
-        player_shots = self.lastframe.game_specific.side2.player_shots if side2 else self.lastframe.player_shots
+        player_options_pos = self.lastframe.side2.player_options_pos if side2 else self.lastframe.player_options_pos
+        player_shots = self.lastframe.side2.player_shots if side2 else self.lastframe.player_shots
 
         ax.scatter([option_pos[0] for option_pos in player_options_pos], [option_pos[1] for option_pos in player_options_pos],
                     s=75, facecolor=(0,0,0,0.1), marker='o')
@@ -696,20 +696,20 @@ class AnalysisPlotAll(AnalysisPlot):
     plot_title = 'Game Entity Scatter Plot'
 
     def plot(self, ax, side2):
-        if game_id == 13 and self.lastframe.game_specific.miko_final_logic_active:
+        if game_id == 13 and self.lastframe.miko_final_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False))
 
-        elif game_id == 14 and self.lastframe.game_specific.sukuna_penult_logic_active:
+        elif game_id == 14 and self.lastframe.sukuna_penult_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False))
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False))
 
-        elif game_id == 15 and self.lastframe.game_specific.graze_inferno_logic_active:
+        elif game_id == 15 and self.lastframe.graze_inferno_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False))
 
-        elif game_id == 16 and self.lastframe.game_specific.snowman_logic_active:
+        elif game_id == 16 and self.lastframe.snowman_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False))
 
-        elif game_id == 18 and self.lastframe.game_specific.asylum_logic_active:
+        elif game_id == 18 and self.lastframe.asylum_logic_active:
             ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False))
 
         plottedPlayerShots = AnalysisPlotPlayerShots(self.lastframe).plot(ax, side2)
@@ -786,14 +786,14 @@ class AnalysisPlotDynamic(AnalysisDynamic, ABC):
     def update_graph(self):
         player_scale = self.state.player_hitbox_rad
         if game_id == 14:
-            player_scale *= self.state.game_specific.player_scale
+            player_scale *= self.state.player_scale
 
-            if self.state.game_specific.seija_flip[0] == -1:
+            if self.state.seija_flip[0] == -1:
                 self.graph.invertX(True)
             elif self.graph.getViewBox().getState()['xInverted']:
                 self.graph.invertX(False)
 
-            if self.state.game_specific.seija_flip[1] == -1:
+            if self.state.seija_flip[1] == -1:
                 self.graph.invertY(False)
             elif not self.graph.getViewBox().getState()['yInverted']:
                 self.graph.invertY(True)
@@ -910,7 +910,7 @@ class AnalysisPlotGrazeableBullets(AnalysisPlot):
         return 'Grazeable ' + ('(& Scopeable) ' if game_id == 19 else '') + 'Bullet Scatter Plot'
 
     def plot(self, ax, side2):
-        bullets = self.lastframe.game_specific.side2.bullets if side2 else self.lastframe.bullets
+        bullets = self.lastframe.side2.bullets if side2 else self.lastframe.bullets
 
         if bullets:
             x_coords = [bullet.position[0] for bullet in bullets]
@@ -957,7 +957,7 @@ class AnalysisPlotTD(AnalysisPlot):
         if side2:
             return HIDE_P2
 
-        spirit_items = self.lastframe.game_specific.spirit_items
+        spirit_items = self.lastframe.spirit_items
         has_echoes = False
 
         if spirit_items:
@@ -966,7 +966,7 @@ class AnalysisPlotTD(AnalysisPlot):
             face_colors = [self.type_colors[spirit.spirit_type] + (self.face_alpha,) for spirit in spirit_items]
             edge_colors = [self.type_colors[spirit.spirit_type] + (self.edge_alpha,) for spirit in spirit_items]
 
-            if self.use_visual_sizes and not self.lastframe.game_specific.trance_active:
+            if self.use_visual_sizes and not self.lastframe.trance_active:
                 sizes = [((523 - spirit.alive_timer)/523) * self.type_sizes[spirit.spirit_type] for spirit in spirit_items]
             else:
                 sizes = self.actual_size
@@ -981,8 +981,8 @@ class AnalysisPlotTD(AnalysisPlot):
                                 spirit.velocity[0], spirit.velocity[1],
                                 head_width=4, head_length=8, color=(0,0,0,0.2))
 
-        if self.lastframe.game_specific.kyouko_echo:
-            echo = self.lastframe.game_specific.kyouko_echo
+        if self.lastframe.kyouko_echo:
+            echo = self.lastframe.kyouko_echo
 
             if hasattr(echo, 'radius'):
                 ax.add_patch(Circle(
@@ -1000,7 +1000,7 @@ class AnalysisPlotTD(AnalysisPlot):
 
         if not spirit_items:
             print("No spirit items to plot.")
-            if not self.lastframe.game_specific.kyouko_echo:
+            if not self.lastframe.kyouko_echo:
                 return DONT_PLOT
 
 # TD/HSiFS: "Plot enemy with color intensity based on speedkill drop count" [only requires enemies]
@@ -1056,8 +1056,8 @@ class AnalysisHookChapterTransition(Analysis):
         self.time_in_chapter = 0
 
     def step(self, state: GameState):
-        if hasattr(state.game_specific, 'time_in_chapter'):
-            cur_time_in_chapter = state.game_specific.time_in_chapter
+        if hasattr(state, 'time_in_chapter'):
+            cur_time_in_chapter = state.time_in_chapter
             if cur_time_in_chapter < self.time_in_chapter:
                 print("Chapter Transition!!")
 
@@ -1112,8 +1112,8 @@ class AnalysisPlotWBaWC(AnalysisPlot):
         if side2:
             return HIDE_P2
 
-        field_tokens = self.lastframe.game_specific.field_tokens
-        hyper = self.lastframe.game_specific.roaring_hyper
+        field_tokens = self.lastframe.field_tokens
+        hyper = self.lastframe.roaring_hyper
 
         if field_tokens:
             x_coords = [token.position[0] for token in field_tokens]

@@ -316,113 +316,9 @@ class P2Side:
     pvp_wins: int
     env: RunEnvironmentUDoALG
 
-# ================================================
-# `game_specific` schemas ========================
-# ================================================
-
-# Abstract base class for GameSpecific objects
-@dataclass
-class GameSpecific(ABC):
-    pass
-
-# Ten Desires
-@dataclass
-class GameSpecificTD(GameSpecific):
-    trance_active: bool
-    trance_meter: int #[0, 600], doubles as remaining frame counter for trances (600 frames = 10s)
-    chain_timer: int #[0, 60] frames
-    chain_counter: int #>9 greys spawn
-    spirit_items: List[SpiritItem]
-    spawned_spirit_count: int #next spirit spawns to the left if odd, to the right otherwise; applies to all spirits
-    kyouko_echo: Union[RectangleEcho, CircleEcho]
-    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
-    miko_final_logic_active: bool
-
-# Double Dealing Character
-@dataclass
-class GameSpecificDDC(GameSpecific):
-    bonus_count: int #increases with non-2.0 bonuses, life piece at every multiple of 5
-    player_scale: float #[1, 3]
-    seija_flip: Tuple[float, float] #[-1, 1] for x and y
-    sukuna_penult_logic_active: bool
-
-# Legacy of Lunatic Kingdom
-@dataclass
-class GameSpecificLoLK(GameSpecific):
-    item_graze_slowdown_factor: float
-    reisen_bomb_shields: int
-    time_in_chapter: int
-    chapter_graze: int
-    chapter_enemy_weight_spawned: int
-    chapter_enemy_weight_destroyed: int
-    in_pointdevice: bool
-    pointdevice_resets_total: int
-    pointdevice_resets_chapter: int
-    graze_inferno_logic_active: bool
-
-# Hidden Star in Four Seasons
-@dataclass
-class GameSpecificHSiFS(GameSpecific):
-    next_extend_score: int
-    season_level: int
-    season_power: int #increments with each season item grabbed
-    next_level_season_power: int #season power required for next level
-    season_delay_post_use: int #[0, 45], ticks down from 45 after release deactivates
-    release_active: bool
-    season_disabled: bool
-    snowman_logic_active: bool
-
-# Wily Beast & Weakest Creature
-@dataclass
-class GameSpecificWBaWC(GameSpecific):
-    held_tokens: List[int] #length [0, 5], meaning: token_types[token]
-    field_tokens: List[AnimalToken]
-    roaring_hyper: Optional[RoaringHyper]
-    extra_token_spawn_delay_timer: int #[0, 120], ticks up, only resets when Extra Beasts Appear! delay starts
-    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
-    yacchie_recent_graze: int #sum of graze gains over last 20 frames
-
-# Unconnected Marketeers
-@dataclass
-class GameSpecificUM(GameSpecific):
-    funds: int
-    total_cards: int
-    total_actives: int
-    total_equipmt: int
-    total_passive: int
-    cancel_counter: int #increments with bullet cancels that spawn items, used by Mallet for item conversion
-    lily_counter: Optional[int] #increments with uses of the Lily card, determines difficulty
-    centipede_multiplier: Optional[float] #[1.0, 1.8]
-    active_cards: List[ActiveCard]
-    asylum_logic_active: bool
-    sakuya_knives_angle: float #[~0.79, ~2.34] (higher = farther left, lower = farther right, 1.57 = middle)
-    sakuya_knives_spread: float #[~-0.3, ~1.03] (lower = more concentrated, higher = more spread)
-
-# Unfinished Dream of All Living Ghost
-@dataclass
-class GameSpecificUDoALG(GameSpecific):
-    lives_max: int
-    hitstun_status: int
-    shield_status: int
-    last_combo_hits: int
-    current_combo_hits: int
-    current_combo_chain: int
-    enemy_pattern_count: int
-    item_spawn_total: int
-    gauge_charging: bool
-    gauge_charge: int
-    gauge_fill: int
-    ex_attack_level: int
-    boss_attack_level: int
-    pvp_wins: int
-    side2: Optional[P2Side]
-    story_fight_phase: Optional[int]
-    story_progress_meter: Optional[int]
-    pvp_timer_start: int
-    pvp_timer: int
 
 # ================================================
-# `state` schema =================================
+# General `state` schema =========================
 # ================================================
 
 @dataclass
@@ -462,6 +358,106 @@ class GameState:
     items: List[Item]
     lasers: List[Laser]
     screen: Optional[np.ndarray]
-    game_specific: GameSpecific
     constants: GameConstants
     env: RunEnvironment
+
+
+# ================================================
+# Game specific state extensions =================
+# ================================================
+
+# Ten Desires
+@dataclass
+class GameStateTD(GameState):
+    trance_active: bool
+    trance_meter: int #[0, 600], doubles as remaining frame counter for trances (600 frames = 10s)
+    chain_timer: int #[0, 60] frames
+    chain_counter: int #>9 greys spawn
+    spirit_items: List[SpiritItem]
+    spawned_spirit_count: int #next spirit spawns to the left if odd, to the right otherwise; applies to all spirits
+    kyouko_echo: Union[RectangleEcho, CircleEcho]
+    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
+    miko_final_logic_active: bool
+
+# Double Dealing Character
+@dataclass
+class GameStateDDC(GameState):
+    bonus_count: int #increases with non-2.0 bonuses, life piece at every multiple of 5
+    player_scale: float #[1, 3]
+    seija_flip: Tuple[float, float] #[-1, 1] for x and y
+    sukuna_penult_logic_active: bool
+
+# Legacy of Lunatic Kingdom
+@dataclass
+class GameStateLoLK(GameState):
+    item_graze_slowdown_factor: float
+    reisen_bomb_shields: int
+    time_in_chapter: int
+    chapter_graze: int
+    chapter_enemy_weight_spawned: int
+    chapter_enemy_weight_destroyed: int
+    in_pointdevice: bool
+    pointdevice_resets_total: int
+    pointdevice_resets_chapter: int
+    graze_inferno_logic_active: bool
+
+# Hidden Star in Four Seasons
+@dataclass
+class GameStateHSiFS(GameState):
+    next_extend_score: int
+    season_level: int
+    season_power: int #increments with each season item grabbed
+    next_level_season_power: int #season power required for next level
+    season_delay_post_use: int #[0, 45], ticks down from 45 after release deactivates
+    release_active: bool
+    season_disabled: bool
+    snowman_logic_active: bool
+
+# Wily Beast & Weakest Creature
+@dataclass
+class GameStateWBaWC(GameState):
+    held_tokens: List[int] #length [0, 5], meaning: token_types[token]
+    field_tokens: List[AnimalToken]
+    roaring_hyper: Optional[RoaringHyper]
+    extra_token_spawn_delay_timer: int #[0, 120], ticks up, only resets when Extra Beasts Appear! delay starts
+    youmu_charge_timer: int #focus shot on release if >60f, negative for 40f cooldown
+    yacchie_recent_graze: int #sum of graze gains over last 20 frames
+
+# Unconnected Marketeers
+@dataclass
+class GameStateUM(GameState):
+    funds: int
+    total_cards: int
+    total_actives: int
+    total_equipmt: int
+    total_passive: int
+    cancel_counter: int #increments with bullet cancels that spawn items, used by Mallet for item conversion
+    lily_counter: Optional[int] #increments with uses of the Lily card, determines difficulty
+    centipede_multiplier: Optional[float] #[1.0, 1.8]
+    active_cards: List[ActiveCard]
+    asylum_logic_active: bool
+    sakuya_knives_angle: float #[~0.79, ~2.34] (higher = farther left, lower = farther right, 1.57 = middle)
+    sakuya_knives_spread: float #[~-0.3, ~1.03] (lower = more concentrated, higher = more spread)
+
+# Unfinished Dream of All Living Ghost
+@dataclass
+class GameStateUDoALG(GameState):
+    lives_max: int
+    hitstun_status: int
+    shield_status: int
+    last_combo_hits: int
+    current_combo_hits: int
+    current_combo_chain: int
+    enemy_pattern_count: int
+    item_spawn_total: int
+    gauge_charging: bool
+    gauge_charge: int
+    gauge_fill: int
+    ex_attack_level: int
+    boss_attack_level: int
+    pvp_wins: int
+    side2: Optional[P2Side]
+    story_fight_phase: Optional[int]
+    story_progress_meter: Optional[int]
+    pvp_timer_start: int
+    pvp_timer: int

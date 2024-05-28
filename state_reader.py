@@ -514,7 +514,49 @@ def extract_spellcard(spellcard = zSpellCard):
     )
 
 def extract_game_state(frame_id = 0, real_time = 0):
-    game_specific = None
+    boss_timer = -1
+    if (game_id in has_boss_timer_drawn_if_indic_zero) == (read_int(zGui+zGui_bosstimer_drawn) == 0):
+        boss_timer = read_int(zGui+zGui_bosstimer_s) + read_int(zGui+zGui_bosstimer_ms)/100
+
+    state_base = {
+        'frame_stage':        read_int(stage_timer),
+        'frame_global':       read_int(global_timer),
+        'stage_chapter':      read_int(stage_chapter, rel=True),
+        'seq_frame_id':       frame_id,
+        'seq_real_time':      real_time,
+        'pause_state':        read_int(pause_state, rel=True),
+        'game_mode':          read_int(game_mode, rel=True),
+        'game_speed':         read_float(game_speed, rel=True),
+        'score':              read_int(score, rel=True) * 10,
+        'lives':              read_int(lives, rel=True, signed=True),
+        'life_pieces':        read_int(life_pieces, rel=True) if life_pieces else 0,
+        'bombs':              read_int(bombs, rel=True),
+        'bomb_pieces':        read_int(bomb_pieces, rel=True),
+        'power':              read_int(power, rel=True),
+        'piv':                int(read_int(piv, rel=True) / 100),
+        'graze':              read_int(graze, rel=True),
+        'boss_timer':         boss_timer,
+        'spellcard':          extract_spellcard(),
+        'rank':               read_int(rank, rel=True),
+        'input':              read_int(input, rel=True),
+        'rng':                read_int(replay_rng, rel=True),
+        'continues':          read_int(continues, rel=True),
+        'player_position':    (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
+        'player_hitbox_rad':  read_float(zPlayer + zPlayer_hit_rad),
+        'player_iframes':     read_int(zPlayer + zPlayer_iframes),
+        'player_focused':     read_int(zPlayer + zPlayer_focused) == 1,
+        'player_options_pos': extract_player_option_positions(),
+        'player_shots':       extract_player_shots() if requires_player_shots else [],
+        'player_deathbomb_f': max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
+        'bomb_state':         read_int(zBomb + zBomb_state),
+        'bullets':            extract_bullets() if requires_bullets else [],
+        'enemies':            extract_enemies() if requires_enemies else [],
+        'items':              extract_items() if requires_items else [],
+        'lasers':             extract_lasers() if requires_lasers else [],
+        'screen':             get_rgb_screenshot() if requires_screenshots else None,
+        'constants':          game_constants,
+        'env':                run_environment,
+    }
 
     if game_id == 13:
         game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
@@ -551,7 +593,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
                     radius   = read_float(kyouko + zEnemy_f0_echo_x1),
                 )
 
-        game_specific = GameSpecificTD(
+        return GameStateTD(
+            **state_base,
             trance_active           = read_int(trance_state, rel=True) != 0,
             trance_meter            = read_int(trance_meter, rel=True),
             spawned_spirit_count    = read_int(zSpiritManager + zSpiritManager_spawn_total),
@@ -564,7 +607,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         )
 
     elif game_id == 14:
-        game_specific = GameSpecificDDC(
+        return GameStateDDC(
+            **state_base,
             bonus_count  = read_int(bonus_count, rel=True),
             player_scale = read_float(zPlayer + zPlayer_scale),
             seija_flip   = (read_float(ddcSeijaAnm + seija_flip_x), read_float(ddcSeijaAnm + seija_flip_y)),
@@ -572,7 +616,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         )
 
     elif game_id == 15:
-        game_specific = GameSpecificLoLK(
+        return GameStateLoLK(
+            **state_base,
             item_graze_slowdown_factor     = read_float(zItemManager + zItemManager_graze_slowdown_factor),
             reisen_bomb_shields            = read_int(zBomb + zBomb_reisen_shields),
             time_in_chapter                = read_int(time_in_chapter, rel=True),
@@ -589,7 +634,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         player_season_level = read_int(zPlayer + zPlayer_season_level)
         season_bomb_timer = read_int(zSeasomBomb + zBomb_timer, signed=True)
 
-        game_specific = GameSpecificHSiFS(
+        return GameStateHSiFS(
+            **state_base,
             next_extend_score = 10 * read_int((extend_scores_extra if difficulty == 4 else extend_scores_maingame) + read_int(next_extend_score_index, rel=True) * 0x4, rel=True),
             season_level = player_season_level,
             season_power = read_int(season_power, rel=True),
@@ -630,7 +676,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 currently_breaking     = roaring_hyper_flags & 2**2 != 0,
             )
 
-        game_specific = GameSpecificWBaWC(
+        return GameStateWBaWC(
+            **state_base,
             held_tokens                   = held_tokens,
             field_tokens                  = extract_animal_tokens() if requires_items else [],
             roaring_hyper                 = hyper,
@@ -676,7 +723,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 in_use        = read_int(zCard + zCard_flags) & 2**5 != 0,
             ))
 
-        game_specific = GameSpecificUM(
+        return GameStateUM(
+            **state_base,
             funds                = read_int(funds, rel=True),
             total_cards          = read_int(zAbilityManager + zAbilityManager_total_cards),
             total_actives        = read_int(zAbilityManager + zAbilityManager_total_actives),
@@ -694,7 +742,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
     elif game_id == 19:
         side2 = None
 
-        #technically side2, but important singleplayer info so stored at the root of game_specific
+        #technically side2, but important singleplayer info so stored at the root of the state
         story_fight_phase, story_progress_meter = None, None
         if zAiP2:
             zStoryAi = read_int(zAiP2 + zAi_story_mode_pointer)
@@ -740,7 +788,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 env                 = p2_run_environment,
             )
 
-        game_specific = GameSpecificUDoALG(
+        return GameStateUDoALG(
+            **state_base,
             lives_max            = read_int(lives_max, rel=True),
             hitstun_status       = read_int(zPlayer + zPlayer_hitstun_status),
             shield_status        = read_int(zPlayer + zPlayer_shield_status),
@@ -761,53 +810,6 @@ def extract_game_state(frame_id = 0, real_time = 0):
             pvp_timer_start      = read_int(pvp_timer_start, rel=True),
             pvp_timer            = read_int(pvp_timer, rel=True),
         )
-
-    boss_timer = -1
-    if (game_id in has_boss_timer_drawn_if_indic_zero) == (read_int(zGui+zGui_bosstimer_drawn) == 0):
-        boss_timer = float(f"{read_int(zGui+zGui_bosstimer_s)}.{read_int(zGui+zGui_bosstimer_ms)}")
-
-    gs = GameState(
-        frame_stage         = read_int(stage_timer),
-        frame_global        = read_int(global_timer),
-        stage_chapter       = read_int(stage_chapter, rel=True),
-        seq_frame_id        = frame_id,
-        seq_real_time       = real_time,
-        pause_state         = read_int(pause_state, rel=True),
-        game_mode           = read_int(game_mode, rel=True),
-        game_speed          = read_float(game_speed, rel=True),
-        score               = read_int(score, rel=True) * 10,
-        lives               = read_int(lives, rel=True, signed=True),
-        life_pieces         = read_int(life_pieces, rel=True) if life_pieces else 0,
-        bombs               = read_int(bombs, rel=True),
-        bomb_pieces         = read_int(bomb_pieces, rel=True),
-        power               = read_int(power, rel=True),
-        piv                 = int(read_int(piv, rel=True) / 100),
-        graze               = read_int(graze, rel=True),
-        boss_timer          = boss_timer,
-        spellcard           = extract_spellcard(),
-        rank                = read_int(rank, rel=True),
-        input               = read_int(input, rel=True),
-        rng                 = read_int(replay_rng, rel=True),
-        continues           = read_int(continues, rel=True),
-        player_position     = (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
-        player_hitbox_rad   = read_float(zPlayer + zPlayer_hit_rad),
-        player_iframes      = read_int(zPlayer + zPlayer_iframes),
-        player_focused      = read_int(zPlayer + zPlayer_focused) == 1,
-        player_options_pos  = extract_player_option_positions(),
-        player_shots        = extract_player_shots() if requires_player_shots else [],
-        player_deathbomb_f  = max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
-        bomb_state          = read_int(zBomb + zBomb_state),
-        bullets             = extract_bullets() if requires_bullets else [],
-        enemies             = extract_enemies() if requires_enemies else [],
-        items               = extract_items() if requires_items else [],
-        lasers              = extract_lasers() if requires_lasers else [],
-        screen              = get_rgb_screenshot() if requires_screenshots else None,
-        game_specific       = game_specific,
-        constants           = game_constants,
-        env                 = run_environment,
-    )
-
-    return gs
 
 def print_game_state(gs: GameState):
     #======================================
@@ -852,23 +854,23 @@ def print_game_state(gs: GameState):
     #======================================
     # Game-specific prints ================
     if game_id == 13: #TD
-        print(f"| TD Trance Meter: {round(gs.game_specific.trance_meter/200, 2)} / 3.0")
+        print(f"| TD Trance Meter: {round(gs.trance_meter/200, 2)} / 3.0")
 
-        if gs.game_specific.trance_active:
-            print(f"| TD Active Trance: {gs.game_specific.trance_meter/60:.2f}s")
+        if gs.trance_active:
+            print(f"| TD Active Trance: {gs.trance_meter/60:.2f}s")
 
-        if gs.game_specific.chain_counter:
-            print(f"| TD Chain {'Active' if gs.game_specific.chain_counter > 9 else 'Starting (no greys)'}: {gs.game_specific.chain_counter} blues spawned; {gs.game_specific.chain_timer}f left")
+        if gs.chain_counter:
+            print(f"| TD Chain {'Active' if gs.chain_counter > 9 else 'Starting (no greys)'}: {gs.chain_counter} blues spawned; {gs.chain_timer}f left")
 
-        if gs.game_specific.miko_final_logic_active:
+        if gs.miko_final_logic_active:
             print("| TD Miko Final: Orbs will stop and aim towards player if player distance <= 48")
 
-        if gs.game_specific.spirit_items:
+        if gs.spirit_items:
             counter = 0
 
             print("\nList of spirit items:")
             print("  Type       Position         Velocity         Frames Left")
-            for spirit in gs.game_specific.spirit_items:
+            for spirit in gs.spirit_items:
                 description = "• "
                 description += tabulate(spirit_types[spirit.spirit_type], 11)
                 description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
@@ -884,27 +886,27 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(gs.game_specific.spirit_items)} spirit item total]')
+                    print(f'• ... [{len(gs.spirit_items)} spirit item total]')
                     break
 
     elif game_id == 14: #DDC
         bonus_cycle_desc = ""
-        if gs.game_specific.bonus_count % 5 == 4:
+        if gs.bonus_count % 5 == 4:
             bonus_cycle_desc = " (life piece for next bonus < 2.0)"
         else:
             bonus_cycle_desc = " (bomb piece for next bonus < 2.0)"
-        print(f"| DDC Bonus Cycle: {gs.game_specific.bonus_count%5}{bonus_cycle_desc}")
+        print(f"| DDC Bonus Cycle: {gs.bonus_count%5}{bonus_cycle_desc}")
 
-        if gs.game_specific.seija_flip[0] != 1:
-            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.game_specific.seija_flip[0]+1)/2, 2)}%")
+        if gs.seija_flip[0] != 1:
+            print(f"| DDC Seija Horizontal Flip: {round(100*(-gs.seija_flip[0]+1)/2, 2)}%")
 
-        if gs.game_specific.seija_flip[1] != 1:
-            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.game_specific.seija_flip[1]+1)/2, 2)}%")
+        if gs.seija_flip[1] != 1:
+            print(f"| DDC Seija Vertical Flip: {round(100*(-gs.seija_flip[1]+1)/2, 2)}%")
 
-        if gs.game_specific.player_scale > 1:
-            print(f"| DDC Player Scale: grew {round(gs.game_specific.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.game_specific.player_scale, 2)})")
+        if gs.player_scale > 1:
+            print(f"| DDC Player Scale: grew {round(gs.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.player_scale, 2)})")
 
-        if gs.game_specific.sukuna_penult_logic_active:
+        if gs.sukuna_penult_logic_active:
             print("| DDC Sukuna Penult: Orbs will start homing if player distance < 64, will stop when player distance >= 128")
 
     elif game_id == 15: #LoLK
@@ -912,56 +914,56 @@ def print_game_state(gs: GameState):
         if gs.stage_chapter:
             chapter = f"S{read_int(stage, rel=True)}C{gs.stage_chapter+1}"
 
-        chapter_desc = f"{gs.game_specific.chapter_graze} graze; "
-        chapter_desc += f"shootdown {gs.game_specific.chapter_enemy_weight_destroyed}/{gs.game_specific.chapter_enemy_weight_spawned}"
-        if gs.game_specific.chapter_enemy_weight_spawned > 0:
-            chapter_desc += f" ({round(100*gs.game_specific.chapter_enemy_weight_destroyed/gs.game_specific.chapter_enemy_weight_spawned,1)}%)"
-        chapter_desc += f"; frame #{gs.game_specific.time_in_chapter}"
+        chapter_desc = f"{gs.chapter_graze} graze; "
+        chapter_desc += f"shootdown {gs.chapter_enemy_weight_destroyed}/{gs.chapter_enemy_weight_spawned}"
+        if gs.chapter_enemy_weight_spawned > 0:
+            chapter_desc += f" ({round(100*gs.chapter_enemy_weight_destroyed/gs.chapter_enemy_weight_spawned,1)}%)"
+        chapter_desc += f"; frame #{gs.time_in_chapter}"
         print(f"| LoLK {chapter}: {chapter_desc}")
 
-        if gs.game_specific.in_pointdevice:
-            print(f"| LoLK Pointdevice: {gs.game_specific.pointdevice_resets_chapter} chapter resets / {gs.game_specific.pointdevice_resets_total} total resets")
+        if gs.in_pointdevice:
+            print(f"| LoLK Pointdevice: {gs.pointdevice_resets_chapter} chapter resets / {gs.pointdevice_resets_total} total resets")
 
-        if gs.game_specific.item_graze_slowdown_factor < 1:
-            print(f"| LoLK Item Graze Slowdown: {round(gs.game_specific.item_graze_slowdown_factor,1)}x")
+        if gs.item_graze_slowdown_factor < 1:
+            print(f"| LoLK Item Graze Slowdown: {round(gs.item_graze_slowdown_factor,1)}x")
 
-        if gs.game_specific.reisen_bomb_shields > 0:
-            print(f"| LoLK Reisen Bomb Shields: {gs.game_specific.reisen_bomb_shields}")
+        if gs.reisen_bomb_shields > 0:
+            print(f"| LoLK Reisen Bomb Shields: {gs.reisen_bomb_shields}")
 
-        if gs.game_specific.graze_inferno_logic_active:
+        if gs.graze_inferno_logic_active:
             print(f"| LoLK Graze Inferno: Fireballs will slow down when player distance <= {math.sqrt(1800):.3f}")
 
     elif game_id == 16: #HSiFS
-        print(f"| HSiFS Next Score Extend Threshold: {gs.game_specific.next_extend_score:,}")
+        print(f"| HSiFS Next Score Extend Threshold: {gs.next_extend_score:,}")
 
-        if gs.game_specific.season_disabled:
+        if gs.season_disabled:
             print(f"| HSiFS Season Gauge: Disabled by Okina final")
 
         else:
             remaining_charge_desc = ""
-            if gs.game_specific.next_level_season_power - gs.game_specific.season_power:
-                remaining_charge_desc = f" for level {gs.game_specific.season_level+1}"
+            if gs.next_level_season_power - gs.season_power:
+                remaining_charge_desc = f" for level {gs.season_level+1}"
 
             releasability_desc = " (can't release)"
-            if gs.game_specific.season_level and not gs.bomb_state and not gs.game_specific.release_active:
-                if gs.game_specific.season_delay_post_use:
-                    releasability_desc = f" (can release in {gs.game_specific.season_delay_post_use}f)"
+            if gs.season_level and not gs.bomb_state and not gs.release_active:
+                if gs.season_delay_post_use:
+                    releasability_desc = f" (can release in {gs.season_delay_post_use}f)"
                 else:
                     releasability_desc = " (can release)"
 
-            print(f"| HSiFS Season Gauge: level {gs.game_specific.season_level}, {gs.game_specific.season_power}/{gs.game_specific.next_level_season_power} season items{remaining_charge_desc}{releasability_desc}")
+            print(f"| HSiFS Season Gauge: level {gs.season_level}, {gs.season_power}/{gs.next_level_season_power} season items{remaining_charge_desc}{releasability_desc}")
 
     elif game_id == 17: #WBaWC
-        if gs.game_specific.held_tokens:
+        if gs.held_tokens:
             token_stock = ""
-            for held_token in gs.game_specific.held_tokens:
+            for held_token in gs.held_tokens:
                 if token_stock:
                     token_stock += ", "
                 token_stock += token_types[held_token-1]
-            print(f"| WBaWC Held Tokens ({len(gs.game_specific.held_tokens)}/5): {token_stock}")
+            print(f"| WBaWC Held Tokens ({len(gs.held_tokens)}/5): {token_stock}")
 
-        if gs.game_specific.roaring_hyper:
-            hyper = gs.game_specific.roaring_hyper
+        if gs.roaring_hyper:
+            hyper = gs.roaring_hyper
             hyper_extend_desc = f"(+{hyper.token_grab_time_bonus}f for grabbing a token)" if not hyper.currently_breaking else "(broken)"
             print(f"| WBaWC {hyper_types[hyper.type]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
 
@@ -979,15 +981,15 @@ def print_game_state(gs: GameState):
             if hyper.type == 2:
                 print(f"| WBaWC Otter Hyper Shield Angles: {round(hyper.otter_shield_angles[0], 3)}, {round(hyper.otter_shield_angles[1], 3)}, {round(hyper.otter_shield_angles[2], 3)}")
 
-        if gs.game_specific.youmu_charge_timer:
-            print(f"| WBaWC Youmu Charge Timer: {gs.game_specific.youmu_charge_timer}f / 60f")
+        if gs.youmu_charge_timer:
+            print(f"| WBaWC Youmu Charge Timer: {gs.youmu_charge_timer}f / 60f")
 
-        if gs.game_specific.field_tokens:
+        if gs.field_tokens:
             counter = 0
 
             print("\nList of animal tokens:")
             print("  Position         Base Velocity    Type        Timer")
-            for token in gs.game_specific.field_tokens:
+            for token in gs.field_tokens:
                 description = "• "
                 description += tabulate(f"({round(token.position[0], 1)}, {round(token.position[1], 1)})", 17)
                 description += tabulate(f"({round(token.base_velocity[0], 1)}, {round(token.base_velocity[1], 1)})", 17)
@@ -1010,42 +1012,42 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(gs.game_specific.field_tokens)} animal tokens total]')
+                    print(f'• ... [{len(gs.field_tokens)} animal tokens total]')
                     break
 
     elif game_id == 18: #UM
-        print(f"| UM Funds: {gs.game_specific.funds:,}")
+        print(f"| UM Funds: {gs.funds:,}")
 
         cards_breakdown = ""
-        if gs.game_specific.total_cards > 0:
+        if gs.total_cards > 0:
             cards_breakdown += " ("
-            if gs.game_specific.total_actives > 0:
-                cards_breakdown += f"{gs.game_specific.total_actives} active"
-            if gs.game_specific.total_equipmt > 0:
+            if gs.total_actives > 0:
+                cards_breakdown += f"{gs.total_actives} active"
+            if gs.total_equipmt > 0:
                 if cards_breakdown != " (":
                     cards_breakdown += ", "
-                cards_breakdown += f"{gs.game_specific.total_equipmt} equipment"
-            if gs.game_specific.total_passive > 0:
+                cards_breakdown += f"{gs.total_equipmt} equipment"
+            if gs.total_passive > 0:
                 if cards_breakdown != " (":
                     cards_breakdown += ", "
-                cards_breakdown += f"{gs.game_specific.total_passive} passive"
+                cards_breakdown += f"{gs.total_passive} passive"
             cards_breakdown += ")"
 
-        print(f"| UM Cards: {gs.game_specific.total_cards}" + cards_breakdown)
+        print(f"| UM Cards: {gs.total_cards}" + cards_breakdown)
 
-        if gs.game_specific.centipede_multiplier:
-            print(f"| UM Centipede Multiplier: {gs.game_specific.centipede_multiplier:.3f}x")
+        if gs.centipede_multiplier:
+            print(f"| UM Centipede Multiplier: {gs.centipede_multiplier:.3f}x")
 
-        if gs.game_specific.lily_counter != None:
-            print(f"| UM Lily Use Count: {gs.game_specific.lily_counter} (" + ('next Lily drops Life Piece' if gs.game_specific.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
+        if gs.lily_counter != None:
+            print(f"| UM Lily Use Count: {gs.lily_counter} (" + ('next Lily drops Life Piece' if gs.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
 
-        if gs.game_specific.asylum_logic_active:
+        if gs.asylum_logic_active:
             print("| UM Asylum of Danmaku: Droplets will transform if player distance <= 128")
 
-        if gs.game_specific.active_cards:
+        if gs.active_cards:
             print("\nList of active cards:")
             print("  ID   Internal Name   Nickname    Charge / Max     %")
-            for card in gs.game_specific.active_cards:
+            for card in gs.active_cards:
                 description = "• "
                 description += tabulate(card.type, 5)
                 description += tabulate(card.internal_name, 16)
@@ -1062,9 +1064,9 @@ def print_game_state(gs: GameState):
                 print(description)
 
     elif game_id == 19: #UDoALG
-        print(f"| UDoALG Shield: {'Active' if gs.game_specific.shield_status == 1 else 'Broken'}; Max Lives: {gs.game_specific.lives_max}")
-        print(f"| UDoALG Combo Hits: {gs.game_specific.current_combo_hits}")
-        print(f"| UDoALG Item Spawn Total: {gs.game_specific.item_spawn_total}")
+        print(f"| UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
+        print(f"| UDoALG Combo Hits: {gs.current_combo_hits}")
+        print(f"| UDoALG Item Spawn Total: {gs.item_spawn_total}")
 
         thresholds = [gs.env.charge_attack_threshold, gs.env.charge_skill_threshold, gs.env.ex_attack_threshold, gs.env.boss_attack_threshold]
         names = ["attack", "skill", "ex", "boss"]
@@ -1072,9 +1074,9 @@ def print_game_state(gs: GameState):
         fill_met = ""
 
         for t in range(len(thresholds)):
-            if gs.game_specific.gauge_charge >= thresholds[t]:
+            if gs.gauge_charge >= thresholds[t]:
                 charge_met = names[t]
-            if gs.game_specific.gauge_fill >= thresholds[t]:
+            if gs.gauge_fill >= thresholds[t]:
                 fill_met += names[t] + ", "
 
         if charge_met:
@@ -1082,20 +1084,20 @@ def print_game_state(gs: GameState):
         if fill_met:
             fill_met = f"(can send {fill_met.rstrip(', ')})"
 
-        if gs.game_specific.gauge_charging:
-            print(f"| UDoALG Gauge Charge: {gs.game_specific.gauge_charge} / {gs.game_specific.gauge_fill} {charge_met}")
+        if gs.gauge_charging:
+            print(f"| UDoALG Gauge Charge: {gs.gauge_charge} / {gs.gauge_fill} {charge_met}")
 
-        print(f"| UDoALG Gauge Fill: {gs.game_specific.gauge_fill} / 2500 {fill_met}")
-        print(f"| UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.game_specific.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.game_specific.boss_attack_level + 1})")
+        print(f"| UDoALG Gauge Fill: {gs.gauge_fill} / 2500 {fill_met}")
+        print(f"| UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.boss_attack_level + 1})")
 
-        if gs.game_specific.pvp_timer_start:
-            print(f"| UDoALG PvP Timer: {round(gs.game_specific.pvp_timer/60)} / {round(gs.game_specific.pvp_timer_start/60)}")
+        if gs.pvp_timer_start:
+            print(f"| UDoALG PvP Timer: {round(gs.pvp_timer/60)} / {round(gs.pvp_timer_start/60)}")
 
-        if gs.game_specific.story_fight_phase != None and gs.game_specific.story_progress_meter != None:
-            print(f"| UDoALG Story Mode Fight Phase {gs.game_specific.story_fight_phase} Progress Meter: {gs.game_specific.story_progress_meter}")
+        if gs.story_fight_phase != None and gs.story_progress_meter != None:
+            print(f"| UDoALG Story Mode Fight Phase {gs.story_fight_phase} Progress Meter: {gs.story_progress_meter}")
 
-        if gs.game_specific.side2:
-            print(f"| UDoALG P2 ({characters[gs.game_specific.side2.env.character]}) side data included in state.")
+        if gs.side2:
+            print(f"| UDoALG P2 ({characters[gs.side2.env.character]}) side data included in state.")
 
     #======================================
     # Game entity prints (all optional) ===

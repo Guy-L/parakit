@@ -18,14 +18,14 @@ _venv_path = 'venv'
 _reqs_path = 'requirements.txt'
 _worker_script_path = 'state_reader.py'
 _vcheck_script_path = 'version_check.py'
-    
+
 #Create venv if not already created
 if not os.path.isfile(os.path.join(_venv_path, 'pyvenv.cfg')):
     if os.path.exists(_venv_path):
         print(f"Setup error: The venv folder at '{_venv_path}' appears to be corrupted (missing config file).")
         print("Fix the issue or delete the folder and run this script again.")
         input_exit()
-        
+
     venv.create(_venv_path, with_pip=True)
     print(f"Setup: venv created at '{_venv_path}'")
     print("\nIf this is your first time using ParaKit, welcome!")
@@ -51,7 +51,7 @@ def get_installed_packages(venv_path):
 def get_required_packages(requirements_path):
     with open(requirements_path) as reqs:
         return {line.strip() for line in reqs if line and not line.startswith('#')}
-        
+
 if get_required_packages(_reqs_path) - get_installed_packages(_venv_path):
     print("Setup: Missing packages detected; running pip install.")
     try:
@@ -62,7 +62,7 @@ if get_required_packages(_reqs_path) - get_installed_packages(_venv_path):
         input_exit()
 else:
     print(f"Setup: Requirements all good.")
-    
+
 #Run state-reader
 subprocess.run([_python_exe, _worker_script_path])
 
