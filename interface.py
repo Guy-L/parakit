@@ -7,12 +7,14 @@ import psutil
 import ctypes
 import win32process
 import win32api
+import win32gui
 import win32con
+import win32com.client
 import numpy as np
 import cv2
-import keyboard 
+import keyboard
 import struct
-import random  
+import random
 
 # Step 1 - Find valid game processes & windows
 _game_main_modules = {
@@ -354,7 +356,15 @@ def get_focus():
         return False
 
     if _game_window != gw.getActiveWindow():
-        _game_window.activate()
+        try:
+            _game_window.activate()
+        except gw.PyGetWindowException as e:
+            print("Note: Game window failed to focus (most likely because the terminal also lost focus).")
+            print("      Trying again after sending blank input.")
+            print("      It's unknown why this works.")
+            win32com.client.Dispatch("WScript.Shell").SendKeys('')
+            _game_window.activate()
+
         while _game_window != gw.getActiveWindow():
             pass
     return True
