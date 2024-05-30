@@ -38,7 +38,6 @@ seqext_settings = {
     'auto_unpause': False,
     'auto_repause': True,
     'need_active':  False,
-    'infinite_print_updates': False,
 }
 
 # Game-World Plotting Settings (Analysis)

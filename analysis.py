@@ -1,6 +1,7 @@
 from game_entities import GameState
 from abc import ABC, abstractmethod
 from interface import game_id
+from utils import *
 
 #Base class (abstract), shouldn't be touched
 class Analysis(ABC):
@@ -30,7 +31,7 @@ class AnalysisTemplate(Analysis):
 
     #Called after extraction finishes
     def done(self):
-        print("(Template) Analysis results go here.")
+        print(bright("(Template)"), "Analysis results go here.")
         #Your printing code here
 
 
@@ -39,7 +40,7 @@ class AnalysisTemplate(Analysis):
 #useful stuff, see analysis_examples.py for usages
 #(note: put your custom analysis under these lines so you can use 'em)
 from settings import pyplot_settings
-from interface import save_screenshot, terminate, get_color, get_curve_color, get_item_type
+from interface import save_screenshot, terminate, get_color, get_curve_color, item_types
 from interface import enemy_anms, world_width, world_height, color16, np, uses_pivot_angle
 from interface import zItemState_autocollect, zItemState_attracted
 from scipy.ndimage import uniform_filter
@@ -49,6 +50,7 @@ import matplotlib.colors as mcolors
 from matplotlib.patches import Ellipse, Circle, Rectangle
 from matplotlib.transforms import Affine2D
 import math
+import time
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from PyQt5.QtWidgets import QApplication

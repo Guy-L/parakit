@@ -63,7 +63,7 @@ class AnalysisMostBulletsFrame(Analysis):
 
     def done(self):
         if self.frame_with_most_bullets:
-            print(f"Analysis results: frame with most bullet was stage frame #{self.frame_with_most_bullets.frame_stage} at {self.max_bullets} bullets.")
+            print(bright("Analysis results:"), f"frame with most bullets was stage frame #{self.frame_with_most_bullets.frame_stage} at {self.max_bullets} bullets.")
 
             if self.frame_with_most_bullets.screen is not None:
                 print("Saved screenshot of frame in most_bullets.png")
@@ -516,8 +516,8 @@ class AnalysisPlotItems(AnalysisPlot):
 
             x_coords = [item.position[0] for item in items]
             y_coords = [item.position[1] for item in items]
-            colors = [item_color(get_item_type(item.item_type), self.lastframe.env.subshot) for item in items]
-            sizes = [item_size(get_item_type(item.item_type)) for item in items]
+            colors = [item_color(item_types[item.item_type], self.lastframe.env.subshot) for item in items]
+            sizes = [item_size(item_types[item.item_type]) for item in items]
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, marker='*')
             if self.show_poc_line:
@@ -897,6 +897,15 @@ class AnalysisPrintBulletsASCII(Analysis):
             print(line)
         print("```")
 
+class AnalysisDebug1FPS(Analysis):
+    def __init__(self):
+        pass
+
+    def step(self, state: GameState):
+        time.sleep(1)
+
+    def done(self):
+        pass
 
 # =======================================================================
 # Useful analyzers & templates for multiple games =======================

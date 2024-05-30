@@ -1,16 +1,23 @@
 from settings import extraction_settings, singlext_settings, seqext_settings
-from interface import *
-import analysis_examples as analysis #(includes analysis.py analyzers)
+from utils import *
 import sys
 import math
-import time
 import atexit
+import traceback
+
+try:
+    print(italics(darker("Importing analyzers...")), clear(), end='\r')
+    import analysis_examples as analysis #(includes analysis.py analyzers)
+    print(italics(darker("Setting up extraction interface...")), end='\r')
+    from interface import *
+except KeyboardInterrupt:
+    print("Extraction setup interrupted by user.")
+    exit()
 
 #For quick access
 analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
-infinite_print_updates = seqext_settings['infinite_print_updates']
 
 def extract_bullets(bullet_manager = zBulletManager):
     bullets = []
@@ -250,7 +257,7 @@ def extract_items(item_manager = zItemManager):
             continue
 
         item_type = read_int(item + zItem_type)
-        if not get_item_type(item_type):
+        if item_type not in item_types:
             if item_type < 50:
                 print(f"Found and skipped unknown item with type ID {item_type}. If this is a real in-game item, please report it to the developper!")
             continue
@@ -518,6 +525,12 @@ def extract_game_state(frame_id = 0, real_time = 0):
     if (game_id in has_boss_timer_drawn_if_indic_zero) == (read_int(zGui+zGui_bosstimer_drawn) == 0):
         boss_timer = read_int(zGui+zGui_bosstimer_s) + read_int(zGui+zGui_bosstimer_ms)/100
 
+    if game_id == 13:
+        game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
+    elif game_id == 18:
+        game_constants.deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
+        game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
+
     state_base = {
         'frame_stage':        read_int(stage_timer),
         'frame_global':       read_int(global_timer),
@@ -559,8 +572,6 @@ def extract_game_state(frame_id = 0, real_time = 0):
     }
 
     if game_id == 13:
-        game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
-
         kyouko = None
         echo_func = 0x0
         for kyouko_echo_func in (square_echo_func, inv_square_echo_func, circle_echo_func):
@@ -687,9 +698,6 @@ def extract_game_state(frame_id = 0, real_time = 0):
         )
 
     elif game_id == 18:
-        game_constants.deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
-        game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
-
         selected_active = read_int(zAbilityManager + zAbilityManager_selected_active)
         lily_counter = None
         centipede_multiplier = None
@@ -814,11 +822,16 @@ def extract_game_state(frame_id = 0, real_time = 0):
 def print_game_state(gs: GameState):
     #======================================
     # Consistent prints ===================
+    bar = bright(color("|", 'green'))
+
     shottype = characters[gs.env.character] + ('' if subshots[gs.env.subshot] == 'N/A' else "-" + subshots[gs.env.subshot])
-    print(f"[Stage Frame #{gs.frame_stage} | Global Frame #{gs.frame_global}] Score: {gs.score:,}; {shottype} {difficulties[gs.env.difficulty]} Stage {gs.env.stage}")
+    print(bright(f"[Global Frame #{gs.frame_global} | Stage Frame #{gs.frame_stage} | {shottype} {difficulties[gs.env.difficulty]} Stage {gs.env.stage}] Score:"), f"{gs.score:,}")
+
+    # Player status
+    print(bar, bright("Player status:" ), f"Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
 
     # Basic resources
-    basic_resources = f"| {gs.lives} lives"
+    basic_resources = bar + bright(" Resources: ") + f"{gs.lives} lives"
     if gs.constants.life_piece_req != None:
         basic_resources += f" ({gs.life_pieces}/{gs.constants.life_piece_req} pieces)"
     basic_resources += f"; {gs.bombs} bombs"
@@ -826,52 +839,53 @@ def print_game_state(gs: GameState):
         basic_resources += f" ({gs.bomb_pieces}/{gs.constants.bomb_piece_req} pieces)"
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
-    # Player status
-    print(f"| Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
-
     # Useful internals
-    print(f"| Game state: {pause_states[gs.pause_state]} ({game_modes[gs.game_mode]})")
-    print(f"| Input bitflag: {gs.input:08b}")
-    print(f"| RNG value: {gs.rng}")
+    print(bar, bright("Game state:" ), f"{pause_states[gs.pause_state]} ({game_modes[gs.game_mode]})")
+    print(bar, bright("Input bitflag:" ), f"{gs.input:08b}")
+    print(bar, bright("RNG value:" ), f"{gs.rng}")
 
     if game_id in uses_rank:
-        print(f"| Rank value: {gs.rank}")
+        print(bar, bright("Rank value:" ), f"{gs.rank}")
 
     #======================================
     # Situational prints ==================
+    bar = bright(color("|", 'cyan'))
+
     if gs.boss_timer != -1:
-        print(f"| Boss timer: {gs.boss_timer:.2f}")
+        print(bar, bright("Boss timer:" ), f"{gs.boss_timer:.2f}")
 
     if gs.spellcard:
-        print(f"| Spell #{gs.spellcard.spell_id+1}; SCB: {gs.spellcard.capture_bonus if gs.spellcard.capture_bonus > 0 else 'Failed'}")
+        print(bar, bright(f"Spell #{gs.spellcard.spell_id+1}; SCB:"), f"{gs.spellcard.capture_bonus if gs.spellcard.capture_bonus > 0 else 'Failed'}")
 
     if gs.player_deathbomb_f:
-        print(f"| Deathbomb window: {gs.player_deathbomb_f} frames left")
+        print(bar, bright("Deathbomb window:" ), f"{gs.player_deathbomb_f} frames left")
 
     if gs.bomb_state:
-        print(f"| Bomb active (state: {gs.bomb_state})")
+        print(bar, bright("Bomb active" ), f"(state: {gs.bomb_state})")
 
     #======================================
     # Game-specific prints ================
+    bar = color("|", 'yellow')
+
     if game_id == 13: #TD
-        print(f"| TD Trance Meter: {round(gs.trance_meter/200, 2)} / 3.0")
+        print(bar, f"TD Trance Meter: {round(gs.trance_meter/200, 2)} / 3.0")
 
         if gs.trance_active:
-            print(f"| TD Active Trance: {gs.trance_meter/60:.2f}s")
+            print(bar, f"TD Active Trance: {gs.trance_meter/60:.2f}s")
 
         if gs.chain_counter:
-            print(f"| TD Chain {'Active' if gs.chain_counter > 9 else 'Starting (no greys)'}: {gs.chain_counter} blues spawned; {gs.chain_timer}f left")
+            print(bar, f"TD Chain {'Active' if gs.chain_counter > 9 else 'Starting (no greys)'}: {gs.chain_counter} blues spawned; {gs.chain_timer}f left")
 
         if gs.miko_final_logic_active:
-            print("| TD Miko Final: Orbs will stop and aim towards player if player distance <= 48")
+            print(bar, "TD Miko Final: Orbs will stop and aim towards player if player distance <= 48")
 
         if gs.spirit_items:
             counter = 0
 
-            print("\nList of spirit items:")
-            print("  Type       Position         Velocity         Frames Left")
+            print(bright(underline("\nList of spirit items:")))
+            print(bright("  Type       Position         Velocity         Frames Left"))
             for spirit in gs.spirit_items:
-                description = "• "
+                description = bp
                 description += tabulate(spirit_types[spirit.spirit_type], 11)
                 description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
                 description += tabulate(f"({round(spirit.velocity[0], 1)}, {round(spirit.velocity[1], 1)})", 17)
@@ -886,7 +900,7 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(gs.spirit_items)} spirit item total]')
+                    print(bp, f'... [{len(gs.spirit_items)} spirit item total]')
                     break
 
     elif game_id == 14: #DDC
@@ -895,19 +909,19 @@ def print_game_state(gs: GameState):
             bonus_cycle_desc = " (life piece for next bonus < 2.0)"
         else:
             bonus_cycle_desc = " (bomb piece for next bonus < 2.0)"
-        print(f"| DDC Bonus Cycle: {gs.bonus_count%5}{bonus_cycle_desc}")
+        print(bar, f"DDC Bonus Cycle: {gs.bonus_count%5}{bonus_cycle_desc}")
 
         if gs.seija_flip[0]:
-            print(f"| DDC Seija Horizontal Flip: {round(100*gs.seija_flip[0], 2)}%")
+            print(bar, f"DDC Seija Horizontal Flip: {round(100*gs.seija_flip[0], 2)}%")
 
         if gs.seija_flip[1]:
-            print(f"| DDC Seija Vertical Flip: {round(100*gs.seija_flip[1], 2)}%")
+            print(bar, f"DDC Seija Vertical Flip: {round(100*gs.seija_flip[1], 2)}%")
 
         if gs.player_scale > 1:
-            print(f"| DDC Player Scale: grew {round(gs.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.player_scale, 2)})")
+            print(bar, f"DDC Player Scale: grew {round(gs.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.player_scale, 2)})")
 
         if gs.sukuna_penult_logic_active:
-            print("| DDC Sukuna Penult: Orbs will start homing if player distance < 64, will stop when player distance >= 128")
+            print(bar, "DDC Sukuna Penult: Orbs will start homing if player distance < 64, will stop when player distance >= 128")
 
     elif game_id == 15: #LoLK
         chapter = "Chapter"
@@ -919,25 +933,25 @@ def print_game_state(gs: GameState):
         if gs.chapter_enemy_weight_spawned > 0:
             chapter_desc += f" ({round(100*gs.chapter_enemy_weight_destroyed/gs.chapter_enemy_weight_spawned,1)}%)"
         chapter_desc += f"; frame #{gs.time_in_chapter}"
-        print(f"| LoLK {chapter}: {chapter_desc}")
+        print(bar, f"LoLK {chapter}: {chapter_desc}")
 
         if gs.in_pointdevice:
-            print(f"| LoLK Pointdevice: {gs.pointdevice_resets_chapter} chapter resets / {gs.pointdevice_resets_total} total resets")
+            print(bar, f"LoLK Pointdevice: {gs.pointdevice_resets_chapter} chapter resets / {gs.pointdevice_resets_total} total resets")
 
         if gs.item_graze_slowdown_factor < 1:
-            print(f"| LoLK Item Graze Slowdown: {round(gs.item_graze_slowdown_factor,1)}x")
+            print(bar, f"LoLK Item Graze Slowdown: {round(gs.item_graze_slowdown_factor,1)}x")
 
         if gs.reisen_bomb_shields > 0:
-            print(f"| LoLK Reisen Bomb Shields: {gs.reisen_bomb_shields}")
+            print(bar, f"LoLK Reisen Bomb Shields: {gs.reisen_bomb_shields}")
 
         if gs.graze_inferno_logic_active:
-            print(f"| LoLK Graze Inferno: Fireballs will slow down when player distance <= {math.sqrt(1800):.3f}")
+            print(bar, f"LoLK Graze Inferno: Fireballs will slow down when player distance <= {math.sqrt(1800):.3f}")
 
     elif game_id == 16: #HSiFS
-        print(f"| HSiFS Next Score Extend Threshold: {gs.next_extend_score:,}")
+        print(bar, f"HSiFS Next Score Extend Threshold: {gs.next_extend_score:,}")
 
         if gs.season_disabled:
-            print(f"| HSiFS Season Gauge: Disabled by Okina final")
+            print(bar, f"HSiFS Season Gauge: Disabled by Okina final")
 
         else:
             remaining_charge_desc = ""
@@ -951,7 +965,7 @@ def print_game_state(gs: GameState):
                 else:
                     releasability_desc = " (can release)"
 
-            print(f"| HSiFS Season Gauge: level {gs.season_level}, {gs.season_power}/{gs.next_level_season_power} season items{remaining_charge_desc}{releasability_desc}")
+            print(bar, f"HSiFS Season Gauge: level {gs.season_level}, {gs.season_power}/{gs.next_level_season_power} season items{remaining_charge_desc}{releasability_desc}")
 
     elif game_id == 17: #WBaWC
         if gs.held_tokens:
@@ -960,12 +974,12 @@ def print_game_state(gs: GameState):
                 if token_stock:
                     token_stock += ", "
                 token_stock += token_types[held_token-1]
-            print(f"| WBaWC Held Tokens ({len(gs.held_tokens)}/5): {token_stock}")
+            print(bar, f"WBaWC Held Tokens ({len(gs.held_tokens)}/5): {token_stock}")
 
         if gs.roaring_hyper:
             hyper = gs.roaring_hyper
             hyper_extend_desc = f"(+{hyper.token_grab_time_bonus}f for grabbing a token)" if not hyper.currently_breaking else "(broken)"
-            print(f"| WBaWC {hyper_types[hyper.type]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
+            print(bar, f"WBaWC {hyper_types[hyper.type]} Hyper Timer: {hyper.time_remaining}f / {hyper.duration}f {hyper_extend_desc}")
 
             hyper_rewards_desc = "1 Life Piece, 4 Random Animals"
             if hyper.reward_mode == 0:
@@ -976,21 +990,21 @@ def print_game_state(gs: GameState):
                 hyper_rewards_desc = "2 Bomb Piece, 1 Life Piece, 1 Power Item, 1 Point Item"
 
             if not hyper.currently_breaking:
-                print(f"| WBaWC {hyper_types[hyper.type]} Hyper Token Rewards: {hyper_rewards_desc}")
+                print(bar, f"WBaWC {hyper_types[hyper.type]} Hyper Token Rewards: {hyper_rewards_desc}")
 
             if hyper.type == 2:
-                print(f"| WBaWC Otter Hyper Shield Angles: {round(hyper.otter_shield_angles[0], 3)}, {round(hyper.otter_shield_angles[1], 3)}, {round(hyper.otter_shield_angles[2], 3)}")
+                print(bar, f"WBaWC Otter Hyper Shield Angles: {round(hyper.otter_shield_angles[0], 3)}, {round(hyper.otter_shield_angles[1], 3)}, {round(hyper.otter_shield_angles[2], 3)}")
 
         if gs.youmu_charge_timer:
-            print(f"| WBaWC Youmu Charge Timer: {gs.youmu_charge_timer}f / 60f")
+            print(bar, f"WBaWC Youmu Charge Timer: {gs.youmu_charge_timer}f / 60f")
 
         if gs.field_tokens:
             counter = 0
 
-            print("\nList of animal tokens:")
-            print("  Position         Base Velocity    Type        Timer")
+            print(bright(underline("\nList of animal tokens:")))
+            print(bright("  Position         Base Velocity    Type        Timer"))
             for token in gs.field_tokens:
-                description = "• "
+                description = bp
                 description += tabulate(f"({round(token.position[0], 1)}, {round(token.position[1], 1)})", 17)
                 description += tabulate(f"({round(token.base_velocity[0], 1)}, {round(token.base_velocity[1], 1)})", 17)
                 description += tabulate(token_types[token.type-1], 12)
@@ -1007,16 +1021,15 @@ def print_game_state(gs: GameState):
                 if token.can_switch:
                     description += f" (switches in {token.switch_timer}f)"
 
-
                 print(description)
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(gs.field_tokens)} animal tokens total]')
+                    print(bp, f'... [{len(gs.field_tokens)} animal tokens total]')
                     break
 
     elif game_id == 18: #UM
-        print(f"| UM Funds: {gs.funds:,}")
+        print(bar, f"UM Funds: {gs.funds:,}")
 
         cards_breakdown = ""
         if gs.total_cards > 0:
@@ -1033,22 +1046,22 @@ def print_game_state(gs: GameState):
                 cards_breakdown += f"{gs.total_passive} passive"
             cards_breakdown += ")"
 
-        print(f"| UM Cards: {gs.total_cards}" + cards_breakdown)
+        print(bar, f"UM Cards: {gs.total_cards}" + cards_breakdown)
 
         if gs.centipede_multiplier:
-            print(f"| UM Centipede Multiplier: {gs.centipede_multiplier:.3f}x")
+            print(bar, f"UM Centipede Multiplier: {gs.centipede_multiplier:.3f}x")
 
         if gs.lily_counter != None:
-            print(f"| UM Lily Use Count: {gs.lily_counter} (" + ('next Lily drops Life Piece' if gs.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
+            print(bar, f"UM Lily Use Count: {gs.lily_counter} (" + ('next Lily drops Life Piece' if gs.lily_counter % 3 == 2 else 'next Lily drops Bomb Piece') + ")")
 
         if gs.asylum_logic_active:
-            print("| UM Asylum of Danmaku: Droplets will transform if player distance <= 128")
+            print(bar, "UM Asylum of Danmaku: Droplets will transform if player distance <= 128")
 
         if gs.active_cards:
-            print("\nList of active cards:")
-            print("  ID   Internal Name   Nickname    Charge / Max     %")
+            print(bright(underline("\nList of active cards:")))
+            print(bright("  ID   Internal Name   Nickname    Charge / Max     %"))
             for card in gs.active_cards:
-                description = "• "
+                description = bp
                 description += tabulate(card.type, 5)
                 description += tabulate(card.internal_name, 16)
                 description += tabulate(card_nicknames[card.type], 12)
@@ -1064,9 +1077,9 @@ def print_game_state(gs: GameState):
                 print(description)
 
     elif game_id == 19: #UDoALG
-        print(f"| UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
-        print(f"| UDoALG Combo Hits: {gs.current_combo_hits}")
-        print(f"| UDoALG Item Spawn Total: {gs.item_spawn_total}")
+        print(bar, f"UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
+        print(bar, f"UDoALG Combo Hits: {gs.current_combo_hits}")
+        print(bar, f"UDoALG Item Spawn Total: {gs.item_spawn_total}")
 
         thresholds = [gs.env.charge_attack_threshold, gs.env.charge_skill_threshold, gs.env.ex_attack_threshold, gs.env.boss_attack_threshold]
         names = ["attack", "skill", "ex", "boss"]
@@ -1085,32 +1098,32 @@ def print_game_state(gs: GameState):
             fill_met = f"(can send {fill_met.rstrip(', ')})"
 
         if gs.gauge_charging:
-            print(f"| UDoALG Gauge Charge: {gs.gauge_charge} / {gs.gauge_fill} {charge_met}")
+            print(bar, f"UDoALG Gauge Charge: {gs.gauge_charge} / {gs.gauge_fill} {charge_met}")
 
-        print(f"| UDoALG Gauge Fill: {gs.gauge_fill} / 2500 {fill_met}")
-        print(f"| UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.boss_attack_level + 1})")
+        print(bar, f"UDoALG Gauge Fill: {gs.gauge_fill} / 2500 {fill_met}")
+        print(bar, f"UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.boss_attack_level + 1})")
 
         if gs.pvp_timer_start:
-            print(f"| UDoALG PvP Timer: {round(gs.pvp_timer/60)} / {round(gs.pvp_timer_start/60)}")
+            print(bar, f"UDoALG PvP Timer: {round(gs.pvp_timer/60)} / {round(gs.pvp_timer_start/60)}")
 
         if gs.story_fight_phase != None and gs.story_progress_meter != None:
-            print(f"| UDoALG Story Mode Fight Phase {gs.story_fight_phase} Progress Meter: {gs.story_progress_meter}")
+            print(bar, f"UDoALG Story Mode Fight Phase {gs.story_fight_phase} Progress Meter: {gs.story_progress_meter}")
 
         if gs.side2:
-            print(f"| UDoALG P2 ({characters[gs.side2.env.character]}) side data included in state.")
+            print(bar, f"UDoALG P2 ({characters[gs.side2.env.character]}) side data included in state.")
 
     #======================================
     # Game entity prints (all optional) ===
     if gs.bullets and any(bullet.is_active for bullet in gs.bullets): #Bullets
         counter = 0
 
-        print("\nList of bullets:")
-        print("  Position         Velocity         Speed   Angle   Radius  Timer  Color        Type")
+        print(bright(underline("\nList of bullets:")))
+        print(bright("  Position         Velocity         Speed   Angle   Radius  Timer  Color        Type"))
         for bullet in gs.bullets:
             if not bullet.is_active:
                 continue
 
-            description = "• "
+            description = bp
             description += tabulate(f"({round(bullet.position[0], 1)}, {round(bullet.position[1], 1)})", 17)
             description += tabulate(f"({round(bullet.velocity[0], 1)}, {round(bullet.velocity[1], 1)})", 17)
             description += tabulate(round(bullet.speed, 1), 8)
@@ -1146,7 +1159,7 @@ def print_game_state(gs: GameState):
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(f'• ... [{len(gs.bullets)} active bullets total]')
+                print(bp, f'... [{len(gs.bullets)} active bullets total]')
                 break
 
     if gs.lasers: #Lasers
@@ -1158,10 +1171,10 @@ def print_game_state(gs: GameState):
         if line_lasers:
             counter = 0
 
-            print("\nList of segment (\"line\") lasers:")
-            print("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite")
+            print(bright(underline("\nList of segment (\"line\") lasers:")))
+            print(bright("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite"))
             for laser in line_lasers:
-                description = "• "
+                description = bp
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(round(laser.speed, 1), 8)
                 description += tabulate(round(laser.angle, 2), 8)
@@ -1174,16 +1187,16 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(line_lasers)} line lasers total]')
+                    print(bp, f'... [{len(line_lasers)} line lasers total]')
                     break
 
         if infinite_lasers:
             counter = 0
 
-            print("\nList of telegraphed (\"infinite\") lasers:")
-            print("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)")
+            print(bright(underline("\nList of telegraphed (\"infinite\") lasers:")))
+            print(bright("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)"))
             for laser in infinite_lasers:
-                description = "• "
+                description = bp
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(f"({round(laser.origin_vel[0], 1)}, {round(laser.origin_vel[1], 1)})", 17)
                 description += tabulate(round(laser.angle, 2), 6)
@@ -1207,16 +1220,16 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(infinite_lasers)} telegraphed lasers total]')
+                    print(bp, f'... [{len(infinite_lasers)} telegraphed lasers total]')
                     break
 
         if curve_lasers:
             counter = 0
 
-            print("\nList of curvy lasers:")
-            print("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite")
+            print(bright(underline("\nList of curvy lasers:")))
+            print(bright("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite"))
             for laser in curve_lasers:
-                description = "• "
+                description = bp
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
                 description += tabulate(f"({round(laser.nodes[0].position[0], 1)}, {round(laser.nodes[0].position[1], 1)})", 18)
                 description += tabulate(f"({round(laser.nodes[0].velocity[0], 1)}, {round(laser.nodes[0].velocity[1], 1)})", 16)
@@ -1230,17 +1243,17 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(curve_lasers)} curvy lasers total]')
+                    print(bp, f'... [{len(curve_lasers)} curvy lasers total]')
                     break
 
         if beam_lasers:
             counter = 0
 
-            print("\nList of beam lasers:")
-            print("Note: Beam lasers are not fully supported; data may be inaccurate.")
-            print("  Position         Speed   Angle   Length  Width   Color   Sprite")
+            print(bright(underline("\nList of beam lasers:")))
+            print(darken("Note: Beam lasers are not fully supported; data may be inaccurate."))
+            print(bright("  Position         Speed   Angle   Length  Width   Color   Sprite"))
             for laser in beam_lasers:
-                description = "• "
+                description = bp
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(round(laser.speed, 1), 8)
                 description += tabulate(round(laser.angle, 2), 8)
@@ -1252,21 +1265,21 @@ def print_game_state(gs: GameState):
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(f'• ... [{len(beam_lasers)} beam lasers total]')
+                    print(bp, f'... [{len(beam_lasers)} beam lasers total]')
                     break
 
     if gs.enemies: #Enemies
         counter = 0
 
-        print("\nList of enemies:")
-        print("  Position        Hurtbox         Hitbox          Timer  HP / Max HP     ECL Sub         Type")
+        print(bright(underline("\nList of enemies:")))
+        print(bright("  Position        Hurtbox         Hitbox          Timer  HP / Max HP     ECL Sub         Type"))
         for enemy in gs.enemies:
-            description = "• "
+            description = bp
             description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
             description += tabulate(enemy.alive_timer, 7)
-            description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
+            description += tabulate(f"{enemy.health} / {enemy.health_max}", 16)
             description += truncate(enemy.ecl_sub_name, 14)
 
             type = ""
@@ -1303,7 +1316,7 @@ def print_game_state(gs: GameState):
 
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
-                description += "\n  • Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
+                description += "\n  " + bp + "Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
                 if game_id == 13 and enemy.speedkill_cur_drop_amt:
                     description += f" (+ {enemy.speedkill_cur_drop_amt} Blue Spirit; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
 
@@ -1317,20 +1330,20 @@ def print_game_state(gs: GameState):
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(f'• ... [{len(gs.enemies)} enemies total]')
+                print(bp, f'... [{len(gs.enemies)} enemies total]')
                 break
 
     if gs.game_mode == 7 and gs.items: #Items
         counter = 0
 
-        print("\nList of items:")
-        print("  Position         Velocity         Timer   Type")
+        print(bright(underline("\nList of items:")))
+        print(bright("  Position         Velocity         Timer   Type"))
         for item in gs.items:
-            description = "• "
+            description = bp
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
             description += tabulate(item.alive_timer, 8)
-            description += tabulate(get_item_type(item.item_type), 14)
+            description += tabulate(item_types[item.item_type], 14)
 
             if item.state == zItemState_autocollect:
                 description += " (Auto-collecting)"
@@ -1341,16 +1354,16 @@ def print_game_state(gs: GameState):
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(f'• ... [{len(gs.items)} items total]')
+                print(bp, f'... [{len(gs.items)} items total]')
                 break
 
     if gs.player_shots and singlext_settings['show_player_shots']:
         counter = 0
 
-        print("\nList of player shots:")
-        print("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer")
+        print(bright(underline("\nList of player shots:")))
+        print(bright("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer"))
         for shot in gs.player_shots:
-            description = "• "
+            description = bp
             description += tabulate(f"({round(shot.position[0], 1)}, {round(shot.position[1], 1)})", 17)
             description += tabulate(f"({round(shot.velocity[0], 1)}, {round(shot.velocity[1], 1)})", 17)
             description += tabulate(f"({round(shot.hitbox[0], 1)}, {round(shot.hitbox[1], 1)})", 16)
@@ -1363,7 +1376,7 @@ def print_game_state(gs: GameState):
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(f'• ... [{len(gs.player_shots)} shots total]')
+                print(bp, f'... [{len(gs.player_shots)} shots total]')
                 break
 
 def on_exit():
@@ -1390,7 +1403,7 @@ def parse_frame_count(expr):
 
     return frame_count
 
-print("================================")
+print(separator)
 
 infinite = False
 frame_count = 0
@@ -1404,7 +1417,7 @@ if seqext_settings['ingame_duration']:
         if parsed_frame_count:
             frame_count = parsed_frame_count
         else:
-            print(f"Error: Couldn't parse duration '{seqext_settings['ingame_duration']}'; remember to include a unit (e.g. 150f / 12.4s).")
+            print(color("Error:", 'red'), f"Couldn't parse duration '{bright(seqext_settings['ingame_duration'])}'; remember to include a unit (e.g. 150f, 12.4s, infinite, etc.).")
             print("Defaulting to single-state extraction.\n")
 
 if len(sys.argv) > 1:
@@ -1421,11 +1434,11 @@ if len(sys.argv) > 1:
             exact = True #overwrites settings
 
         else:
-            print(f"Error: Unrecognized argument '{arg}'.")
+            print(color("Error:", 'red'), f"Unrecognized argument '{bright(arg)}'.")
             exit()
 
 if not hasattr(analysis, analyzer):
-    print(f"Error: Unrecognized analyzer {analyzer}; defaulting to template.")
+    print(color("Error:", 'red'), f"Unrecognized analyzer '{bright(analyzer)}'; defaulting to template.")
     analyzer = 'AnalysisTemplate'
 
 if frame_count < 2 and not infinite: #Single-State Extraction
@@ -1435,67 +1448,112 @@ if frame_count < 2 and not infinite: #Single-State Extraction
         get_focus()
 
     state = extract_game_state()
-    analysis.step(state)
     print_game_state(state)
 
-    print("================================")
-    analysis.done()
+    try:
+        print(separator)
+        set_status(f"Running {bright(analyzer)}...")
+        status_start()
+        analysis.step(state)
+        analysis.done()
+
+    except KeyboardInterrupt:
+        print(f"{bright(analyzer)} interrupted by user.", clear())
+
+    except Exception as e:
+        status_stop()
+        print(color(f"{analyzer} error:", 'red'), str(e), darker(), clear())
+        traceback.print_exc()
+        print(default())
+
+    finally:
+        status_stop()
+
 
 else: #State Sequence Extraction
     if infinite:
-        print(f"Extracting until termination (infinite mode){' (exact mode)' if exact else ''}.")
+        print(bright(f"Extracting until termination triggered by user or analyzer{' (exact mode)' if exact else ''}."))
     else:
-        print(f"Extracting for {frame_count} frames{' (exact mode)' if exact else ''}.")
+        print(bright(f"Extracting for {frame_count} frames{' (exact mode)' if exact else ''}."))
 
     if seqext_settings['auto_unpause']:
         unpause_game()
-    else:
-        if seqext_settings['auto_focus']:
-            get_focus()
-        print("(Unpause the game to begin extraction)")
+    elif seqext_settings['auto_focus']:
+        get_focus()
 
     analysis = getattr(analysis, analyzer)()
-    start_time = time.perf_counter()
-    terminated = False
-    frame_counter = 0
 
-    while infinite or frame_counter < frame_count:
-        if terminated:
-            break
+    try:
+        start_time = time.perf_counter()
+        terminated = False
+        frame_counter = 0
 
-        frame_timestamp = read_int(stage_timer)
-        if infinite:
-            if infinite_print_updates:
-                print(f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
-        else:
-            print(f"[{int(100*frame_counter/frame_count)}%] Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
-
-        if exact:
-            game_process.suspend()
-
-        state = extract_game_state(frame_counter, time.perf_counter() - start_time)
-        analysis.step(state)
-        frame_counter += 1
-
-        if exact:
-            game_process.resume()
-
-        #busy wait for new frame
-        while True: #(do...while, ensuring term conditions evaluated at least once)
-            term_return = eval_termination_conditions(need_active)
-            if term_return:
-                print(f"{term_return}; terminating now.")
-                terminated = True
+        status_start()
+        while infinite or frame_counter < frame_count:
+            if terminated:
                 break
 
-            if read_int(stage_timer) != frame_timestamp:
-                break
+            frame_timestamp = read_int(stage_timer)
+            if infinite:
+                set_status(f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+            else:
+                set_status(f"[{int(100*frame_counter/frame_count)}%] Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
 
-    if not terminated:
-        print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.")
+            if exact:
+                game_process.suspend()
+
+            state = extract_game_state(frame_counter, time.perf_counter() - start_time)
+            analysis.step(state)
+            frame_counter += 1
+
+            if exact:
+                game_process.resume()
+
+            #busy wait for new frame
+            wait_duration = 0
+            while True: #(do...while, ensuring term conditions evaluated at least once)
+                term_return = eval_termination_conditions(need_active)
+
+                if term_return:
+                    print(f"{term_return}; terminating now.", clear())
+                    terminated = True
+                    break
+
+                if read_int(stage_timer) != frame_timestamp:
+                    break
+                elif wait_duration > 1000:
+                    set_status("(Unpause the game to continue extraction)")
+                wait_duration += 1
+
+        if not terminated:
+            print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.", clear())
+
+    except KeyboardInterrupt:
+        print("User interrupted extraction; terminating now.", clear())
+
+    except Exception as e:
+        status_stop()
+        print(color("Error:", 'red'), str(e) + "; terminating now.", darker(), clear())
+        traceback.print_exc()
+        print(default())
+
+    finally:
+        game_process.resume()
 
     if seqext_settings['auto_repause']:
         pause_game()
 
-    print("================================")
-    analysis.done()
+    set_status(f"Running {bright(analyzer)}.done()...")
+    print(separator, clear())
+
+    try:
+        analysis.done()
+    except KeyboardInterrupt:
+        print(f"{bright(analyzer)} interrupted by user.", clear())
+    except Exception as e:
+        status_stop()
+        print(color(f"{analyzer} error:", 'red'), str(e), darker(), clear())
+        traceback.print_exc()
+        print(default())
+    finally:
+        status_stop()

@@ -1,6 +1,7 @@
 from settings import interface_settings as _settings
 from offsets import offsets
 from game_entities import *
+from utils import *
 import pygetwindow as gw
 import pyautogui
 import psutil
@@ -15,6 +16,7 @@ import cv2
 import keyboard
 import struct
 import random
+import time
 
 # Step 1 - Find valid game processes & windows
 _game_main_modules = {
@@ -56,28 +58,31 @@ for process in psutil.process_iter(['pid', 'name', 'status']):
             valid_game_windows.append(_windows[process.pid])
 
 if not valid_game_processes:
-    print('Interface error: No valid game process found.')
-    print(f'Make sure the game is open.')
+    print(color("Error:", 'red'), 'No valid game process found.')
+    print('Make sure the game is open.')
     exit()
 
 
 # Step 2 - Select the desired game (break tie if multiple games are open)
 _valid_game_i = 0
 _tiebreaker = _settings['tiebreaker_game']
-if _tiebreaker and isinstance(_tiebreaker, str) and len(valid_game_processes) > 1:
-    print(f'Tiebreaker: Multiple games are open; {_tiebreaker} will be selected if found (otherwise will select first).')
-    for i in range(len(valid_game_processes)):
-        if _tiebreaker.lower().strip() in _game_main_modules[valid_game_processes[i].info['name']]:
-            _valid_game_i = i
-            break
+if len(valid_game_processes) > 1:
+    if _tiebreaker and isinstance(_tiebreaker, str):
+        print(color('Tie:', 'cyan'), f"Multiple games are open; {bright(_tiebreaker)} will be selected if found (otherwise will select first).")
+        for i in range(len(valid_game_processes)):
+            if _tiebreaker.lower().strip() in _game_main_modules[valid_game_processes[i].info['name']]:
+                _valid_game_i = i
+                break
+    else:
+        print(color('Tie:', 'cyan'), "Multiple games are open; since tiebreaker setting isn't set, first process will be selected.")
 
 game_process = valid_game_processes[_valid_game_i]
 _game_window = valid_game_windows[_valid_game_i]
 _module_name = game_process.info['name']
 game_id = int(_game_main_modules[_module_name][0])
 
-print(f'Found the {_module_name} game process with PID: {game_process.pid}')
-print(f'Found the game window: {_game_window}')
+print(darker(f'Found the {_module_name} game process with PID: {game_process.pid}'))
+print(darker(f'Found the game window: {_game_window.title}'))
 
 
 # Step 3 - Unpack offsets from selected game into namespace
@@ -107,9 +112,9 @@ for module in _module_list:
         break
 
 if _base_address is not None:
-    print(f'Base address of the process main module: {hex(_base_address)}')
+    print(darker(f'Base address of the process main module: {hex(_base_address)}'))
 else:
-    print('Interface error: Module base address not found')
+    print(color("Error:", 'red'), 'Module base address not found')
     exit()
 
 
@@ -192,26 +197,6 @@ def read_string(offset, length, rel = False):
 
 def read_zList(offset):
     return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
-
-def tabulate(x, min_size=10):
-    x_str = str(x)
-    to_append = min_size - len(x_str)
-    return x_str + " "*to_append
-
-def truncate(x, size=10, spaces = 2):
-    x_str = str(x)
-    if len(x_str) > size:
-        return x_str[:size-1] + "…" + " "*spaces
-
-    to_append = size - len(x_str) + spaces
-    return x_str + " "*to_append
-
-def get_item_type(item_type):
-    if item_type in item_types.keys():
-        return item_types[item_type]
-    else:
-        return None
-        #return "Unknown " + str(item_type) #(all item types should be known for supported games)
 
 def get_color(sprite, color):
     if bullet_types[sprite][1] == 0:
@@ -305,7 +290,7 @@ def eval_termination_conditions(need_active):
     elif keyboard.is_pressed(_settings['termination_key']):
         return "User pressed termination key"
     elif auto_termination:
-        return "Automatic termination triggered by analysis step"
+        return "Automatic termination triggered by analyzer"
     elif need_active and _game_window != gw.getActiveWindow():
         return "Game no longer active (need_active set to True)"
 
@@ -333,8 +318,12 @@ def restart_run():
     press_key('up')
     press_key('z')
 
-def pause_game():
-    if get_focus() and read_int(pause_state, rel=True) == 2:
+def pause_game(wait_for_input=False):
+    if read_int(pause_state, rel=True) == 2:
+        #seems to be a delay before you can pause after
+        #alt tabbing (no such delay for unpausing)
+        if get_focus():
+            wait_global_frame(count=1)
         press_key('esc')
 
         while read_int(pause_state, rel=True) != 0:
@@ -342,31 +331,31 @@ def pause_game():
 
         #seems to be a hardcoded 8-frame delay between 
         #when pause starts and when pause menu can take inputs
-        wait_global_frame(count=8)
+        if wait_for_input:
+            wait_global_frame(count=8)
 
 def unpause_game():
-    if get_focus() and read_int(pause_state, rel=True) == 0:
+    get_focus()
+    if read_int(pause_state, rel=True) == 0:
         press_key('esc')
 
         while read_int(pause_state, rel=True) != 2:
             pass
 
 def get_focus():
-    if not game_process.is_running():
-        return False
+    if _game_window == gw.getActiveWindow():
+        return False #didn't have to change focus
 
-    if _game_window != gw.getActiveWindow():
+    while _game_window != gw.getActiveWindow():
         try:
             _game_window.activate()
         except gw.PyGetWindowException as e:
-            print("Note: Game window failed to focus (most likely because the terminal also lost focus).")
+            print(bright("Note:"), "Game window failed to focus (most likely because ParaKit also lost focus).")
             print("      Trying again after sending blank input.")
             print("      It's unknown why this works.")
             win32com.client.Dispatch("WScript.Shell").SendKeys('')
-            _game_window.activate()
-
-        while _game_window != gw.getActiveWindow():
-            pass
+            time.sleep(0.5)
+        pass
     return True
 
 def enact_game_actions_bin(actions): #space-separated action binary strings
@@ -391,6 +380,8 @@ def print_int(offset, bytes = 4, rel = False, signed = False, name = None, forma
 def print_float(offset, rel = False, name = None):
     print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_float(offset, rel)}")
 
+def print_string(offset, length, rel = False, name = None):
+    print(f"{hex(offset)}{' (' + name + ')' if name else ''}: {read_string(offset, length, rel)}")
 
 # Private Method Definitions
 
@@ -402,7 +393,7 @@ def _read_memory(address, size, rel):
         _buffers[size] = ctypes.create_string_buffer(size)
     buffer = _buffers[size]
     if not _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref):
-        raise RuntimeError(f"Failed to read memory at address {hex(address if not rel else _base_address + address)} with size {size}.")
+        raise RuntimeError(f"Failed to read memory at address {hex(address if not rel else _base_address + address)} with size {size}")
     return buffer.raw
 
 
@@ -437,7 +428,7 @@ def _random_player():
 
 # Step 6 - Initial reads used by extraction context
 if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_mode, rel=True)] != 'Game World on Screen':
-    print("Error: Game world not loaded.")
+    print(color("Error:", 'red'), "Game world not loaded.")
     exit()
 
 global_timer += read_int(ascii_manager_pointer, rel=True)
