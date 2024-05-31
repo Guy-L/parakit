@@ -885,7 +885,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of spirit items:")))
             print(bright("  Type       Position         Velocity         Frames Left"))
             for spirit in gs.spirit_items:
-                description = bp
+                description = bp + " "
                 description += tabulate(spirit_types[spirit.spirit_type], 11)
                 description += tabulate(f"({round(spirit.position[0], 1)}, {round(spirit.position[1], 1)})", 17)
                 description += tabulate(f"({round(spirit.velocity[0], 1)}, {round(spirit.velocity[1], 1)})", 17)
@@ -896,11 +896,11 @@ def print_game_state(gs: GameState):
                 elif spirit.state == 4:
                     description += " (Auto-collecting)"
 
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(gs.spirit_items)} spirit item total]')
+                    print(bp, darker(f'... [{len(gs.spirit_items)} spirit item total]'))
                     break
 
     elif game_id == 14: #DDC
@@ -1004,7 +1004,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of animal tokens:")))
             print(bright("  Position         Base Velocity    Type        Timer"))
             for token in gs.field_tokens:
-                description = bp
+                description = bp + " "
                 description += tabulate(f"({round(token.position[0], 1)}, {round(token.position[1], 1)})", 17)
                 description += tabulate(f"({round(token.base_velocity[0], 1)}, {round(token.base_velocity[1], 1)})", 17)
                 description += tabulate(token_types[token.type-1], 12)
@@ -1021,11 +1021,11 @@ def print_game_state(gs: GameState):
                 if token.can_switch:
                     description += f" (switches in {token.switch_timer}f)"
 
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(gs.field_tokens)} animal tokens total]')
+                    print(bp, darker(f'... [{len(gs.field_tokens)} animal tokens total]'))
                     break
 
     elif game_id == 18: #UM
@@ -1061,7 +1061,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of active cards:")))
             print(bright("  ID   Internal Name   Nickname    Charge / Max     %"))
             for card in gs.active_cards:
-                description = bp
+                description = bp + " "
                 description += tabulate(card.type, 5)
                 description += tabulate(card.internal_name, 16)
                 description += tabulate(card_nicknames[card.type], 12)
@@ -1074,7 +1074,7 @@ def print_game_state(gs: GameState):
                 if card.in_use:
                     description += " (in use)"
 
-                print(description)
+                print(description.strip())
 
     elif game_id == 19: #UDoALG
         print(bar, f"UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
@@ -1123,7 +1123,7 @@ def print_game_state(gs: GameState):
             if not bullet.is_active:
                 continue
 
-            description = bp
+            description = bp + " "
             description += tabulate(f"({round(bullet.position[0], 1)}, {round(bullet.position[1], 1)})", 17)
             description += tabulate(f"({round(bullet.velocity[0], 1)}, {round(bullet.velocity[1], 1)})", 17)
             description += tabulate(round(bullet.speed, 1), 8)
@@ -1155,11 +1155,11 @@ def print_game_state(gs: GameState):
             if hasattr(bullet, 'is_intangible') and bullet.is_intangible:
                 description += f" (intangible)"
 
-            print(description)
+            print(description.strip())
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(bp, f'... [{len(gs.bullets)} active bullets total]')
+                print(bp, darker(f'... [{len(gs.bullets)} active bullets total]'))
                 break
 
     if gs.lasers: #Lasers
@@ -1174,7 +1174,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of segment (\"line\") lasers:")))
             print(bright("  Tail Position    Speed   Angle   Length / Max     Width   Color   Sprite"))
             for laser in line_lasers:
-                description = bp
+                description = bp + " "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(round(laser.speed, 1), 8)
                 description += tabulate(round(laser.angle, 2), 8)
@@ -1183,11 +1183,11 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(bullet_types[laser.sprite][0], 8)
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(line_lasers)} line lasers total]')
+                    print(bp, darker(f'... [{len(line_lasers)} line lasers total]'))
                     break
 
         if infinite_lasers:
@@ -1196,7 +1196,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of telegraphed (\"infinite\") lasers:")))
             print(bright("  Origin Position  Origin Velocity  Angle (Vel)    Length (%)    Width (%)     Color   State (#frames left)"))
             for laser in infinite_lasers:
-                description = bp
+                description = bp + " "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(f"({round(laser.origin_vel[0], 1)}, {round(laser.origin_vel[1], 1)})", 17)
                 description += tabulate(round(laser.angle, 2), 6)
@@ -1216,11 +1216,11 @@ def print_game_state(gs: GameState):
                 else:
                     description += "Unknown"
 
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(infinite_lasers)} telegraphed lasers total]')
+                    print(bp, darker(f'... [{len(infinite_lasers)} telegraphed lasers total]'))
                     break
 
         if curve_lasers:
@@ -1229,7 +1229,7 @@ def print_game_state(gs: GameState):
             print(bright(underline("\nList of curvy lasers:")))
             print(bright("  Spawn Position  Head Position     Head Velocity   HSpeed  HAngle  #Nodes  Width   Color   Sprite"))
             for laser in curve_lasers:
-                description = bp
+                description = bp + " "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 16)
                 description += tabulate(f"({round(laser.nodes[0].position[0], 1)}, {round(laser.nodes[0].position[1], 1)})", 18)
                 description += tabulate(f"({round(laser.nodes[0].velocity[0], 1)}, {round(laser.nodes[0].velocity[1], 1)})", 16)
@@ -1239,21 +1239,21 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_curve_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(curve_sprites[laser.sprite], 10)
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(curve_lasers)} curvy lasers total]')
+                    print(bp, darker(f'... [{len(curve_lasers)} curvy lasers total]'))
                     break
 
         if beam_lasers:
             counter = 0
 
             print(bright(underline("\nList of beam lasers:")))
-            print(darken("Note: Beam lasers are not fully supported; data may be inaccurate."))
+            print(darker("Note: Beam lasers are not fully supported; data may be inaccurate."))
             print(bright("  Position         Speed   Angle   Length  Width   Color   Sprite"))
             for laser in beam_lasers:
-                description = bp
+                description = bp + " "
                 description += tabulate(f"({round(laser.position[0], 1)}, {round(laser.position[1], 1)})", 17)
                 description += tabulate(round(laser.speed, 1), 8)
                 description += tabulate(round(laser.angle, 2), 8)
@@ -1261,11 +1261,11 @@ def print_game_state(gs: GameState):
                 description += tabulate(round(laser.width, 1), 8)
                 description += tabulate(get_color(laser.sprite, laser.color)[0], 8)
                 description += tabulate(bullet_types[laser.sprite][0], 8)
-                print(description)
+                print(description.strip())
 
                 counter += 1
                 if counter >= singlext_settings['list_print_limit']:
-                    print(bp, f'... [{len(beam_lasers)} beam lasers total]')
+                    print(bp, darker(f'... [{len(beam_lasers)} beam lasers total]'))
                     break
 
     if gs.enemies: #Enemies
@@ -1274,7 +1274,7 @@ def print_game_state(gs: GameState):
         print(bright(underline("\nList of enemies:")))
         print(bright("  Position        Hurtbox         Hitbox          Timer  HP / Max HP     ECL Sub         Type"))
         for enemy in gs.enemies:
-            description = bp
+            description = bp + " "
             description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
@@ -1316,7 +1316,7 @@ def print_game_state(gs: GameState):
 
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
-                description += "\n  " + bp + "Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
+                description += "\n  " + bp + " Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
                 if game_id == 13 and enemy.speedkill_cur_drop_amt:
                     description += f" (+ {enemy.speedkill_cur_drop_amt} Blue Spirit; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
 
@@ -1326,11 +1326,11 @@ def print_game_state(gs: GameState):
                         description += f"; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f"
                     description += ")"
 
-            print(description)
+            print(description.strip())
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(bp, f'... [{len(gs.enemies)} enemies total]')
+                print(bp, darker(f'... [{len(gs.enemies)} enemies total]'))
                 break
 
     if gs.game_mode == 7 and gs.items: #Items
@@ -1339,7 +1339,7 @@ def print_game_state(gs: GameState):
         print(bright(underline("\nList of items:")))
         print(bright("  Position         Velocity         Timer   Type"))
         for item in gs.items:
-            description = bp
+            description = bp + " "
             description += tabulate(f"({round(item.position[0], 1)}, {round(item.position[1], 1)})", 17)
             description += tabulate(f"({round(item.velocity[0], 1)}, {round(item.velocity[1], 1)})", 17)
             description += tabulate(item.alive_timer, 8)
@@ -1350,11 +1350,11 @@ def print_game_state(gs: GameState):
             elif item.state == zItemState_attracted:
                 description += " (Attracted)"
 
-            print(description)
+            print(description.strip())
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(bp, f'... [{len(gs.items)} items total]')
+                print(bp, darker(f'... [{len(gs.items)} items total]'))
                 break
 
     if gs.player_shots and singlext_settings['show_player_shots']:
@@ -1363,7 +1363,7 @@ def print_game_state(gs: GameState):
         print(bright(underline("\nList of player shots:")))
         print(bright("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer"))
         for shot in gs.player_shots:
-            description = bp
+            description = bp + " "
             description += tabulate(f"({round(shot.position[0], 1)}, {round(shot.position[1], 1)})", 17)
             description += tabulate(f"({round(shot.velocity[0], 1)}, {round(shot.velocity[1], 1)})", 17)
             description += tabulate(f"({round(shot.hitbox[0], 1)}, {round(shot.hitbox[1], 1)})", 16)
@@ -1372,11 +1372,11 @@ def print_game_state(gs: GameState):
             description += tabulate(shot.damage, 8)
             description += tabulate(shot.alive_timer, 8)
 
-            print(description)
+            print(description.strip())
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(bp, f'... [{len(gs.player_shots)} shots total]')
+                print(bp, darker(f'... [{len(gs.player_shots)} shots total]'))
                 break
 
 def on_exit():
@@ -1403,7 +1403,7 @@ def parse_frame_count(expr):
 
     return frame_count
 
-print(separator)
+print(separator.replace('\n',''))
 
 infinite = False
 frame_count = 0
@@ -1494,10 +1494,10 @@ else: #State Sequence Extraction
                 break
 
             frame_timestamp = read_int(stage_timer)
-            if infinite:
-                set_status(f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
-            else:
-                set_status(f"[{int(100*frame_counter/frame_count)}%] Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+            percent = ""
+            if not infinite:
+                percent = f"[{int(100*frame_counter/frame_count)}%] "
+            set_status(percent + f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
 
             if exact:
                 game_process.suspend()
@@ -1522,7 +1522,7 @@ else: #State Sequence Extraction
                 if read_int(stage_timer) != frame_timestamp:
                     break
                 elif wait_duration > 1000:
-                    set_status("(Unpause the game to continue extraction)")
+                    set_status(percent + "(Unpause the game to continue extraction)")
                 wait_duration += 1
 
         if not terminated:

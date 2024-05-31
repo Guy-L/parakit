@@ -112,12 +112,12 @@ You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<
 ## Sample Outputs
 
 <b>Single State Extraction</b>
-A single frame's state is extracted and supplied to the selected analyzer to draw results from. The terminal output will display some information from the extracted game state, including basic state data, game-specific data, and data about the active entities in the game world. Note that the information presented in this mode is but an arbitrary sample, and that extracted states contain much more data not displayed here (see `game_entities.py`).
-<img alt="single state extraction in wbawc" src="https://github.com/Guy-L/parakit/assets/55163797/c8fe5bcf-c606-450f-adea-f66d293b2f50" width="600px">
+A single frame's state is extracted and supplied to the selected analyzer to draw results from. The terminal output will display some information from the extracted game state, including basic state data, game-specific data, and data about the active entities in the game world. Note that the information presented in this mode is but an arbitrary sample, and that extracted states contain much more data not displayed here (see `game_entities.py`).<br>
+<img alt="single state extraction in wbawc" src="https://github.com/Guy-L/parakit/assets/55163797/7e0beb25-50c8-4671-85bd-d6f07047e56a" width="600px">
 
 <b>Sequence Extraction</b>
-The analyzer will be supplied the game state extracted from each frame and will present its results once the extraction process is complete. The terminal output simply displays the extraction's progress. Note that extraction is paused while the game is paused, and that its duration can be infinite (in this case, the user should terminate it by pressing the termination key which defaults to `F6`; some analyzers may also terminate it automatically).
-<img alt="analysis over 20 frames" src="https://github.com/Guy-L/parakit/assets/55163797/e80d3190-1a7f-455e-be95-3db40e8140d4" width="300px">
+The analyzer will be supplied the game state extracted from each frame and will present its results once the extraction process is complete. The terminal output simply displays the extraction's progress. Note that extraction is paused while the game is paused, and that its duration can be infinite (in this case, the user should terminate it by pressing the termination key which defaults to `F6`; some analyzers may also terminate it automatically).<br>
+<img alt="100f & inf sequence extraction" src="https://github.com/Guy-L/parakit/assets/55163797/984bbf31-fb5a-4612-b827-d468003b8300" width="600px">
 
 ## Built-In Analyzers
 

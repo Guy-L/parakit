@@ -1,22 +1,28 @@
+import os
+import signal
+
 def input_exit():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     print()
     try:
         input("\33[5mPress \33[1mEnter\033[22m to close the program.\033[25m")
-    except KeyboardInterrupt:
+    except (EOFError, KeyboardInterrupt):
         print()
-    print("\033[F\033[K\033[F", end='')
+    print("\033[F\033[K\033F\033[F", end='')
     exit()
 
 #Extreme sanity check
 try:
     import venv
     import sys
-    import os
     import platform
     import subprocess
     import traceback
     import shutil
     from utils import *
+except KeyboardInterrupt:
+    print("Setup interrupted by user")
+    input_exit()
 except Exception as e:
     print(f"\33[31mSetup error:\33[0m Error while importing standard libraries: {e}")
     print("If you see this message, please contact the developer!")

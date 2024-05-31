@@ -1,5 +1,4 @@
 import builtins
-import signal
 
 def tabulate(x, min_size=10):
     x_str = str(x)
@@ -32,9 +31,6 @@ def bright(txt = None):
     else:
         return "\33[1m"
 
-separator = bright("\n================================")
-bp = bright(color("• ", 'yellow'))
-
 def darker(txt = None):
     if txt:
         return f"\33[2m{str(txt)}\033[22m"
@@ -65,6 +61,9 @@ def clear():
 def default():
     return "\33[0m"
 
+separator = bright("\n================================") + clear()
+bp = bright(color("•", 'yellow'))
+
 def print_status(txt):
     print(blink("\n"+str(txt)+"\033[F\033[K"), end='')
 
@@ -72,11 +71,11 @@ _py_print = print
 _status = ''
 def _status_print(*args, **kwargs):
     _py_print(*args, clear(), **kwargs)
-    _py_print("\n"+blink(_status)+"\033[K\033[F\033[K", end='\r')
+    _py_print("\n"+_status+"\033[K\033[F\033[K", end='\r')
 
 def set_status(txt):
     global _status
-    _status = txt
+    _status = blink(txt)
     print(end='')
 
 def get_status():
@@ -89,10 +88,3 @@ def status_start():
 def status_stop():
     builtins.print = _py_print
     print("\033[E\033[K\033[F\033[?25h", end='')
-
-_py_sigint_handler = signal.getsignal(signal.SIGINT)
-def disable_interrupt(): #doesn't seme to work as expected
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-def enable_interrupt():
-    signal.signal(signal.SIGINT, _py_sigint_handler)

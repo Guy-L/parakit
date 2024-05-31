@@ -52,7 +52,7 @@ if _latest_version_date > VERSION_DATE:
                     if len(commit_msg) > max_commit_msg_len:
                         commit_msg = commit_msg[:max_commit_msg_len] + '...'
 
-                    new_commit_list.append(bp + bright(f"[{commit_date.strftime('%Y-%m-%d %H:%M')} UTC] ") + commit_msg)
+                    new_commit_list.append(bp + bright(f" [{commit_date.strftime('%Y-%m-%d %H:%M')} UTC] ") + commit_msg)
 
         print(separator)
         s = ('s' if new_commits > 1 else '')
