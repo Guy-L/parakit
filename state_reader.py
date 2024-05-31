@@ -675,7 +675,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
             if cur_hyper_type == 2:
                 for otter_vm_i in range(3):
                     otter_vm = find_anm_vm_by_id(read_int(zTokenManager + zTokenManager_otter_anm_ids + otter_vm_i * 0x4))
-                    otter_shield_angles.append(read_float(otter_vm + zAnmVm_rotation) - (math.pi/9)) #game does this subtraction
+                    if otter_vm:
+                        otter_shield_angles.append(read_float(otter_vm + zAnmVm_rotation) - (math.pi/9)) #game does this subtraction
 
             hyper = RoaringHyper(
                 type                   = read_int(hyper_type, rel=True),
@@ -1502,7 +1503,8 @@ else: #State Sequence Extraction
             if exact:
                 game_process.suspend()
 
-            state = extract_game_state(frame_counter, time.perf_counter() - start_time)
+            current_time = time.perf_counter()
+            state = extract_game_state(frame_counter, current_time - start_time)
             analysis.step(state)
             frame_counter += 1
 
@@ -1510,9 +1512,10 @@ else: #State Sequence Extraction
                 game_process.resume()
 
             #busy wait for new frame
-            wait_duration = 0
+            pause_time = 0
             while True: #(do...while, ensuring term conditions evaluated at least once)
-                term_return = eval_termination_conditions(need_active)
+                current_pause_state = read_int(pause_state, rel=True)
+                term_return = eval_termination_conditions(current_pause_state, need_active)
 
                 if term_return:
                     print(f"{term_return}; terminating now.", clear())
@@ -1521,9 +1524,10 @@ else: #State Sequence Extraction
 
                 if read_int(stage_timer) != frame_timestamp:
                     break
-                elif wait_duration > 1000:
+                elif current_pause_state == 0:
+                    pause_time = time.perf_counter() - current_time
                     set_status(percent + "(Unpause the game to continue extraction)")
-                wait_duration += 1
+            start_time += pause_time
 
         if not terminated:
             print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.", clear())

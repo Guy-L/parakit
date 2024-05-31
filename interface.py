@@ -282,8 +282,8 @@ def terminate():
     global auto_termination
     auto_termination = True
 
-def eval_termination_conditions(need_active):
-    if read_int(pause_state, rel=True) == 1:
+def eval_termination_conditions(pause_state, need_active):
+    if pause_state == 1:
         return "Non-run game state detected"
     elif not game_process.is_running():
         return "Game was closed" #bugged, but not worth fixing (edge case)

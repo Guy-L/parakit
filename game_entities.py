@@ -327,7 +327,7 @@ class GameState:
     frame_global: int
     stage_chapter: int
     seq_frame_id: Optional[int]
-    seq_real_time: Optional[float]
+    seq_real_time: Optional[float] #ignores pause time
     pause_state: int
     game_mode: int
     game_speed: float #usually 1
