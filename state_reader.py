@@ -6,10 +6,11 @@ import atexit
 import traceback
 
 try:
+    print(italics(darker("Setting up extraction interface...")), clear(), end='\r')
+    from interface import *
     print(italics(darker("Importing analyzers...")), clear(), end='\r')
     import analysis_examples as analysis #(includes analysis.py analyzers)
-    print(italics(darker("Setting up extraction interface...")), end='\r')
-    from interface import *
+    print(italics(darker("Starting extraction...")), clear(), end='\r')
 except KeyboardInterrupt:
     print("Extraction setup interrupted by user.")
     exit()
@@ -1280,7 +1281,7 @@ def print_game_state(gs: GameState):
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
             description += tabulate(enemy.alive_timer, 7)
-            description += tabulate(f"{enemy.health} / {enemy.health_max}", 16)
+            description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
             description += truncate(enemy.ecl_sub_name, 14)
 
             type = ""
