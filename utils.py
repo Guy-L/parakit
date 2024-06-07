@@ -13,6 +13,9 @@ def truncate(x, size=10, spaces = 2):
     to_append = size - len(x_str) + spaces
     return x_str + " "*to_append
 
+def round_down(f, digits=0):
+    return float(str(f)[:str(f).index('.')+digits+1])
+
 _term_colors = ['black', 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white']
 def color(txt = None, c = 'white'):
     if isinstance(c, str):

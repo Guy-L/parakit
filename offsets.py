@@ -123,7 +123,8 @@ class EnemyOffsets:
     zEnemyData_anm_vm_id: int #"anm_vm_ids"
     zEnemyData_anm_page: int #"anm_slot_0_index"
     zEnemyData_anm_id: int #"anm_slot_0_script"
-    zEnemyData_timer: int
+    zEnemyData_ecl_timer: int
+    zEnemyData_alive_timer: int
     zEnemyData_movement_bounds: int
     zEnemyData_score_reward: int
     zEnemyData_hp: int
@@ -132,6 +133,13 @@ class EnemyOffsets:
     zEnemyData_iframes: int
     zEnemyData_flags: int #"flags_low"
     zEnemyData_subboss_id: int
+    zEnemyData_interrupts_arr: int
+    zEnemy_interrupts_arr_len: int
+    zEnemyInterrupt_hp: int
+    zEnemyInterrupt_time: int
+    zEnemyInterrupt_hp_sub: int
+    zEnemyInterrupt_time_sub: int
+    zEnemyInterrupt_len: int
     zEnemyData_special_func: int
 
 @dataclass
@@ -222,13 +230,6 @@ class SpellCardOffsets:
     zSpellcard_bonus: int
 
 @dataclass
-class GUIOffsets:
-    gui_pointer: int
-    zGui_bosstimer_s: int
-    zGui_bosstimer_ms: int
-    zGui_bosstimer_drawn: int
-
-@dataclass
 class GameThreadOffsets:
     game_thread_pointer: int
     stage_timer: int
@@ -286,7 +287,6 @@ class Offset:
     ascii: AsciiOffsets
     anm: AnmOffsets
     spell_card: SpellCardOffsets
-    gui: GUIOffsets
     game_thread: GameThreadOffsets
     supervisor: SupervisorOffsets
     associations: Associations
@@ -459,7 +459,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x120,
             zEnemyData_anm_page        = 0x264,
             zEnemyData_anm_id          = 0x268,
-            zEnemyData_timer           = 0x2bc,
+            zEnemyData_ecl_timer       = 0x2bc,
+            zEnemyData_alive_timer     = 0x2d0,
             zEnemyData_movement_bounds = 0x3f38,
             zEnemyData_score_reward    = 0x3f48,
             zEnemyData_hp              = 0x3f4c,
@@ -468,6 +469,13 @@ offsets = {
             zEnemyData_iframes         = 0x3fd0,
             zEnemyData_flags           = 0x4030,
             zEnemyData_subboss_id      = 0x4040,
+            zEnemyData_interrupts_arr  = 0x4048,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0xc,
+            zEnemyInterrupt_len      = 0x10,
             zEnemyData_special_func    = 0x40e8,
         ),
         items = ItemOffsets(
@@ -547,12 +555,6 @@ offsets = {
             zSpellcard_indicator = 0x20,
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xc2190,
-            zGui_bosstimer_s     = 0x1a0,
-            zGui_bosstimer_ms    = 0x1a4,
-            zGui_bosstimer_drawn = 0x1ac,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xc2194,
@@ -714,7 +716,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x124,
             zEnemyData_anm_page        = 0x268,
             zEnemyData_anm_id          = 0x26c,
-            zEnemyData_timer           = 0x2c0,
+            zEnemyData_ecl_timer       = 0x2c0,
+            zEnemyData_alive_timer     = 0x2d4,
             zEnemyData_movement_bounds = 0x3f60,
             zEnemyData_score_reward    = 0x3f70,
             zEnemyData_hp              = 0x3f74,
@@ -723,6 +726,13 @@ offsets = {
             zEnemyData_iframes         = 0x3ff0,
             zEnemyData_flags           = 0x4054,
             zEnemyData_subboss_id      = 0x4064,
+            zEnemyData_interrupts_arr  = 0x406c,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0xc,
+            zEnemyInterrupt_len      = 0x10,
             zEnemyData_special_func    = 0x410c,
         ),
         items = ItemOffsets(
@@ -802,12 +812,6 @@ offsets = {
             zSpellcard_indicator = 0x20,
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xdb550,
-            zGui_bosstimer_s     = 0x19c,
-            zGui_bosstimer_ms    = 0x1a0,
-            zGui_bosstimer_drawn = 0x1a8,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xdb558,
@@ -952,7 +956,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x124,
             zEnemyData_anm_page        = 0x268,
             zEnemyData_anm_id          = 0x26c,
-            zEnemyData_timer           = 0x2c0,
+            zEnemyData_ecl_timer       = 0x2c0,
+            zEnemyData_alive_timer     = 0x2d4,
             zEnemyData_movement_bounds = 0x3f60,
             zEnemyData_score_reward    = 0x3f70,
             zEnemyData_hp              = 0x3f74,
@@ -961,6 +966,13 @@ offsets = {
             zEnemyData_iframes         = 0x3ffc,
             zEnemyData_flags           = 0x4060,
             zEnemyData_subboss_id      = 0x4070,
+            zEnemyData_interrupts_arr  = 0x4078,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0x48,
+            zEnemyInterrupt_len      = 0x88,
             zEnemyData_special_func    = 0x4518,
         ),
         items = ItemOffsets(
@@ -1040,12 +1052,6 @@ offsets = {
             zSpellcard_indicator = 0x1c,
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xe9a8c,
-            zGui_bosstimer_s     = 0x1c0,
-            zGui_bosstimer_ms    = 0x1c4,
-            zGui_bosstimer_drawn = 0x1cc,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xe9a94,
@@ -1191,7 +1197,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x124,
             zEnemyData_anm_page        = 0x268,
             zEnemyData_anm_id          = 0x26c,
-            zEnemyData_timer           = 0x2d4,
+            zEnemyData_ecl_timer       = 0x2c0,
+            zEnemyData_alive_timer     = 0x2d4,
             zEnemyData_movement_bounds = 0x3f60,
             zEnemyData_score_reward    = 0x3f70,
             zEnemyData_hp              = 0x3f74,
@@ -1200,6 +1207,13 @@ offsets = {
             zEnemyData_iframes         = 0x4000,
             zEnemyData_flags           = 0x4060,
             zEnemyData_subboss_id      = 0x4070,
+            zEnemyData_interrupts_arr  = 0x4078,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0x48,
+            zEnemyInterrupt_len      = 0x88,
             zEnemyData_special_func    = 0x4518,
         ),
         items = ItemOffsets(
@@ -1279,12 +1293,6 @@ offsets = {
             zSpellcard_indicator = 0x1c,
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xa6dcc,
-            zGui_bosstimer_s     = 0x1d0,
-            zGui_bosstimer_ms    = 0x1d4,
-            zGui_bosstimer_drawn = 0x1dc,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xa6dd4,
@@ -1440,7 +1448,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x124,
             zEnemyData_anm_page        = 0x268,
             zEnemyData_anm_id          = 0x26c,
-            zEnemyData_timer           = 0x2d4,
+            zEnemyData_ecl_timer       = 0x2c0,
+            zEnemyData_alive_timer     = 0x2d4,
             zEnemyData_movement_bounds = 0x3f60,
             zEnemyData_score_reward    = 0x3f70,
             zEnemyData_hp              = 0x3f74,
@@ -1449,6 +1458,13 @@ offsets = {
             zEnemyData_iframes         = 0x4044,
             zEnemyData_flags           = 0x4080,
             zEnemyData_subboss_id      = 0x4090,
+            zEnemyData_interrupts_arr  = 0x4098,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0x48,
+            zEnemyInterrupt_len      = 0x88,
             zEnemyData_special_func    = 0x4538,
         ),
         items = ItemOffsets(
@@ -1528,12 +1544,6 @@ offsets = {
             zSpellcard_indicator = 0x1c,
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xb76ac,
-            zGui_bosstimer_s     = 0x1c8,
-            zGui_bosstimer_ms    = 0x1cc,
-            zGui_bosstimer_drawn = 0x1d4,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xb76b0,
@@ -1690,7 +1700,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x124,
             zEnemyData_anm_page        = 0x268,
             zEnemyData_anm_id          = 0x26c,
-            zEnemyData_timer           = 0x2d4,
+            zEnemyData_ecl_timer       = 0x2c0,
+            zEnemyData_alive_timer     = 0x2d4,
             zEnemyData_movement_bounds = 0x4fe0,
             zEnemyData_score_reward    = 0x4ff0,
             zEnemyData_hp              = 0x4ff4,
@@ -1699,6 +1710,13 @@ offsets = {
             zEnemyData_iframes         = 0x50f4,
             zEnemyData_flags           = 0x5130,
             zEnemyData_subboss_id      = 0x5140,
+            zEnemyData_interrupts_arr  = 0x5148,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0x48,
+            zEnemyInterrupt_len      = 0x88,
             zEnemyData_special_func    = 0x55e8,
         ),
         items = ItemOffsets(
@@ -1778,12 +1796,6 @@ offsets = {
             zSpellcard_indicator = 0x1c,
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
-        ),
-        gui = GUIOffsets(
-            gui_pointer          = 0xcf2e0,
-            zGui_bosstimer_s     = 0x1b8,
-            zGui_bosstimer_ms    = 0x1bc,
-            zGui_bosstimer_drawn = 0x1c4,
         ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xcf2e4,
@@ -1938,7 +1950,8 @@ offsets = {
             zEnemyData_anm_vm_id       = 0x134,
             zEnemyData_anm_page        = 0x278,
             zEnemyData_anm_id          = 0x27c,
-            zEnemyData_timer           = 0x2e4,
+            zEnemyData_ecl_timer       = 0x2d0,
+            zEnemyData_alive_timer     = 0x2e4,
             zEnemyData_movement_bounds = 0x4ff4,
             zEnemyData_score_reward    = 0x5004,
             zEnemyData_hp              = 0x5008,
@@ -1947,6 +1960,13 @@ offsets = {
             zEnemyData_iframes         = 0x512c,
             zEnemyData_flags           = 0x516c,
             zEnemyData_subboss_id      = 0x5180,
+            zEnemyData_interrupts_arr  = 0x5188,
+            zEnemy_interrupts_arr_len  = 0x8,
+            zEnemyInterrupt_hp       = 0x0,
+            zEnemyInterrupt_time     = 0x4,
+            zEnemyInterrupt_hp_sub   = 0x8,
+            zEnemyInterrupt_time_sub = 0x48,
+            zEnemyInterrupt_len      = 0x88,
             zEnemyData_special_func    = 0x5648,
         ),
         items = ItemOffsets(
@@ -2027,12 +2047,6 @@ offsets = {
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
         ),
-        gui = GUIOffsets(
-            gui_pointer          = 0x1ae460,
-            zGui_bosstimer_s     = 0x68,
-            zGui_bosstimer_ms    = 0x6c,
-            zGui_bosstimer_drawn = 0x60,
-        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0x1ae464,
             stage_timer = 0x14,
@@ -2083,11 +2097,8 @@ offsets = {
             'zGaugeManager_charging_bool': 0x2c,
             'zGaugeManager_gauge_charge': 0x94,
             'zGaugeManager_gauge_fill': 0xa4,
-            'zAbilityManager_total_cards': 0x2c, #untracked
+            'zAbilityManager_total_cards': 0x2c,
             'zAnmManager_list_p2': 0x744,
-            'zGui_p2_bosstimer_s': 0xd4,
-            'zGui_p2_bosstimer_ms': 0xd8,
-            'zGui_p2_bosstimer_drawn': 0xcc,
             'zAi_story_mode_pointer': 0x34,
             'zStoryAi_fight_phase': 0x4,
             'zStoryAi_progress_meter': 0x8,
@@ -2109,10 +2120,10 @@ offsets = {
             'p2_ai_pointer': 0x1ae4e0,
 
             #P1 (Remaining) Globals
-            'charge_attack_threshold': 0x207934, #untracked
-            'skill_attack_threshold': 0x207938, #untracked
-            'ex_attack_threshold': 0x20793c, #untracked
-            'boss_attack_threshold': 0x207940, #untracked
+            'charge_attack_threshold': 0x207934,
+            'skill_attack_threshold': 0x207938,
+            'ex_attack_threshold': 0x20793c,
+            'boss_attack_threshold': 0x207940,
             'ex_attack_level': 0x207944,
             'boss_attack_level': 0x207948,
             'lives_max': 0x207964,
@@ -2120,12 +2131,12 @@ offsets = {
 
             #P2 Globals
             'p2_input': 0x2018b0,
-            'p2_shottype': 0x2079dc, #untracked
+            'p2_shottype': 0x2079dc,
             'p2_power': 0x2079e4,
-            'p2_charge_attack_threshold': 0x2079f4, #untracked
-            'p2_skill_attack_threshold': 0x2079f8, #untracked
-            'p2_ex_attack_threshold': 0x2079fc, #untracked
-            'p2_boss_attack_threshold': 0x207a00, #untracked
+            'p2_charge_attack_threshold': 0x2079f4,
+            'p2_skill_attack_threshold': 0x2079f8,
+            'p2_ex_attack_threshold': 0x2079fc,
+            'p2_boss_attack_threshold': 0x207a00,
             'p2_ex_attack_level': 0x207a04,
             'p2_boss_attack_level': 0x207a08,
             'p2_lives': 0x207a20,
@@ -2236,7 +2247,8 @@ offsets = {
 #            zEnemyData_anm_vm_id       = None,
 #            zEnemyData_anm_page        = None,
 #            zEnemyData_anm_id          = None,
-#            zEnemyData_timer           = None,
+#            zEnemyData_ecl_timer       = None,
+#            zEnemyData_alive_timer     = None,
 #            zEnemyData_movement_bounds = None,
 #            zEnemyData_score_reward    = None,
 #            zEnemyData_hp              = None,
@@ -2245,6 +2257,14 @@ offsets = {
 #            zEnemyData_iframes         = None,
 #            zEnemyData_flags           = None,
 #            zEnemyData_subboss_id      = None,
+#            zEnemyData_interrupts_arr  = None,
+#            zEnemy_interrupts_arr_len  = None,
+#            zEnemyInterrupt_hp       = None,
+#            zEnemyInterrupt_time     = None,
+#            zEnemyInterrupt_hp_sub   = None,
+#            zEnemyInterrupt_time_sub = None,
+#            zEnemyInterrupt_len      = None,
+#            zEnemyData_special_func    = None,
 #        ),
 #        items = ItemOffsets(
 #            item_manager_pointer   = None,
@@ -2323,12 +2343,6 @@ offsets = {
 #            zSpellcard_indicator = None,
 #            zSpellcard_id        = None,
 #            zSpellcard_bonus     = None,
-#        ),
-#        gui = GUIOffsets(
-#            gui_pointer          = None,
-#            zGui_bosstimer_s     = None,
-#            zGui_bosstimer_ms    = None,
-#            zGui_bosstimer_drawn = None,
 #        ),
 #        game_thread = GameThreadOffsets(
 #            game_thread_pointer = None,

@@ -41,7 +41,7 @@ class AnalysisTemplate(Analysis):
 #(note: put your custom analysis under these lines so you can use 'em)
 from settings import pyplot_settings
 from interface import save_screenshot, terminate, get_color, get_curve_color, item_types
-from interface import enemy_anms, world_width, world_height, color16, np, uses_pivot_angle
+from interface import enemy_anms, world_width, world_height, np, uses_pivot_angle
 from interface import zItemState_autocollect, zItemState_attracted
 from scipy.ndimage import uniform_filter
 import matplotlib

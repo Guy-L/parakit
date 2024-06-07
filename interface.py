@@ -87,7 +87,7 @@ print(darker(f'Found the game window: {_game_window.title}'))
 
 # Step 3 - Unpack offsets from selected game into namespace
 for offset_category in offsets[_module_name].__dict__.values():
-    for name, val in (offset_category.items() if isinstance(offset_category, dict) else offset_category.__dict__.items()):
+    for name, val in (offset_category.items() if isinstance(offset_category, dict) else vars(offset_category).items()):
         if 'zEnemyData_' in name:
             globals()[name.replace('Data', '')] = (zEnemy_data + val if val != None else val)
         elif any(classname in name for classname in ['zLaserLine_', 'zLaserInfinite_', 'zLaserCurve_', 'zLaserBeam_']):
@@ -132,7 +132,6 @@ has_enemy_score_reward = [6, 7, 8, 9, 10, 11]
 has_charging_youmu = [13, 17]
 has_bullet_delay = [14, 14.3, 18.5]
 has_bullet_intangible = [16, 16.5]
-has_boss_timer_drawn_if_indic_zero = [19]
 has_ability_cards = [18, 18.5, 19]
 switch_to_serializable_ecl = 15 #first game where enemies store sub_id + offset within the sub as opposed to instruction pointers
 
@@ -442,7 +441,6 @@ zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
 zAnmManager    = read_int(anm_manager_pointer, rel=True)
 zSpellCard     = read_int(spellcard_pointer, rel=True)
-zGui           = read_int(gui_pointer, rel=True)
 
 if game_id == 13:
     zSpiritManager = read_int(spirit_manager_pointer, rel=True)

@@ -42,18 +42,22 @@ class Enemy:
     no_hurtbox: bool
     no_hitbox: bool
     invincible: bool
+    intangible: bool
     is_grazeable: bool
     is_rectangle: bool
     is_boss: bool
     subboss_id: int
+    health_threshold: Tuple[int, str] #if health <= int, run ECL sub str, only used by bosses
+    time_threshold: Tuple[int, str] #if ecl timer > int, run ECL sub str, only used by bosses
     rotation: float
     pivot_angle: float #used to rotate retangle enemies in DDC-UM in janky way (see AnalysisPlotEnemies); 0 in other games
-    ecl_sub_name: str #name of the ecl subroutine ran by the enemy. useful to tell apart stage enemies
     anm_page: int #usually: 0 for bosses sprites, 1 for stage enemy sprites, 2 for custom enemy sprites
     anm_id: int #id of the sprite within the page
+    ecl_sub_name: str #name of the ecl subroutine ran by the enemy. useful to tell apart stage enemies
+    ecl_sub_timer: int
     alive_timer: int
-    hp: int
-    hp_max: int
+    health: int
+    health_max: int
     drops: Dict[int, int] #key: item type, value: count
     iframes: int
 
@@ -287,7 +291,8 @@ class P2Side:
     bomb_pieces: int
     power: int
     graze: int
-    boss_timer: float
+    boss_timer_shown: float
+    boss_timer_real: float
     spellcard: Optional[Spellcard]
     input: int
     player_position: Tuple[float, float]
@@ -296,6 +301,7 @@ class P2Side:
     player_focused: bool
     player_options_pos: List[Tuple[float, float]]
     player_shots: List[PlayerShot]
+    player_deathbomb_f: int
     bomb_state: int
     bullets: List[Bullet]
     enemies: List[Enemy]
@@ -328,9 +334,11 @@ class GameState:
     stage_chapter: int
     seq_frame_id: Optional[int]
     seq_real_time: Optional[float] #ignores pause time
+    boss_timer_shown: float #capped at 99.99, truncated to 2 decimals
+    boss_timer_real: float #not capped, not truncated
     pause_state: int
     game_mode: int
-    game_speed: float #usually 1
+    game_speed: float #usually 1 (always 1 in pause menu)
     score: int
     lives: int
     life_pieces: int #set to 0 in pre-SA + UDoALG for convenience
@@ -339,7 +347,6 @@ class GameState:
     power: int
     piv: int
     graze: int
-    boss_timer: float
     spellcard: Optional[Spellcard]
     rank: int
     input: int

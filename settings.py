@@ -25,6 +25,7 @@ interface_settings = {
 # Single-State Extraction Settings
 singlext_settings = {
     'show_enemy_drops': False,
+    'show_boss_thresholds': True,
     'show_player_shots': False,
     'list_print_limit': 30,
 }

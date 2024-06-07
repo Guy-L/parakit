@@ -85,6 +85,64 @@ def extract_bullets(bullet_manager = zBulletManager):
 
     return bullets
 
+def extract_enemy_movement_limit(movement_bounds, flags):
+    if flags & zEnemyFlags_has_move_limit:
+        return EnemyMovementLimit(
+            center = (read_float(movement_bounds), read_float(movement_bounds + 0x4)),
+            width = read_float(movement_bounds + 0x8),
+            height = read_float(movement_bounds + 0xc),
+        )
+
+def extract_enemy_ecl_sub_name(ecl_ref):
+    if game_id >= switch_to_serializable_ecl:
+        enemy_sub_id = read_int(ecl_ref) #may be -1 for spawning enemies
+
+        if enemy_sub_id in range(len(ecl_sub_names)):
+            return ecl_sub_names[enemy_sub_id]
+
+    else:
+        cur_instr_addr = read_int(ecl_ref)
+        enemy_sub_id = None
+        for sub_id in range(len(ecl_sub_starts)):
+            if ecl_sub_starts[sub_id] <= cur_instr_addr:
+                if not enemy_sub_id or ecl_sub_starts[sub_id] > ecl_sub_starts[enemy_sub_id] :
+                    enemy_sub_id = sub_id
+
+        if enemy_sub_id:
+            return ecl_sub_names[enemy_sub_id]
+
+def extract_enemy_thresholds(interrupts):
+    zEnemyHealthThreshold = None
+    zEnemyTimeThreshold = None
+
+    interrupts_end = interrupts + zEnemyInterrupt_len * zEnemy_interrupts_arr_len
+
+    for interrupt in range(interrupts, interrupts_end, zEnemyInterrupt_len):
+        interrupt_hp = read_int(interrupt + zEnemyInterrupt_hp, signed=True)
+
+        if interrupt_hp >= 0:
+            if not zEnemyHealthThreshold:
+                #grab health threshold from first interrupt with valid health
+                interrupt_hp_sub_addr = interrupt + zEnemyInterrupt_hp_sub
+
+                if game_id < switch_to_serializable_ecl: #seems its a pointer in older games
+                    interrupt_hp_sub_addr = read_int(interrupt_hp_sub_addr)
+
+                zEnemyHealthThreshold = (interrupt_hp, read_string(interrupt_hp_sub_addr, 64))
+
+            interrupt_time = read_int(interrupt + zEnemyInterrupt_time, signed=True)
+            if interrupt_time > 0:
+                #grab time threshold from first interrupt with BOTH valid health and time
+                interrupt_time_sub_addr = interrupt + zEnemyInterrupt_time_sub
+
+                if game_id < switch_to_serializable_ecl: #seems its a pointer in older games
+                    interrupt_time_sub_addr = read_int(interrupt_time_sub_addr)
+
+                zEnemyTimeThreshold = (interrupt_time, read_string(interrupt_time_sub_addr, 64))
+                break
+
+    return (zEnemyHealthThreshold, zEnemyTimeThreshold)
+
 def extract_enemy_drops(enemy_drops):
     drops = {}
 
@@ -113,70 +171,50 @@ def extract_enemies(enemy_manager = zEnemyManager):
         zEnemy = current_enemy_list["entry"]
         zEnemyFlags = (read_int(zEnemy + zEnemy_flags + 0x4) << 32) | read_int(zEnemy + zEnemy_flags)
 
-        if zEnemyFlags & zEnemyFlags_intangible != 0:
-            continue
-
-        zEnemyMovementLimit = None
-        if zEnemyFlags & zEnemyFlags_has_move_limit:
-            zEnemyMovementLimit = EnemyMovementLimit(
-                center = (read_float(zEnemy + zEnemy_movement_bounds), read_float(zEnemy + zEnemy_movement_bounds + 0x4)),
-                width = read_float(zEnemy + zEnemy_movement_bounds + 0x8),
-                height = read_float(zEnemy + zEnemy_movement_bounds + 0xc),
-            )
-
-        zEnemyEclSubName = ""
-        if game_id >= switch_to_serializable_ecl:
-            enemy_sub_id = read_int(zEnemy + zEnemy_ecl_ref) #may be -1 for spawning enemies
-
-            if enemy_sub_id in range(len(ecl_sub_names)):
-                zEnemyEclSubName = ecl_sub_names[enemy_sub_id]
-
+        if enemy_manager != zEnemyManager: #udoalg p2
+            zEnemyAnmVM = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id), zAnmManager_list_p2)
         else:
-            cur_instr_addr = read_int(zEnemy + zEnemy_ecl_ref)
-            enemy_sub_id = None
-            for sub_id in range(len(ecl_sub_starts)):
-                if ecl_sub_starts[sub_id] <= cur_instr_addr:
-                    if not enemy_sub_id or ecl_sub_starts[sub_id] > ecl_sub_starts[enemy_sub_id] :
-                        enemy_sub_id = sub_id
+            zEnemyAnmVM = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id))
 
-            if enemy_sub_id:
-                zEnemyEclSubName = ecl_sub_names[enemy_sub_id]
-
-        if enemy_manager != zEnemyManager:
-            enemy_vm = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id), zAnmManager_list_p2)
-        else:
-            enemy_vm = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id))
-
-        #filter invisible enemies that weren't filtered earlier
-        if not enemy_vm:
+        # Filter invisible enemies
+        if not zEnemyAnmVM:
             continue
 
         enemy = {
-            'id':           zEnemy,
-            'position':     (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
-            'velocity':     (read_float(zEnemy + zEnemy_vel), read_float(zEnemy + zEnemy_vel + 0x4)),
-            'hurtbox':      (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
-            'hitbox':       (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
-            'move_limit':   zEnemyMovementLimit,
-            'no_hurtbox':   zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
-            'no_hitbox':    zEnemyFlags & zEnemyFlags_no_hitbox != 0,
-            'invincible':   zEnemyFlags & zEnemyFlags_invincible != 0,
-            'is_grazeable': zEnemyFlags & zEnemyFlags_is_grazeable != 0,
-            'is_rectangle': zEnemyFlags & zEnemyFlags_is_rectangle != 0,
-            'is_boss':      zEnemyFlags & zEnemyFlags_is_boss != 0,
-            'subboss_id':   read_int(zEnemy + zEnemy_subboss_id, signed=True),
-            'rotation':     read_float(zEnemy + zEnemy_rotation) if game_id != 13 else read_float(enemy_vm + zAnmVm_rotation_z),
-            'pivot_angle':  read_float(enemy_vm + zAnmVm_rotation_z) if game_id in uses_pivot_angle else 0,
-            'ecl_sub_name': zEnemyEclSubName,
-            'anm_page':     read_int(zEnemy + zEnemy_anm_page),
-            'anm_id':       read_int(zEnemy + zEnemy_anm_id),
-            'alive_timer':  read_int(zEnemy + zEnemy_timer),
-            'hp':           read_int(zEnemy + zEnemy_hp),
-            'hp_max':       read_int(zEnemy + zEnemy_hp_max),
-            'drops':        extract_enemy_drops(zEnemy + zEnemy_drops),
-            'iframes':      read_int(zEnemy + zEnemy_iframes),
+            'id':               zEnemy,
+            'position':         (read_float(zEnemy + zEnemy_pos), read_float(zEnemy + zEnemy_pos + 0x4)),
+            'velocity':         (read_float(zEnemy + zEnemy_vel), read_float(zEnemy + zEnemy_vel + 0x4)),
+            'hurtbox':          (read_float(zEnemy + zEnemy_hurtbox), read_float(zEnemy + zEnemy_hurtbox + 0x4)),
+            'hitbox':           (read_float(zEnemy + zEnemy_hitbox), read_float(zEnemy + zEnemy_hitbox + 0x4)),
+            'move_limit':       extract_enemy_movement_limit(zEnemy + zEnemy_movement_bounds, zEnemyFlags),
+            'no_hurtbox':       zEnemyFlags & zEnemyFlags_no_hurtbox != 0,
+            'no_hitbox':        zEnemyFlags & zEnemyFlags_no_hitbox != 0,
+            'invincible':       zEnemyFlags & zEnemyFlags_invincible != 0,
+            'intangible':       zEnemyFlags & zEnemyFlags_intangible != 0,
+            'is_grazeable':     zEnemyFlags & zEnemyFlags_is_grazeable != 0,
+            'is_rectangle':     zEnemyFlags & zEnemyFlags_is_rectangle != 0,
+            'is_boss':          zEnemyFlags & zEnemyFlags_is_boss != 0,
+            'subboss_id':       read_int(zEnemy + zEnemy_subboss_id, signed=True),
+            'health_threshold': None, #only checked for boss & boss-related enemies
+            'time_threshold':   None, #only checked for boss & boss-related enemies
+            'rotation':         read_float(zEnemy + zEnemy_rotation) if game_id != 13 else read_float(zEnemyAnmVM + zAnmVm_rotation_z),
+            'pivot_angle':      read_float(zEnemyAnmVM + zAnmVm_rotation_z) if game_id in uses_pivot_angle else 0,
+            'anm_page':         read_int(zEnemy + zEnemy_anm_page),
+            'anm_id':           read_int(zEnemy + zEnemy_anm_id),
+            'ecl_sub_name':     extract_enemy_ecl_sub_name(zEnemy + zEnemy_ecl_ref),
+            'ecl_sub_timer':    read_int(zEnemy + zEnemy_ecl_timer),
+            'alive_timer':      read_int(zEnemy + zEnemy_alive_timer),
+            'health':           read_int(zEnemy + zEnemy_hp),
+            'health_max':       read_int(zEnemy + zEnemy_hp_max),
+            'drops':            extract_enemy_drops(zEnemy + zEnemy_drops),
+            'iframes':          read_int(zEnemy + zEnemy_iframes),
         }
 
+        # Checking thresholds for boss & boss-related enemies
+        if enemy['is_boss'] or enemy['anm_page'] == 0 or enemy['anm_page'] > 2:
+            enemy['health_threshold'], enemy['time_threshold'] = extract_enemy_thresholds(zEnemy + zEnemy_interrupts_arr)
+
+        # Game-specific extensions
         if game_id in has_enemy_score_reward:
             enemy['score_reward'] = read_int(zEnemy + zEnemy_score_reward)
             enemies.append(ScoreRewardEnemy(**enemy))
@@ -246,6 +284,15 @@ def find_special_enemy_addr(special_func, enemy_manager = zEnemyManager):
         zEnemy = current_enemy_list["entry"]
         if read_int(zEnemy + zEnemy_special_func) == special_func:
             return zEnemy
+
+#used to get the (uncapped) boss timer from extracted enemies
+def get_boss_timer(enemies):
+    #boss timer GUI updates off last boss enemy with valid time threshold
+    for enemy in reversed(enemies):
+        if enemy.time_threshold and enemy.is_boss:
+
+            #note: + 1 accounts for extra frame from time > threshold comparison (instead of >=)
+            return (enemy.time_threshold[0] + 1 - enemy.ecl_sub_timer)/60
 
 def extract_items(item_manager = zItemManager):
     items = []
@@ -522,10 +569,6 @@ def extract_spellcard(spellcard = zSpellCard):
     )
 
 def extract_game_state(frame_id = 0, real_time = 0):
-    boss_timer = -1
-    if (game_id in has_boss_timer_drawn_if_indic_zero) == (read_int(zGui+zGui_bosstimer_drawn) == 0):
-        boss_timer = read_int(zGui+zGui_bosstimer_s) + read_int(zGui+zGui_bosstimer_ms)/100
-
     if game_id == 13:
         game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
     elif game_id == 18:
@@ -538,6 +581,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'stage_chapter':      read_int(stage_chapter, rel=True),
         'seq_frame_id':       frame_id,
         'seq_real_time':      real_time,
+        'boss_timer_shown':   None, #need to extract enemies
+        'boss_timer_real':    None, #need to extract enemies
         'pause_state':        read_int(pause_state, rel=True),
         'game_mode':          read_int(game_mode, rel=True),
         'game_speed':         read_float(game_speed, rel=True),
@@ -549,7 +594,6 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'power':              read_int(power, rel=True),
         'piv':                int(read_int(piv, rel=True) / 100),
         'graze':              read_int(graze, rel=True),
-        'boss_timer':         boss_timer,
         'spellcard':          extract_spellcard(),
         'rank':               read_int(rank, rel=True),
         'input':              read_int(input, rel=True),
@@ -571,6 +615,11 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'constants':          game_constants,
         'env':                run_environment,
     }
+
+    boss_timer = get_boss_timer(state_base['enemies'])
+    if boss_timer:
+        state_base['boss_timer_real'] = boss_timer
+        state_base['boss_timer_shown'] = min(99.99, round_down(boss_timer, 2))
 
     if game_id == 13:
         kyouko = None
@@ -768,7 +817,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 bomb_pieces         = read_int(p2_bomb_pieces, rel=True),
                 power               = read_int(p2_power, rel=True),
                 graze               = read_int(p2_graze, rel=True),
-                boss_timer          = float(f"{read_int(zGui+zGui_p2_bosstimer_s)}.{read_int(zGui+zGui_p2_bosstimer_ms)}") if read_int(zGui+zGui_p2_bosstimer_drawn) == 0 else -1,
+                boss_timer_shown    = None, #need to extract enemies
+                boss_timer_real     = None, #need to extract enemies
                 spellcard           = extract_spellcard(zSpellCardP2),
                 input               = read_int(p2_input, rel=True),
                 player_position     = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
@@ -777,6 +827,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
                 player_options_pos  = extract_player_option_positions(zPlayerP2),
                 player_shots        = extract_player_shots(zPlayerP2) if requires_player_shots else [],
+                player_deathbomb_f  = max(0, game_constants.deathbomb_window_frames - read_int(zPlayerP2 + zPlayer_db_timer)) if read_int(zPlayerP2 + zPlayer_state) == 4 else 0,
                 bomb_state          = read_int(zBombP2 + zBomb_state),
                 bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
                 enemies             = extract_enemies(zEnemyManagerP2) if requires_enemies else [],
@@ -798,6 +849,11 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 env                 = p2_run_environment,
             )
 
+            boss_timer_p2 = get_boss_timer(side2.enemies)
+            if boss_timer_p2:
+                side2.boss_timer_real = boss_timer_p2
+                side2.boss_timer_shown = min(99.99, round_down(boss_timer_p2, 2))
+
         return GameStateUDoALG(
             **state_base,
             lives_max            = read_int(lives_max, rel=True),
@@ -813,12 +869,12 @@ def extract_game_state(frame_id = 0, real_time = 0):
             gauge_fill           = read_int(zGaugeManager + zGaugeManager_gauge_fill),
             ex_attack_level      = read_int(ex_attack_level, rel=True),
             boss_attack_level    = read_int(boss_attack_level, rel=True),
-            pvp_wins             = read_int(pvp_wins, rel=True),
-            side2                = side2,
-            story_fight_phase    = story_fight_phase,
-            story_progress_meter = story_progress_meter,
             pvp_timer_start      = read_int(pvp_timer_start, rel=True),
             pvp_timer            = read_int(pvp_timer, rel=True),
+            pvp_wins             = read_int(pvp_wins, rel=True),
+            story_fight_phase    = story_fight_phase,
+            story_progress_meter = story_progress_meter,
+            side2                = side2,
         )
 
 def print_game_state(gs: GameState):
@@ -853,11 +909,14 @@ def print_game_state(gs: GameState):
     # Situational prints ==================
     bar = bright(color("|", 'cyan'))
 
-    if gs.boss_timer != -1:
-        print(bar, bright("Boss timer:" ), f"{gs.boss_timer:.2f}")
+    if gs.boss_timer_shown:
+        print(bar, bright("Boss timer:" ), f"{gs.boss_timer_shown:.2f}", darker(f"({round(gs.boss_timer_real, 3)}s)") if round(gs.boss_timer_real, 3) != gs.boss_timer_shown else '')
 
     if gs.spellcard:
-        print(bar, bright(f"Spell #{gs.spellcard.spell_id+1}; SCB:"), f"{gs.spellcard.capture_bonus if gs.spellcard.capture_bonus > 0 else 'Failed'}")
+        print(bar, bright(f"Spell #{gs.spellcard.spell_id+1}; SCB:"), f"{gs.spellcard.capture_bonus:,}" if gs.spellcard.capture_bonus > 0 else 'Failed')
+
+    if gs.game_speed != 1:
+        print(bar, bright("Game speed:" ), f"{gs.game_speed}x")
 
     if gs.player_deathbomb_f:
         print(bar, bright("Deathbomb window:" ), f"{gs.player_deathbomb_f} frames left")
@@ -1276,12 +1335,14 @@ def print_game_state(gs: GameState):
         print(bright(underline("\nList of enemies:")))
         print(bright("  Position        Hurtbox         Hitbox          Timer  HP / Max HP     ECL Sub         Type"))
         for enemy in gs.enemies:
+            is_bosslike = enemy.is_boss or enemy.anm_page == 0 or enemy.anm_page > 2
+
             description = bp + " "
             description += tabulate(f"({round(enemy.position[0], 1)}, {round(enemy.position[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hurtbox[0], 1)}, {round(enemy.hurtbox[1], 1)})", 16)
             description += tabulate(f"({round(enemy.hitbox[0], 1)}, {round(enemy.hitbox[1], 1)})", 16)
-            description += tabulate(enemy.alive_timer, 7)
-            description += tabulate(f"{enemy.hp} / {enemy.hp_max}", 16)
+            description += tabulate(enemy.ecl_sub_timer if is_bosslike else enemy.alive_timer, 7) #so enemies don't all have a 0 timer when thprac timelock is on
+            description += tabulate(f"{enemy.health} / {enemy.health_max}", 16)
             description += truncate(enemy.ecl_sub_name, 14)
 
             type = ""
@@ -1290,7 +1351,7 @@ def print_game_state(gs: GameState):
                     type = enemy_anms[enemy.anm_id]
                 else:
                     type = f"Unknown #{enemy.anm_id}"
-            elif enemy.anm_page == 0 or enemy.anm_page > 2:
+            elif is_bosslike:
                 if enemy.is_boss:
                     if enemy.subboss_id == 0:
                         type = "Boss"
@@ -1309,12 +1370,16 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if enemy.intangible:
+                description += " (Intangible)"
             if enemy.is_grazeable:
                 description += " (Grazeable)"
             if enemy.iframes:
                 description += f" ({enemy.iframes} iframes)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
+
+            description = description.strip()
 
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
@@ -1328,14 +1393,37 @@ def print_game_state(gs: GameState):
                         description += f"; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f"
                     description += ")"
 
-            print(description.strip())
+            if singlext_settings['show_boss_thresholds'] and enemy.is_boss:
+                max_sub_len = -2
+                max_thresh_len = -3
+                max_cur_len = -11
+                if enemy.health_threshold and enemy.time_threshold:
+                    max_sub_len = max(len(enemy.health_threshold[1]), len(enemy.time_threshold[1]))
+                    max_thresh_len = max(len(str(enemy.health_threshold[0]))+3, len(str(enemy.time_threshold[0]))+1)
+                    max_cur_len = max(len(str(enemy.health))+3, len(str(enemy.ecl_sub_timer))+1)
+
+                if enemy.health_threshold:
+                    description += f"\n  {bp} Boss Health Threshold: Sub "
+                    description += tabulate(f"'{enemy.health_threshold[1]}'", max_sub_len + 2)
+                    description += tabulate(f" @ {enemy.health_threshold[0]} HP", max_thresh_len + 3)
+                    description += tabulate(f" (current: {enemy.health} HP", max_cur_len + 11)
+                    description += f" → {(100*(enemy.health_max - enemy.health))//(enemy.health_max - enemy.health_threshold[0])}%)"
+
+                if enemy.time_threshold:
+                    description += f"\n  {bp} Boss Time Threshold:   Sub "
+                    description += tabulate(f"'{enemy.time_threshold[1]}'", max_sub_len + 2)
+                    description += tabulate(f" @ {enemy.time_threshold[0]}f", max_thresh_len + 3)
+                    description += tabulate(f" (current: {enemy.ecl_sub_timer}f", max_cur_len + 11)
+                    description += f" → {(100*enemy.ecl_sub_timer)//enemy.time_threshold[0]}%)"
+
+            print(description)
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
                 print(bp, darker(f'... [{len(gs.enemies)} enemies total]'))
                 break
 
-    if gs.game_mode == 7 and gs.items: #Items
+    if gs.items: #Items
         counter = 0
 
         print(bright(underline("\nList of items:")))
