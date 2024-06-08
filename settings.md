@@ -69,3 +69,4 @@ Settings used by the `parakit.py` main script.
 | Name / Type | Description | Default |
 |-|-|-|
 | **`minimize_version_checker`**<br>(bool) | Reduces the size of the automatic new-version checker's reminders to make it less annoying for users that aren't using Git. | `False` |
+| **`confirm_exit`**<br>(bool) | If enabled, ParaKit will wait until user confirmation to terminate (to prevent the window from disappearing if the script was ran via double-clicking). | `True` |

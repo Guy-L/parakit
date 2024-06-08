@@ -1,14 +1,16 @@
 import os
 import signal
+from settings import parakit_settings
 
 def input_exit():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    print()
-    try:
-        input("\33[5mPress \33[1mEnter\033[22m to close the program.\033[25m")
-    except (EOFError, KeyboardInterrupt):
+    if parakit_settings['confirm_exit']:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
         print()
-    print("\033[F\033[K\033F\033[F", end='')
+        try:
+            input("\33[5mPress \33[1mEnter\033[22m to close the program.\033[25m")
+        except (EOFError, KeyboardInterrupt):
+            print()
+        print("\033[F\033[K\033F\033[F", end='')
     exit()
 
 #Extreme sanity check
@@ -28,6 +30,14 @@ except Exception as e:
     print("If you see this message, please contact the developer!")
     input_exit()
 
+def create_venv(venv_path, label):
+    print(bright(label+":"), f"Creating virtual environment at '{bright(_venv_path)}'...")
+    venv.create(venv_path, with_pip=True)
+    print(bright(label+":"), f"Virtual environment created at '{bright(_venv_path)}'.")
+
+    print(bright(label+":"), "Installing dependencies...")
+    print(bright("Tip:"), "If it seems to do no progress at all for a while, try pressing Enter.", italics(darker("Python's weird.\n")))
+
 def valid_venv(bin_folder, pr=False):
     missing = []
 
@@ -42,26 +52,43 @@ def valid_venv(bin_folder, pr=False):
         print(darker(color(f"Invalid venv for bin folder '{bin_folder}': ", 'red') + f"Missing: {', '.join(missing)}"))
     return not bool(missing)
 
+def get_venv_py_version(cfg_file):
+    with open(cfg_file, 'r') as file:
+        for line in file.readlines():
+            if line.startswith('version'):
+                _, version = line.split('=')
+                return tuple(map(int, version.strip().split('.')))
+
 try:
     _venv_path = 'venv'
     _reqs_path = 'requirements.txt'
     _worker_script_path = 'state_reader.py'
     _vcheck_script_path = 'version_check.py'
+    cur_py_version = (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
+    min_py_version = (3, 7, 4)
+
+    if cur_py_version < min_py_version:
+        print(color("Warning:", 'red'), f"ParaKit is not fully supported in Python {'.'.join(map(str, cur_py_version))} (minimum version supported: {'.'.join(map(str, min_py_version))}).")
+        print("Some ParaKit features may not work as expected.", bright("We highly recommend updating Python."))
+        print("Recent Python versions can be downloaded at:", bright(underline("https://www.python.org/downloads/\n")))
 
     #Create venv if not already created
-    if not os.path.exists(_venv_path):
+    if not os.path.exists(os.path.join(_venv_path, 'pyvenv.cfg')):
         print(color(bright("\nIf this is your first time using ParaKit, welcome!"), 'green'))
         print(color("Please give us a moment to finish setting things up.", 'green'))
         print(color(darker("It should take about a minute.\n"), 'green'))
+        create_venv(_venv_path, "First Time Setup")
 
-        print(bright("First Time Setup:"), f"Creating virtual environment at '{bright(_venv_path)}'...")
-        venv.create(_venv_path, with_pip=True)
-        print(bright("First Time Setup:"), f"Virtual environment created at '{bright(_venv_path)}'.")
-
-        print(bright("First Time Setup:"), f"Installing dependencies...")
-        print(bright("Tip:"), "If it seems to do no progress at all for a while, try pressing Enter.", italics(darker("Python's weird.\n")))
     else:
-        print(italics(darker("Checking dependencies...")), end='\r')
+        venv_py_version = get_venv_py_version(os.path.join(_venv_path, 'pyvenv.cfg'))
+        if cur_py_version > venv_py_version:
+            print(bright("Setup:"), f"The virtual environment is using an older version of Python than the one currently running ({'.'.join(map(str, venv_py_version))} < {'.'.join(map(str, cur_py_version))})")
+            print(bright("Setup:"), "The virtual environment will be re-created to perform the update.")
+            shutil.rmtree(_venv_path)
+            create_venv(_venv_path, "Setup")
+
+        else:
+            print(italics(darker("Checking dependencies...")), end='\r')
 
     if valid_venv('Scripts', True):
         _pip_exe = os.path.join(_venv_path, 'Scripts', 'pip')
@@ -89,6 +116,7 @@ try:
     if get_required_packages(_reqs_path) - get_installed_packages(_venv_path):
         print(bright("Setup:"), "Missing packages detected; running pip install.")
         try:
+            subprocess.check_call([_python_exe, "-m", "pip", "install", "--upgrade", "pip"])
             subprocess.check_call([_pip_exe, "install", "-r", _reqs_path])
             print(bright("Setup:"), color("All required modules installed to '"+bright(_venv_path)+"'", 'green'))
         except Exception as e:

@@ -5,6 +5,14 @@ from version import VERSION_DATE
 
 try:
     import requests
+except ImportError as e:
+    if 'OpenSSL' in str(e):
+        print(bright("Version-checker:"), f"Error while importing requests module (outdated OpenSSL version).")
+        print(color("You are most likely running ParaKit on an unsupported Python version. We highly recommend updating Python.", 'red'))
+        print(color("See above warning for more information.", 'red'))
+    else:
+        print(bright("Version-checker:"), f"Error while importing requests module ({e}).")
+    exit()
 except KeyboardInterrupt:
     exit()
 

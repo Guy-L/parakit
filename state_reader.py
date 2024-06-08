@@ -1562,7 +1562,7 @@ if frame_count < 2 and not infinite: #Single-State Extraction
 
 else: #State Sequence Extraction
     if infinite:
-        print(bright(f"Extracting until termination triggered by user or analyzer{' (exact mode)' if exact else ''}."))
+        print(f"Extracting until termination triggered by user or analyzer {bright(analyzer)}{' (exact mode)' if exact else ''}.")
     else:
         print(bright(f"Extracting for {frame_count} frames{' (exact mode)' if exact else ''}."))
 

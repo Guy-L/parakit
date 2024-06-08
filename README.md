@@ -8,13 +8,12 @@ If you have feature requests or need help making your own custom analyzer, feel 
 
 ### [Settings Documentation](./settings.md)
 ### Supported games:
-* TD
-* DDC
-* LoLK
-* HSiFS
-* WBaWC
-* UM
-* UDoALG
+||||||
+|-|-|-|-|-|
+|❌ EoSD |❌ *StB* |❌ *DS*    |❌ *ISC*     |✅ **WBaWC**  |
+|❌ PCB  |❌ MoF   |❌ *GFW*   |✅ **LoLK**  |✅ **UM**     |
+|❌ IN   |❌ SA    |✅ **TD**  |✅ **HSiFS** |❌ *HBM*      |
+|❌ PoFV |❌ UFO   |✅ **DDC** |❌ *VD*      |✅ **UDoALG** |
 
 ### Goals:
 * Faster inter-process reads
@@ -27,22 +26,25 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * Cross-run and cross-stage extraction
 * Better UX
 
-## Setup
-**Note for those not used to Git**: You can download this project as a ZIP by clicking on the green "Code" button at the top of the page or by downloading a release if a recent one is available. However, **I heavily recommend that you get a bit of experience with Git** to save you the trouble of re-downloading the project without erasing your changes each time a new version comes out. All you'll need to know is how to `clone` (download) and `pull` (update) a project.
+## Installation & Setup
+**Requirements:**
+* **Python**: https://www.python.org/downloads/
+    * The oldest supported version is `3.7.4`. We recommend downloading the latest.
+* **Git**: https://www.git-scm.com/downloads
 
-Once you have the project (and Python) on your machine, **simply open `parakit.py` and the entire setup will be handled for you** before launching the program. Be patient, installing libraries can take a while. Please report to the developer if any issue comes up during this process.
-
-**For experienced users:** If you'd like to run `state_reader.py` directly, you'll either need to source the virtual environment when you start a terminal or to install the required libraries on your machine directly.
-
-To source the virtual environment:
+You can check that these are correctly installed on your machine by running in the terminal:
 ```bash
-venv\Scripts\activate #Windows only
-source venv_name/bin/activate #Unix only
+> python --version    #any version above 3.7.4 is fine
+> git --version       #any version is fine
 ```
-To install the libraries on your machine:
-```bash
-pip install -r requirements.txt
-```
+
+Since ParaKit is not currently able to update itself but is constantly improving, **we highly recommend installing it through Git**. Instead of manually swapping out old files with new ones, you'll be able to update by simply running a command (`git pull`) when prompted to.
+
+To install, open the terminal in the folder you'd like ParaKit to be installed in and run either:
+* **via HTTPS (no setup needed)**: `git clone https://github.com/Guy-L/parakit.git`
+* **via SSH (requires [setup](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account))**: `git clone git@github.com:Guy-L/parakit.git`
+
+The rest of the setup process will be handled for you when running ParaKit for the first time. Please report to the developers if any issue comes up during this process.
 
 
 ## Running ParaKit
@@ -54,37 +56,37 @@ To select the analyzer you wish to run, open `settings.py` and change the value 
 If you're going to use the program a lot, open a terminal window in the project's folder and run:
 
 ```bash
-py parakit.py
+> py parakit.py
 ```
 
-The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (see the Setup section for more information). This comes with the benefit of being able to specify the extraction duration setting as a command line argument - open the below section for examples.
+The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (*note*: this paragraph will be updated soon). This comes with the benefit of being able to specify the extraction duration setting as a command line argument - open the below section for examples.
 
 <details>
   <summary><b>state_reader.py CLI Examples</b></summary>
 
 <br>When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction if duration isn't set in `settings.py`:
 ```bash
-py state_reader.py
+> py state_reader.py
 ```
 
 For single-state extraction if a different duration is set in `settings.py`:
 ```bash
-py state_reader.py 1f
+> py state_reader.py 1f
 ```
 
 For sequence extraction over 500 in-game frames (value must be an integer):
 ```bash
-py state_reader.py 500f
+> py state_reader.py 500f
 ```
 
 For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
 ```bash
-py state_reader.py 10.5s exact
+> py state_reader.py 10.5s exact
 ```
 
 For sequence extraction that continues indefinitely if not terminated some other way:
 ```bash
-py state_reader.py infinite
+> py state_reader.py infinite
 ```
 </details>
 

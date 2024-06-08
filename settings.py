@@ -57,4 +57,5 @@ pyplot_settings = {
 # See settings.md for more info.
 parakit_settings = {
     'minimize_version_checker': False,
+    'confirm_exit': True,
 }
