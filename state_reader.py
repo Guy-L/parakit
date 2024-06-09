@@ -1475,63 +1475,68 @@ def on_exit():
 atexit.register(on_exit)
 
 def parse_frame_count(expr):
-    unit = expr[-1:]
-    if unit.lower() not in "fs":
+    if not expr or expr[-1].lower() not in "fs":
         return None
 
-    frame_count = 0
-    if unit == "s":
-        try:
-            frame_count = math.floor(float(expr[:-1]) * 60)
-        except ValueError:
-            return None
-    else:
-        try:
-            frame_count = int(expr[:-1])
-        except ValueError:
-            return None
+    try:
+        if expr[-1].lower() == "f": #frames
+            return int(expr[:-1])
+        else: #seconds
+            return math.floor(float(expr[:-1]) * 60)
 
-    return frame_count
+    except ValueError:
+        return None
 
 print(separator.replace('\n',''))
 
-infinite = False
-frame_count = 0
-if seqext_settings['ingame_duration']:
-    if seqext_settings['ingame_duration'].lower() in ['inf', 'infinite', 'endless', 'forever']:
-        infinite = True
 
+# Extraction parameters processing
+# Get extraction params from settings.py
+printed_warning = False
+if seqext_settings['ingame_duration'].lower() in ['inf', 'infinite', 'endless', 'forever']:
+    frame_duration = -1
+else:
+    frame_duration = parse_frame_count(seqext_settings['ingame_duration'])
+#(analyzer & exact defined via import)
+
+# Overwrite settings with supplied arguments
+if len(sys.argv) > 4:
+    print(color("Warning:", 'orange'), f"More arguments were supplied than exist settings for ({bright(len(sys.argv)-1)} > 3).")
+    printed_warning = True
+
+for arg in sys.argv[1:]:
+    if arg.lower() == 'exact':
+        exact = True
+    elif arg.lower() == 'inexact':
+        exact = False
+    elif arg.lower() in ['inf', 'infinite', 'endless', 'forever']:
+        frame_duration = -1
+    elif parse_frame_count(arg.lower()):
+        frame_duration = parse_frame_count(arg.lower())
+    elif hasattr(analysis, arg):
+        analyzer = arg
     else:
-        parsed_frame_count = parse_frame_count(seqext_settings['ingame_duration'])
+        print(color("Warning:", 'orange'), f"Unrecognized argument '{bright(arg)}'.")
+        printed_warning = True
 
-        if parsed_frame_count:
-            frame_count = parsed_frame_count
-        else:
-            print(color("Error:", 'red'), f"Couldn't parse duration '{bright(seqext_settings['ingame_duration'])}'; remember to include a unit (e.g. 150f, 12.4s, infinite, etc.).")
-            print("Defaulting to single-state extraction.\n")
-
-if len(sys.argv) > 1:
-    for arg in sys.argv[1:]:
-        parsed_frame_count = parse_frame_count(arg)
-
-        if parsed_frame_count:
-            frame_count = parsed_frame_count
-
-        elif arg in ['inf', 'infinite', 'endless', 'forever']:
-            infinite = True
-
-        elif arg == 'exact':
-            exact = True #overwrites settings
-
-        else:
-            print(color("Error:", 'red'), f"Unrecognized argument '{bright(arg)}'.")
-            exit()
+# Warn & use default value if using unparseable settings
+if seqext_settings['ingame_duration'] and not frame_duration:
+    print(color("Warning:", 'orange'), f"Couldn't parse duration '{bright(seqext_settings['ingame_duration'])}'; remember to include a unit (e.g. '150f', '12.4s', 'infinite', etc.).")
+    print("         Defaulting to single-state extraction.")
+    printed_warning = True
+    frame_duration = 1
 
 if not hasattr(analysis, analyzer):
-    print(color("Error:", 'red'), f"Unrecognized analyzer '{bright(analyzer)}'; defaulting to template.")
+    print(color("Warning:", 'orange'), f"Unrecognized analyzer '{bright(analyzer)}'; defaulting to template.")
+    printed_warning = True
     analyzer = 'AnalysisTemplate'
 
-if frame_count < 2 and not infinite: #Single-State Extraction
+if printed_warning:
+    print()
+
+
+# Single-State Extraction
+if frame_duration in [0, 1]:
     analysis = getattr(analysis, analyzer)()
 
     if requires_screenshots:
@@ -1560,11 +1565,12 @@ if frame_count < 2 and not infinite: #Single-State Extraction
         status_stop()
 
 
-else: #State Sequence Extraction
-    if infinite:
+# Sequence Extraction
+else:
+    if frame_duration < 0:
         print(f"Extracting until termination triggered by user or analyzer {bright(analyzer)}{' (exact mode)' if exact else ''}.")
     else:
-        print(bright(f"Extracting for {frame_count} frames{' (exact mode)' if exact else ''}."))
+        print(bright(f"Extracting for {frame_duration} frames{' (exact mode)' if exact else ''}."))
 
     if seqext_settings['auto_unpause']:
         unpause_game()
@@ -1579,14 +1585,14 @@ else: #State Sequence Extraction
         frame_counter = 0
 
         status_start()
-        while infinite or frame_counter < frame_count:
+        while frame_duration < 0 or frame_counter < frame_duration:
             if terminated:
                 break
 
             frame_timestamp = read_int(stage_timer)
             percent = ""
-            if not infinite:
-                percent = f"[{int(100*frame_counter/frame_count)}%] "
+            if frame_duration > 0:
+                percent = bright(f"[{int(100*frame_counter/frame_duration)}%] ")
             set_status(percent + f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
 
             if exact:
@@ -1619,7 +1625,7 @@ else: #State Sequence Extraction
             start_time += pause_time
 
         if not terminated:
-            print(f"{'[100%] ' if infinite else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.", clear())
+            print(f"{bright('[100%] ') if frame_duration > 0 else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.", clear())
 
     except KeyboardInterrupt:
         print("User interrupted extraction; terminating now.", clear())

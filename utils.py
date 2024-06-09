@@ -16,16 +16,22 @@ def truncate(x, size=10, spaces = 2):
 def round_down(f, digits=0):
     return float(str(f)[:str(f).index('.')+digits+1])
 
-_term_colors = ['black', 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white']
+_std_term_colors = ['black', 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white']
+_custom_term_colors = {'orange':209}
 def color(txt = None, c = 'white'):
     if isinstance(c, str):
-        color = c.lower().strip()
-        if color in _term_colors:
-            if txt:
-                return f"\33[3{_term_colors.index(color)}m{str(txt)}\033[39m"
-            else:
-                return f"\33[3{_term_colors.index(color)}m"
-    print_color(f"Warning: Using invalid terminal color '{c}'", 'red')
+        color_name = c.lower().strip()
+        ansi_code = None
+
+        if color_name in _std_term_colors:
+            ansi_code = f"\33[3{_std_term_colors.index(color_name)}m"
+        elif color_name in _custom_term_colors:
+            ansi_code = f"\33[38:5:{_custom_term_colors[color_name]}m"
+
+        if ansi_code:
+            return ansi_code + ((str(txt) + "\033[39m") if txt else "")
+
+    print(color("Warning:", 'red'), f"Using invalid terminal color '{c}'.")
     return txt
 
 def bright(txt = None):
