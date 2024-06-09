@@ -34,7 +34,7 @@ singlext_settings = {
 # See settings.md for more info.
 seqext_settings = {
     'ingame_duration': '', #e.g. '520f', '12.4s', etc. or 'infinite', 'inf'
-    'exact':        True,
+    'exact':        False,
     'auto_focus':   True,
     'auto_unpause': False,
     'auto_repause': True,

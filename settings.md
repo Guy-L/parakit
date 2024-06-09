@@ -43,7 +43,7 @@ Settings for sequence extraction, in which the state of the game is repeatedly e
 | Name / Type | Description | Default |
 |-|-|-|
 | **`ingame_duration`**<br>(string) | Value + Unit (f for frame, s for seconds). Value can be integer number of frames or decimal number of seconds, e.g.: `'200f'`, `'10.5s'`. If it is left unset, malformed or less than two, single-state extraction is performed. Either way, if it's specified as an argument when running `state-reader.py` in the command line, then value set here will be ignored. Can also be set to `inf` or `infinite` to keep sequence extraction going indefinitely until terminated some other way. | `''` |
-| **`exact`**<br>(bool) | If enabled, slows the game down to ensure extracted frames are contiguous (see `README.md`). Can also be specified as a command-line argument to `state-reader.py` by typing `exact`. Also called *"exact mode"*. Recommended. | `True` |
+| **`exact`**<br>(bool) | If enabled, slows the game down to ensure extracted frames are contiguous (see `README.md`). Can also be specified as a command-line argument to `state-reader.py` by typing `exact`. Also called *"exact mode"*. Recommended. | `False` |
 | **`auto_focus`**<br>(bool) | If enabled, automatically puts the game in focus when extraction is started. | `True` |
 | **`auto_unpause`**<br>(bool) | If enabled, automatically unpauses the game when extraction is started. | `False` |
 | **`auto_repause`**<br>(bool) | If enabled, automatically pauses the game when extraction is finished. | `True` |

@@ -28,7 +28,10 @@ If you have feature requests or need help making your own custom analyzer, feel 
 
 ## Installation & Setup
 **Requirements:**
-* **Python**: https://www.python.org/downloads/
+* **Terminal Essentials** (for Windows users):
+  * Opening the terminal in a folder: https://johnwargo.com/posts/2024/launch-windows-terminal/
+  * Changing the terminal's directory: https://www.geeksforgeeks.org/change-directories-in-command-prompt/
+* **Python**: https://www.python.org/downloads
     * The oldest supported version is `3.7.4`. We recommend downloading the latest.
 * **Git**: https://www.git-scm.com/downloads
 
@@ -50,45 +53,30 @@ The rest of the setup process will be handled for you when running ParaKit for t
 ## Running ParaKit
 **You can simply run ParaKit by opening `parakit.py`.**
 
-To select the analyzer you wish to run, open `settings.py` and change the value of `analyzer`.
-**Documentation explaining every available setting can be found [here](./settings.md).**
-
-If you're going to use the program a lot, open a terminal window in the project's folder and run:
+Doing so by double-clicking the script file will work. However, if you'd like to keep working in the same window, you should instead run it by opening the terminal in the ParaKit folder and running:
 
 ```bash
 > py parakit.py
 ```
 
-The `parakit.py` script includes an automatic new-version checker and a confirmation prompt to exit the program (in case it is run in its own bash window, e.g. by double clicking the script). If this bothers you, it's possible to run `state_reader.py` directly (*note*: this paragraph will be updated soon). This comes with the benefit of being able to specify the extraction duration setting as a command line argument - open the below section for examples.
+This comes with the added benefit of being able to specify three important parameters for the extraction as **command-line arguments**. If arguments are supplied, they will override the associated settings in `settings.py`. Conversely, this also means you should set those settings in `settings.py` if you intend to keep working with the same parameters.
 
-<details>
-  <summary><b>state_reader.py CLI Examples</b></summary>
+| Setting Name | Defaults to | Details |
+|-|-|-|
+| `analyzer` | `AnalysisTemplate` | The **name of the analyzer** you'd like to run (case-sensitive).<br>For a list of built-in analyzers you can use out of the box, see [below section](#built-in-analyzers). |
+| `ingame_duration` | single-frame extraction | The in-game duration for sequence extraction. Can be: <br>• **Frames (integer+`f`):** `100f`, `5000f`, etc.<br>• **Seconds (decimal+`s`):** `25s`, `9.5s`, etc.<br>• **Infinite**: `infinite`, `inf`, `endless`, `forever`<br>Sequence extraction can be terminted manually by pressing the termination key (which defaults to `F6`) or automatically by the running analyzer. A duration of `1` or `0` frames causes single-frame extraction, and a negative duration causes infinite sequence extraction. |
+| `exact` | `False` | Whether ParaKit is allowed to **slow down the game** to ensure extraction of state data for *every single unique frame* in sequence extraction. When given as a command-line argument, can be set by specifying `exact` or unset by specifying `inexact`. |
 
-<br>When running `state_reader.py` directly, you can specify the extraction duration and `exact` settings as command line arguments. If these are specified, they'll take precedence over your settings in `settings.py`. For single-state extraction if duration isn't set in `settings.py`:
+**Example command:**
 ```bash
-> py state_reader.py
+> py parakit.py AnalysisMostBulletsFrame 100f exact
 ```
+**Note**: If the same parameter is specified multiple times, the last value will be used.
 
-For single-state extraction if a different duration is set in `settings.py`:
-```bash
-> py state_reader.py 1f
-```
+You can disable extraction of various game entities (i.e., bullets, enemies, items, lasers, player shots & the other side of the screen in PvP games) in `settings.py` to improve ParaKit's performance if the analysis you're doing doesn't require some of them. You may also enable adding game screenshots to the extracted states, though this has a significant performance and memory impact.
 
-For sequence extraction over 500 in-game frames (value must be an integer):
-```bash
-> py state_reader.py 500f
-```
+**<u>Documentation explaining every available setting in `settings.py` can be found [here](./settings.md).</u>**
 
-For sequence extraction over 10.5 in-game seconds (value can be decimal) without frame skips:
-```bash
-> py state_reader.py 10.5s exact
-```
-
-For sequence extraction that continues indefinitely if not terminated some other way:
-```bash
-> py state_reader.py infinite
-```
-</details>
 
 ## Custom Analyzers
 
@@ -106,8 +94,6 @@ Getting the information you need should be intuitive even for novice programmers
 If the result of your analyzer includes a plot of the game world, you'll want to extend `AnalysisPlot` instead of `Analysis` and implement `plot()`. There's many examples of plotting analyzers for each type of game entity. You can add any of these to your plot by calling their `plot()` method inside of your own (see `AnalysisPlotAll`). The latest recorded frame is stored in `lastframe` (though you can store any frame you want to have plotted there instead).
 
 If you'd like to forcefully terminate sequence extraction when a certain condition is met, you can call `terminate()` in your `step()` method. `done()` will still be ran when this occurs.
-
-State extraction over time can be a computationally heavy process, and the `exact` setting (which is on by default) will slow the game down as needed to ensure that no frame may be skipped as a result. Depending on your needs, you can speed up this process by disabling the extraction of various entities (bullets, enemies, items or lasers) in `settings.py`. States can also include screenshots if you need a visual of a particularly interesting frame (see `AnalysisMostBulletsFrame` as an example), but this behavior is off by default as it slows down extraction significantly.
 
 You shouldn't need to edit any file other than `settings.py` and `analysis.py`.<br>If you do, feel free to send a feature request to the developers.
 

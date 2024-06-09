@@ -125,7 +125,7 @@ try:
             input_exit()
 
     #Run state-reader
-    subprocess.run([_python_exe, _worker_script_path])
+    subprocess.run([_python_exe, _worker_script_path] + sys.argv[1:])
 
 except KeyboardInterrupt:
     print("Setup interrupted by user.")
