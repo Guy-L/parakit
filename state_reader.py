@@ -1520,10 +1520,11 @@ for arg in sys.argv[1:]:
         printed_warning = True
 
 # Warn & use default value if using unparseable settings
-if seqext_settings['ingame_duration'] and not frame_duration:
-    print(color("Warning:", 'orange'), f"Couldn't parse duration '{bright(seqext_settings['ingame_duration'])}'; remember to include a unit (e.g. '150f', '12.4s', 'infinite', etc.).")
-    print("         Defaulting to single-state extraction.")
-    printed_warning = True
+if not frame_duration:
+    if seqext_settings['ingame_duration']:
+        print(color("Warning:", 'orange'), f"Couldn't parse duration '{bright(seqext_settings['ingame_duration'])}'; remember to include a unit (e.g. '150f', '12.4s', 'infinite', etc.).")
+        print("         Defaulting to single-state extraction.")
+        printed_warning = True
     frame_duration = 1
 
 if not hasattr(analysis, analyzer):
