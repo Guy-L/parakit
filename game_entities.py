@@ -58,6 +58,7 @@ class Enemy:
     alive_timer: int
     health: int
     health_max: int
+    revenge_ecl_sub: str #name of the ecl subroutine ran when the enemy dies (revenge bullets)
     drops: Dict[int, int] #key: item type, value: count
     iframes: int
 

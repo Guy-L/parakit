@@ -85,23 +85,23 @@ def extract_bullets(bullet_manager = zBulletManager):
 
     return bullets
 
-def extract_enemy_movement_limit(movement_bounds, flags):
+def extract_enemy_movement_limit(movement_bounds_addr, flags):
     if flags & zEnemyFlags_has_move_limit:
         return EnemyMovementLimit(
-            center = (read_float(movement_bounds), read_float(movement_bounds + 0x4)),
-            width = read_float(movement_bounds + 0x8),
-            height = read_float(movement_bounds + 0xc),
+            center = (read_float(movement_bounds_addr), read_float(movement_bounds_addr + 0x4)),
+            width = read_float(movement_bounds_addr + 0x8),
+            height = read_float(movement_bounds_addr + 0xc),
         )
 
-def extract_enemy_ecl_sub_name(ecl_ref):
+def get_sub_name_from_ref(ecl_ref):
     if game_id >= switch_to_serializable_ecl:
-        enemy_sub_id = read_int(ecl_ref) #may be -1 for spawning enemies
+        enemy_sub_id = ecl_ref #may be -1 for spawning enemies
 
         if enemy_sub_id in range(len(ecl_sub_names)):
             return ecl_sub_names[enemy_sub_id]
 
     else:
-        cur_instr_addr = read_int(ecl_ref)
+        cur_instr_addr = ecl_ref
         enemy_sub_id = None
         for sub_id in range(len(ecl_sub_starts)):
             if ecl_sub_starts[sub_id] <= cur_instr_addr:
@@ -111,47 +111,45 @@ def extract_enemy_ecl_sub_name(ecl_ref):
         if enemy_sub_id:
             return ecl_sub_names[enemy_sub_id]
 
-def extract_enemy_thresholds(interrupts):
+def extract_sub_name(sub_name_addr):
+    if game_id < switch_to_serializable_ecl: #pointer in older games
+        sub_name_addr = read_int(sub_name_addr)
+
+    if sub_name_addr:
+        return read_string(sub_name_addr, 64)
+    return ''
+
+def extract_enemy_thresholds(thresholds_addr):
     zEnemyHealthThreshold = None
     zEnemyTimeThreshold = None
 
-    interrupts_end = interrupts + zEnemyInterrupt_len * zEnemy_interrupts_arr_len
+    interrupts_end = thresholds_addr + zEnemyInterrupt_len * zEnemy_interrupts_arr_len
 
-    for interrupt in range(interrupts, interrupts_end, zEnemyInterrupt_len):
+    for interrupt in range(thresholds_addr, interrupts_end, zEnemyInterrupt_len):
         interrupt_hp = read_int(interrupt + zEnemyInterrupt_hp, signed=True)
 
         if interrupt_hp >= 0:
             if not zEnemyHealthThreshold:
                 #grab health threshold from first interrupt with valid health
-                interrupt_hp_sub_addr = interrupt + zEnemyInterrupt_hp_sub
-
-                if game_id < switch_to_serializable_ecl: #seems its a pointer in older games
-                    interrupt_hp_sub_addr = read_int(interrupt_hp_sub_addr)
-
-                zEnemyHealthThreshold = (interrupt_hp, read_string(interrupt_hp_sub_addr, 64))
+                zEnemyHealthThreshold = (interrupt_hp, extract_sub_name(interrupt + zEnemyInterrupt_hp_sub))
 
             interrupt_time = read_int(interrupt + zEnemyInterrupt_time, signed=True)
             if interrupt_time > 0:
                 #grab time threshold from first interrupt with BOTH valid health and time
-                interrupt_time_sub_addr = interrupt + zEnemyInterrupt_time_sub
-
-                if game_id < switch_to_serializable_ecl: #seems its a pointer in older games
-                    interrupt_time_sub_addr = read_int(interrupt_time_sub_addr)
-
-                zEnemyTimeThreshold = (interrupt_time, read_string(interrupt_time_sub_addr, 64))
+                zEnemyTimeThreshold = (interrupt_time, extract_sub_name(interrupt + zEnemyInterrupt_time_sub))
                 break
 
     return (zEnemyHealthThreshold, zEnemyTimeThreshold)
 
-def extract_enemy_drops(enemy_drops):
+def extract_enemy_drops(drops_addr):
     drops = {}
 
     for item_id in item_types:
-        drop_count = read_int(enemy_drops + 0x4*item_id)
+        drop_count = read_int(drops_addr + 0x4*item_id)
         if drop_count:
             drops[item_id] = drop_count
 
-    main_drop_id = read_int(enemy_drops)
+    main_drop_id = read_int(drops_addr)
     if main_drop_id:
         if main_drop_id in drops:
             drops[main_drop_id] += 1
@@ -201,11 +199,12 @@ def extract_enemies(enemy_manager = zEnemyManager):
             'pivot_angle':      read_float(zEnemyAnmVM + zAnmVm_rotation_z) if game_id in uses_pivot_angle else 0,
             'anm_page':         read_int(zEnemy + zEnemy_anm_page),
             'anm_id':           read_int(zEnemy + zEnemy_anm_id),
-            'ecl_sub_name':     extract_enemy_ecl_sub_name(zEnemy + zEnemy_ecl_ref),
+            'ecl_sub_name':     get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref)),
             'ecl_sub_timer':    read_int(zEnemy + zEnemy_ecl_timer),
             'alive_timer':      read_int(zEnemy + zEnemy_alive_timer),
             'health':           read_int(zEnemy + zEnemy_hp),
             'health_max':       read_int(zEnemy + zEnemy_hp_max),
+            'revenge_ecl_sub':  extract_sub_name(zEnemy + zEnemy_revenge_ecl_sub),
             'drops':            extract_enemy_drops(zEnemy + zEnemy_drops),
             'iframes':          read_int(zEnemy + zEnemy_iframes),
         }
@@ -421,13 +420,13 @@ def extract_lasers(laser_manager = zLaserManager):
 
     return lasers
 
-def extract_line_laser(laser_ptr):
-    line_start_pos_x = read_float(laser_ptr + zLaserLine_start_pos)
-    line_start_pos_y = read_float(laser_ptr + zLaserLine_start_pos + 0x4)
-    line_init_angle  = read_float(laser_ptr + zLaserLine_mgr_angle)
-    line_max_length  = read_float(laser_ptr + zLaserLine_max_length)
-    line_init_speed  = read_float(laser_ptr + zLaserLine_mgr_speed)
-    line_distance    = read_float(laser_ptr + zLaserLine_distance)
+def extract_line_laser(laser_addr):
+    line_start_pos_x = read_float(laser_addr + zLaserLine_start_pos)
+    line_start_pos_y = read_float(laser_addr + zLaserLine_start_pos + 0x4)
+    line_init_angle  = read_float(laser_addr + zLaserLine_mgr_angle)
+    line_max_length  = read_float(laser_addr + zLaserLine_max_length)
+    line_init_speed  = read_float(laser_addr + zLaserLine_mgr_speed)
+    line_distance    = read_float(laser_addr + zLaserLine_distance)
 
     return {
         'start_pos': (line_start_pos_x, line_start_pos_y),
@@ -437,22 +436,22 @@ def extract_line_laser(laser_ptr):
         'distance': line_distance,
     }
 
-def extract_infinite_laser(laser_ptr):
-    infinite_start_pos_x   = read_float(laser_ptr + zLaserInfinite_start_pos)
-    infinite_start_pos_y   = read_float(laser_ptr + zLaserInfinite_start_pos + 0x4)
-    infinite_origin_vel_x  = read_float(laser_ptr + zLaserInfinite_velocity)
-    infinite_origin_vel_y  = read_float(laser_ptr + zLaserInfinite_velocity + 0x4)
-    infinite_default_angle = read_float(laser_ptr + zLaserInfinite_mgr_angle)
-    infinite_angular_vel   = read_float(laser_ptr + zLaserInfinite_angle_vel)
-    infinite_init_length   = read_float(laser_ptr + zLaserInfinite_mgr_len)
-    infinite_max_length    = read_float(laser_ptr + zLaserInfinite_final_len)
-    infinite_max_width     = read_float(laser_ptr + zLaserInfinite_final_width)
-    infinite_default_speed = read_float(laser_ptr + zLaserInfinite_mgr_speed)
-    infinite_start_time    = read_int(laser_ptr + zLaserInfinite_start_time)
-    infinite_expand_time   = read_int(laser_ptr + zLaserInfinite_expand_time)
-    infinite_active_time   = read_int(laser_ptr + zLaserInfinite_active_time)
-    infinite_shrink_time   = read_int(laser_ptr + zLaserInfinite_shrink_time)
-    infinite_distance      = read_float(laser_ptr + zLaserInfinite_mgr_distance)
+def extract_infinite_laser(laser_addr):
+    infinite_start_pos_x   = read_float(laser_addr + zLaserInfinite_start_pos)
+    infinite_start_pos_y   = read_float(laser_addr + zLaserInfinite_start_pos + 0x4)
+    infinite_origin_vel_x  = read_float(laser_addr + zLaserInfinite_velocity)
+    infinite_origin_vel_y  = read_float(laser_addr + zLaserInfinite_velocity + 0x4)
+    infinite_default_angle = read_float(laser_addr + zLaserInfinite_mgr_angle)
+    infinite_angular_vel   = read_float(laser_addr + zLaserInfinite_angle_vel)
+    infinite_init_length   = read_float(laser_addr + zLaserInfinite_mgr_len)
+    infinite_max_length    = read_float(laser_addr + zLaserInfinite_final_len)
+    infinite_max_width     = read_float(laser_addr + zLaserInfinite_final_width)
+    infinite_default_speed = read_float(laser_addr + zLaserInfinite_mgr_speed)
+    infinite_start_time    = read_int(laser_addr + zLaserInfinite_start_time)
+    infinite_expand_time   = read_int(laser_addr + zLaserInfinite_expand_time)
+    infinite_active_time   = read_int(laser_addr + zLaserInfinite_active_time)
+    infinite_shrink_time   = read_int(laser_addr + zLaserInfinite_shrink_time)
+    infinite_distance      = read_float(laser_addr + zLaserInfinite_mgr_distance)
 
     return {
         'start_pos': (infinite_start_pos_x, infinite_start_pos_y),
@@ -470,12 +469,12 @@ def extract_infinite_laser(laser_ptr):
         'distance': infinite_distance,
     }
 
-def extract_curve_laser(laser_ptr):
-    curve_max_length  = read_int(laser_ptr + zLaserCurve_max_length)
-    curve_distance    = read_float(laser_ptr + zLaserCurve_distance)
+def extract_curve_laser(laser_addr):
+    curve_max_length  = read_int(laser_addr + zLaserCurve_max_length)
+    curve_distance    = read_float(laser_addr + zLaserCurve_distance)
 
     curve_nodes = []
-    current_node_ptr = read_int(laser_ptr + zLaserCurve_array)
+    current_node_ptr = read_int(laser_addr + zLaserCurve_array)
     for i in range(0, curve_max_length):
         node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
         node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
@@ -1376,6 +1375,8 @@ def print_game_state(gs: GameState):
                 description += " (Grazeable)"
             if enemy.iframes:
                 description += f" ({enemy.iframes} iframes)"
+            if enemy.revenge_ecl_sub:
+                description += " (reacts to death)"
             if hasattr(enemy, 'shootdown_weight') and enemy.shootdown_weight != 1:
                 description += f" ({enemy.shootdown_weight} weight)"
 

@@ -140,6 +140,7 @@ class EnemyOffsets:
     zEnemyInterrupt_hp_sub: int
     zEnemyInterrupt_time_sub: int
     zEnemyInterrupt_len: int
+    zEnemyData_revenge_ecl_sub: int
     zEnemyData_special_func: int
 
 @dataclass
@@ -476,6 +477,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0xc,
             zEnemyInterrupt_len      = 0x10,
+            zEnemyData_revenge_ecl_sub = 0x40e4,
             zEnemyData_special_func    = 0x40e8,
         ),
         items = ItemOffsets(
@@ -733,6 +735,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0xc,
             zEnemyInterrupt_len      = 0x10,
+            zEnemyData_revenge_ecl_sub = 0x4108,
             zEnemyData_special_func    = 0x410c,
         ),
         items = ItemOffsets(
@@ -973,6 +976,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0x48,
             zEnemyInterrupt_len      = 0x88,
+            zEnemyData_revenge_ecl_sub = 0x44d8,
             zEnemyData_special_func    = 0x4518,
         ),
         items = ItemOffsets(
@@ -1214,6 +1218,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0x48,
             zEnemyInterrupt_len      = 0x88,
+            zEnemyData_revenge_ecl_sub = 0x44d8,
             zEnemyData_special_func    = 0x4518,
         ),
         items = ItemOffsets(
@@ -1465,6 +1470,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0x48,
             zEnemyInterrupt_len      = 0x88,
+            zEnemyData_revenge_ecl_sub = 0x44f8,
             zEnemyData_special_func    = 0x4538,
         ),
         items = ItemOffsets(
@@ -1717,6 +1723,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0x48,
             zEnemyInterrupt_len      = 0x88,
+            zEnemyData_revenge_ecl_sub = 0x55a8,
             zEnemyData_special_func    = 0x55e8,
         ),
         items = ItemOffsets(
@@ -1967,6 +1974,7 @@ offsets = {
             zEnemyInterrupt_hp_sub   = 0x8,
             zEnemyInterrupt_time_sub = 0x48,
             zEnemyInterrupt_len      = 0x88,
+            zEnemyData_revenge_ecl_sub = 0x55e8,
             zEnemyData_special_func    = 0x5648,
         ),
         items = ItemOffsets(
@@ -2264,6 +2272,7 @@ offsets = {
 #            zEnemyInterrupt_hp_sub   = None,
 #            zEnemyInterrupt_time_sub = None,
 #            zEnemyInterrupt_len      = None,
+#            zEnemyData_revenge_ecl_sub = None,
 #            zEnemyData_special_func    = None,
 #        ),
 #        items = ItemOffsets(
