@@ -481,26 +481,27 @@ def extract_curve_laser(laser_addr):
     curve_nodes = []
     current_node_ptr = read_int(laser_addr + zLaserCurve_array)
     for i in range(0, curve_max_length):
-        if not current_node_ptr:
+        try:
+            node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
+            node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
+        except RuntimeError:
+            #if exact mode is off & multiple nodes are deallocated together during extraction, there's no clean way to know to stop iterating the list other than this
             break
 
-        node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
-        node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
-        node_vel_x = None
-        node_vel_y = None
+        node_vel   = None
         node_angle = None
         node_speed = None
 
         if i == 0 or requires_curve_node_vels:
+            if i == 0:
+                node_vel = (read_float(current_node_ptr + zLaserCurveNode_vel), read_float(current_node_ptr + zLaserCurveNode_vel + 0x4))
             node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
             node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
-            node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
-            node_vel_y = read_float(current_node_ptr + zLaserCurveNode_vel + 0x4)
 
         curve_nodes.append(CurveNode(
             id = current_node_ptr,
             position = (node_pos_x, node_pos_y),
-            velocity = (node_vel_x, node_vel_y),
+            velocity = node_vel,
             angle = node_angle,
             speed = node_speed,
         ))

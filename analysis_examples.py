@@ -929,9 +929,10 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
             for laser in self.state.lasers:
                 if laser.laser_type == 2:
                     for node in laser.nodes:
-                        scalar_speed_acc += math.sqrt(node.velocity[0] ** 2 + node.velocity[1] ** 2)
-                        vector_x_vel_acc += node.velocity[0]
-                        vector_y_vel_acc += node.velocity[1]
+                        if node.velocity:
+                            scalar_speed_acc += node.speed
+                            vector_x_vel_acc += node.speed * math.cos(node.angle)
+                            vector_y_vel_acc += node.speed * math.sin(node.angle)
                 else:
                     scalar_speed_acc += laser.speed
                     vector_x_vel_acc += laser.speed * math.cos(laser.angle)

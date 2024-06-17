@@ -13,6 +13,7 @@ Disable extraction of entities not required for your analysis to reduce lag (esp
 | **`requires_enemies`**<br>(bool) | If enabled, extracted states will contain enemy data. | `True` |
 | **`requires_items`**<br>(bool) | If enabled, extracted states will contain item data. | `True` |
 | **`requires_lasers`**<br>(bool) | If enabled, extracted states will contain laser data. | `True` |
+| **`requires_curve_node_vels`**<br>(bool) | If enabled, non-head curvy laser nodes will also have their speed/angle extracted. Velocity is only extracted for the head node (the value is 0 for all others) and by default, the same applies to speed and angle for performance reasons. | `False` |
 | **`requires_player_shots`**<br>(bool) | If enabled, extracted states will contain player shot data. | `True` |
 | **`requires_screenshots`**<br>(bool) | If enabled, extracted states will contain screenshots (game window must stay active on the main monitor).| `False` |
 | **`requires_side2_pvp`**<br>(bool) | If enabled, extracted states will contain P2 (right side of the screen) data in PvP danmaku games. | `True` |
