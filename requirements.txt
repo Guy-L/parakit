@@ -1,6 +1,6 @@
 keyboard
 matplotlib
-numpy
+numpy==1.26.4
 opencv-python
 psutil
 PyAutoGUI
