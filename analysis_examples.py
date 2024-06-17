@@ -909,7 +909,8 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
     def setup_graph(self):
         self.graph.setLabel('left', 'Turbulence')
         self.graph.setLabel('bottom', 'Time (frames)')
-        self.turbulence_curve = self.graph.plot(pen='y')
+        self.turbulence_val_curve = self.graph.plot(pen='grey')
+        self.turbulence_avg_curve = self.graph.plot(pen='y')
         self.turb_percent = pg.TextItem()
         self.turb_percent.setFont(QtGui.QFont("Arial", 12))
         self.graph.addItem(self.turb_percent)
@@ -926,9 +927,15 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
                 vector_y_vel_acc += bullet.velocity[1]
 
             for laser in self.state.lasers:
-                scalar_speed_acc += laser.speed
-                vector_x_vel_acc += laser.speed * math.cos(laser.angle)
-                vector_y_vel_acc += laser.speed * math.sin(laser.angle)
+                if laser.laser_type == 2:
+                    for node in laser.nodes:
+                        scalar_speed_acc += math.sqrt(node.velocity[0] ** 2 + node.velocity[1] ** 2)
+                        vector_x_vel_acc += node.velocity[0]
+                        vector_y_vel_acc += node.velocity[1]
+                else:
+                    scalar_speed_acc += laser.speed
+                    vector_x_vel_acc += laser.speed * math.cos(laser.angle)
+                    vector_y_vel_acc += laser.speed * math.sin(laser.angle)
 
             for enemy in self.state.enemies:
                 scalar_speed_acc += math.sqrt(enemy.velocity[0] ** 2 + enemy.velocity[1] ** 2)
@@ -943,7 +950,8 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
                 self.turbulence_avgs.append(sum(self.turbulence_vals)/len(self.turbulence_vals))
 
         if self.turbulence_avgs:
-            self.turbulence_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
+            self.turbulence_val_curve.setData(np.arange(len(self.turbulence_vals)), self.turbulence_vals)
+            self.turbulence_avg_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
             self.turb_percent.setText(f"{100*self.turbulence_avgs[-1]:.2f}%")
             self.turb_percent.setPos(0.5, 1)
 

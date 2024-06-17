@@ -11,6 +11,7 @@ extraction_settings = {
     'requires_items':   True,
     'requires_lasers':  True,
     'requires_player_shots': True,
+    'requires_curve_node_vels': True,
     'requires_screenshots': False,
     'requires_side2_pvp': True,
 }

@@ -16,7 +16,7 @@ except KeyboardInterrupt:
     exit()
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_curve_node_vels, requires_player_shots, requires_screenshots, requires_side2_pvp = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 
@@ -164,9 +164,13 @@ def extract_enemies(enemy_manager = zEnemyManager):
     ecl_sub_names, ecl_sub_starts = ecl_sub_arrs[enemy_manager]
 
     while current_enemy_list["next"]:
-        current_enemy_list = read_zList(current_enemy_list["next"])
+        try:
+            current_enemy_list = read_zList(current_enemy_list["next"])
+            zEnemy = current_enemy_list["entry"]
+        except RuntimeError:
+            #if exact mode is off & multiple enemies are deallocated together during extraction, there's no clean way to know to stop iterating the list other than this
+            break
 
-        zEnemy = current_enemy_list["entry"]
         zEnemyFlags = (read_int(zEnemy + zEnemy_flags + 0x4) << 32) | read_int(zEnemy + zEnemy_flags)
 
         if enemy_manager != zEnemyManager: #udoalg p2
@@ -221,9 +225,10 @@ def extract_enemies(enemy_manager = zEnemyManager):
         if game_id == 13:
             spirit_time_max  = read_int(zEnemy + zEnemy_spirit_time_max)
             remaining_frames = spirit_time_max - enemy['alive_timer']
+            max_spirit_count = read_int(zEnemy + zEnemy_max_spirit_count)
 
-            if remaining_frames >= 0:
-                interval_size = spirit_time_max // read_int(zEnemy + zEnemy_max_spirit_count)
+            if remaining_frames >= 0 and max_spirit_count:
+                interval_size = spirit_time_max // max_spirit_count
                 enemy['speedkill_cur_drop_amt'] = (remaining_frames // interval_size) + (2 if difficulty >= 2 else 1)
                 enemy['speedkill_time_left_for_amt'] = remaining_frames - (remaining_frames // interval_size) * interval_size + 1
 
@@ -476,6 +481,9 @@ def extract_curve_laser(laser_addr):
     curve_nodes = []
     current_node_ptr = read_int(laser_addr + zLaserCurve_array)
     for i in range(0, curve_max_length):
+        if not current_node_ptr:
+            break
+
         node_pos_x = read_float(current_node_ptr + zLaserCurveNode_pos)
         node_pos_y = read_float(current_node_ptr + zLaserCurveNode_pos + 0x4)
         node_vel_x = None
@@ -483,7 +491,7 @@ def extract_curve_laser(laser_addr):
         node_angle = None
         node_speed = None
 
-        if i == 0 or False: #(bool literal marks a removed setting; useless data for non-head nodes afaik)
+        if i == 0 or requires_curve_node_vels:
             node_angle = read_float(current_node_ptr + zLaserCurveNode_angle)
             node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
             node_vel_x = read_float(current_node_ptr + zLaserCurveNode_vel)
@@ -992,7 +1000,7 @@ def print_game_state(gs: GameState):
     elif game_id == 15: #LoLK
         chapter = "Chapter"
         if gs.stage_chapter:
-            chapter = f"S{read_int(stage, rel=True)}C{gs.stage_chapter+1}"
+            chapter = f"S{gs.env.stage}C{gs.stage_chapter+1}"
 
         chapter_desc = f"{gs.chapter_graze} graze; "
         chapter_desc += f"shootdown {gs.chapter_enemy_weight_destroyed}/{gs.chapter_enemy_weight_spawned}"

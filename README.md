@@ -56,7 +56,7 @@ The rest of the setup process will be handled for you when running ParaKit for t
 Doing so by double-clicking the script file will work. However, if you'd like to keep working in the same window, you should instead run it by opening the terminal in the ParaKit folder and running:
 
 ```bash
-> py parakit.py
+> python parakit.py
 ```
 
 This comes with the added benefit of being able to specify three important parameters for the extraction as **command-line arguments**. If arguments are supplied, they will override the associated settings in `settings.py`. Conversely, this also means you should set those settings in `settings.py` if you intend to keep working with the same parameters.
@@ -69,7 +69,7 @@ This comes with the added benefit of being able to specify three important param
 
 **Example command:**
 ```bash
-> py parakit.py AnalysisMostBulletsFrame 100f exact
+> python parakit.py AnalysisMostBulletsFrame 100f exact
 ```
 **Note**: If the same parameter is specified multiple times, the last value will be used.
 
