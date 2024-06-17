@@ -583,8 +583,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'boss_timer_shown':   None, #need to extract enemies
         'boss_timer_real':    None, #need to extract enemies
         'pause_state':        read_int(pause_state, rel=True),
-        'game_mode':          read_int(game_mode, rel=True),
         'game_speed':         read_float(game_speed, rel=True),
+        'fps':                read_float(zFpsCounter + fps),
         'score':              read_int(score, rel=True) * 10,
         'lives':              read_int(lives, rel=True, signed=True),
         'life_pieces':        read_int(life_pieces, rel=True) if life_pieces else 0,
@@ -880,9 +880,15 @@ def print_game_state(gs: GameState):
     #======================================
     # Consistent prints ===================
     bar = bright(color("|", 'green'))
-
     shottype = characters[gs.env.character] + ('' if subshots[gs.env.subshot] == 'N/A' else "-" + subshots[gs.env.subshot])
-    print(bright(f"[Global Frame #{gs.frame_global} | Stage Frame #{gs.frame_stage} | {shottype} {difficulties[gs.env.difficulty]} Stage {gs.env.stage}] Score:"), f"{gs.score:,}")
+    if gs.env.stage == 0:
+        stage = 'PvP Match'
+    elif gs.env.stage == 7:
+        stage = 'Stage' #'Extra' given from difficulties
+    else:
+        stage = f'Stage {gs.env.stage}'
+
+    print(bright(f"[Global Frame #{gs.frame_global} | Stage Frame #{gs.frame_stage} | {shottype} {difficulties[gs.env.difficulty]} {stage}] Score:"), f"{gs.score:,}")
 
     # Player status
     print(bar, bright("Player status:" ), f"Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
@@ -897,7 +903,7 @@ def print_game_state(gs: GameState):
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
     # Useful internals
-    print(bar, bright("Game state:" ), f"{pause_states[gs.pause_state]} ({game_modes[gs.game_mode]})")
+    print(bar, bright("Game state:" ), f"{pause_states[gs.pause_state]} ({round_down(gs.fps, 1) + 0.1:.1f}fps)")
     print(bar, bright("Input bitflag:" ), f"{gs.input:08b}")
     print(bar, bright("RNG value:" ), f"{gs.rng}")
 
@@ -1471,7 +1477,7 @@ def print_game_state(gs: GameState):
                 break
 
 def on_exit():
-    if game_process.is_running:
+    if game_process.is_running():
         game_process.resume()
 atexit.register(on_exit)
 
@@ -1639,7 +1645,8 @@ else:
         print(default())
 
     finally:
-        game_process.resume()
+        if game_process.is_running():
+            game_process.resume()
 
     if seqext_settings['auto_repause']:
         pause_game()

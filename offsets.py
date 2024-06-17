@@ -231,6 +231,11 @@ class SpellCardOffsets:
     zSpellcard_bonus: int
 
 @dataclass
+class FpsCounterOffsets:
+    fps_counter_pointer: int
+    fps: int
+
+@dataclass
 class GameThreadOffsets:
     game_thread_pointer: int
     stage_timer: int
@@ -238,7 +243,7 @@ class GameThreadOffsets:
 @dataclass
 class SupervisorOffsets:
     supervisor_addr: int
-    zSupervisor_game_mode: int #to relate to the game modes dict in Associations
+    zSupervisor_game_screen: int #to relate to the game screens dict in Associations
     zSupervisor_rng_seed: int #based on time when game was launched; never changes; not extracted
 
 @dataclass
@@ -247,7 +252,7 @@ class Associations:
     enemy_anms: Dict[int, str]
     item_types: Dict[int, str]
     pause_states: List[str]
-    game_modes: Dict[int, str]
+    game_screens: Dict[int, str]
     characters: List[str]
     subshots: List[str]
     difficulties: List[str]
@@ -288,6 +293,7 @@ class Offset:
     ascii: AsciiOffsets
     anm: AnmOffsets
     spell_card: SpellCardOffsets
+    fps_counter: FpsCounterOffsets
     game_thread: GameThreadOffsets
     supervisor: SupervisorOffsets
     associations: Associations
@@ -317,7 +323,7 @@ item_types_post_hsifs = {**item_types_post_ddc, 10:"Green++", 11:"Cancel", 12:"C
 item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
 
 modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
-modern_game_modes = {4: 'Main Menu', 7: 'Game World on Screen', 15: 'Ending Sequence'}
+modern_game_screens = {4: 'Main Menu', 7: 'Game World', 15: 'Ending/Credits'}
 
 usual_difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
 difficulties_pre_td = usual_difficulties + ['Phantasm']
@@ -558,21 +564,25 @@ offsets = {
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xc218c,
+            fps = 0x34,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xc2194,
             stage_timer = 0x14,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xdc6a0,
-            zSupervisor_game_mode = 0x580,
-            zSupervisor_rng_seed  = 0x5c0,
+            zSupervisor_game_screen = 0x580,
+            zSupervisor_rng_seed    = 0x5c0,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_td,
             enemy_anms    = enemy_anms_pre_ddc,
             item_types    = item_types_td,
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Youmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
@@ -816,21 +826,25 @@ offsets = {
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xdb54c,
+            fps = 0x34,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xdb558,
             stage_timer = 0x14,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xd8f60,
-            zSupervisor_game_mode = 0x6e8,
-            zSupervisor_rng_seed  = 0x728,
+            zSupervisor_game_screen = 0x6e8,
+            zSupervisor_rng_seed    = 0x728,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_ddc,
             enemy_anms    = enemy_anms_post_ddc,
             item_types    = item_types_post_ddc,
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Sakuya'],
             subshots      = ['A', 'B'],
             difficulties  = difficulties_post_td,
@@ -1057,21 +1071,25 @@ offsets = {
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xe9a88,
+            fps = 0x30,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xe9a94,
             stage_timer = 0x10,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xe77d0,
-            zSupervisor_game_mode = 0x6f8,
-            zSupervisor_rng_seed  = 0x73c,
+            zSupervisor_game_screen = 0x6f8,
+            zSupervisor_rng_seed    = 0x73c,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
             enemy_anms    = enemy_anms_post_ddc,
             item_types    = {**item_types_post_ddc, 13:"Graze"},
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Reisen'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
@@ -1299,21 +1317,25 @@ offsets = {
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xa6dc8,
+            fps = 0x30,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xa6dd4,
             stage_timer = 0x10,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xc10d0,
-            zSupervisor_game_mode = 0x6f0,
-            zSupervisor_rng_seed  = 0x734,
+            zSupervisor_game_screen = 0x6f0,
+            zSupervisor_rng_seed    = 0x734,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
             enemy_anms    = enemy_anms_post_ddc,
             item_types    = {**item_types_post_hsifs, 16:"Season"},
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Cirno', 'Aya', 'Marisa'],
             subshots      = ['Spring', 'Summer', 'Autumn', 'Winter', 'Full'],
             difficulties  = difficulties_post_td,
@@ -1352,7 +1374,7 @@ offsets = {
             'season_power': 0xa5808,
             'season_power_thresholds': 0xa583c,
             'season_disable_func': 0x4253b0,
-            'season_bomb_ptr': 0xa6da4,
+            'season_bomb_pointer': 0xa6da4,
             'zBomb_timer': 0x38,
         }
     ),
@@ -1551,21 +1573,25 @@ offsets = {
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xb76a8,
+            fps = 0x30,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xb76b0,
             stage_timer = 0x10,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xb5ae0,
-            zSupervisor_game_mode = 0x6f0,
-            zSupervisor_rng_seed  = 0x734,
+            zSupervisor_game_screen = 0x6f0,
+            zSupervisor_rng_seed    = 0x734,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
             enemy_anms    = enemy_anms_post_wbawc,
             item_types    = {**item_types_post_hsifs, 16:"Stable Wolf Spirit", 17:"Stable Otter Spirit", 18:"Stable Eagle Spirit", 19:"Bomb Spirit", 20:"Life Spirit", 21:"Power Spirit", 22:"Point Spirit", 23:"Jellyfish Spirit", 24:"Cow Spirit", 25:"Chick Spirit", 26:"Tortoise Spirit", 27:"Haniwa Spirit", 28:"Haniwa Horse Spirit", 29:"Chick Trio Spirit", 30:"Wolf Spirit", 31:"Otter Spirit", 32:"Eagle Spirit", 33:"Random Spirit"},
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Youmu'],
             subshots      = ['Wolf', 'Otter', 'Eagle'],
             difficulties  = difficulties_post_td,
@@ -1804,21 +1830,25 @@ offsets = {
             zSpellcard_id        = 0x74,
             zSpellcard_bonus     = 0x7c,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0xcf2dc,
+            fps = 0x30,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0xcf2e4,
             stage_timer = 0x10,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0xccdf0,
-            zSupervisor_game_mode = 0x7f4,
-            zSupervisor_rng_seed  = 0x838,
+            zSupervisor_game_screen = 0x7f4,
+            zSupervisor_rng_seed    = 0x838,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_um,
             enemy_anms    = {**enemy_anms_post_um, 229: "Lily", 251: "Jimbo"},
             item_types    = {**item_types_post_um, 16: "LifeP. Card", 17: "BombP. Card", 18: "Gold Card", 19: "Power Card"},
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
@@ -2055,21 +2085,25 @@ offsets = {
             zSpellcard_id        = 0x78,
             zSpellcard_bonus     = 0x80,
         ),
+        fps_counter = FpsCounterOffsets(
+            fps_counter_pointer = 0x1ae45c,
+            fps = 0x38,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer = 0x1ae464,
             stage_timer = 0x14,
         ),
         supervisor = SupervisorOffsets(
             supervisor_addr = 0x208380,
-            zSupervisor_game_mode = 0x90c,
-            zSupervisor_rng_seed  = 0x950,
+            zSupervisor_game_screen = 0x90c,
+            zSupervisor_rng_seed    = 0x950,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_um,
             enemy_anms    = {**enemy_anms_post_um, 265: "Wolf Spirit", 266: "Otter Spirit", 267: "Eagle Spirit", 268: "Tamed Wolf Spirit", 269: "Tamed Otter Spirit", 270: "Tamed Eagle Spirit"},
             item_types    = {**item_types_post_um, 9: "Spirit Power"}, #technically more changes in HBM/UDoALG with bigger-sized spirit power items, but never used afaik
             pause_states  = modern_pause_states,
-            game_modes    = modern_game_modes,
+            game_screens  = modern_game_screens,
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
@@ -2353,21 +2387,25 @@ offsets = {
 #            zSpellcard_id        = None,
 #            zSpellcard_bonus     = None,
 #        ),
+#        fps_counter = FpsCounterOffsets(
+#            fps_counter_pointer = None,
+#            fps = None,
+#        ),
 #        game_thread = GameThreadOffsets(
 #            game_thread_pointer = None,
 #            stage_timer = None,
 #        ),
 #        supervisor = SupervisorOffsets(
 #            supervisor_addr = None,
-#            zSupervisor_game_mode = None,
-#            zSupervisor_rng_seed  = None,
+#            zSupervisor_game_screen = None,
+#            zSupervisor_rng_seed    = None,
 #        ),
 #        associations = Associations(
 #            bullet_types  = None,
 #            enemy_anms    = None,
 #            item_types    = None,
 #            pause_states  = None,
-#            game_modes    = None,
+#            game_screens  = None,
 #            characters    = None,
 #            subshots      = None,
 #            difficulties  = None,

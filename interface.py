@@ -424,9 +424,22 @@ def _random_player():
                     cur_frame+1])))
         apply_action_int(action)
 
+def _scan_region(offset, size):
+    print("     || Int        | Signed     | Float      | String     || *Int       | *Signed    | *Float     | *String")
+    for address in range(offset, offset + size, 0x4):
+        desc = tabulate(hex(address - offset), 4)
+        while address > _base_address and address < 0x20000000:
+            desc += " || " + truncate(read_int(address), 8)
+            desc += " | " + truncate(read_int(address, signed=True), 8)
+            desc += " | " + truncate(read_float(address), 8)
+            desc += " | " + truncate(''.join(char for char in read_string(address, 8) if ord(char) > 32), 8)
+            address = read_int(address)
+        print(desc)
+
 
 # Step 6 - Initial reads used by extraction context
-if read_int(game_mode, rel=True) not in game_modes or game_modes[read_int(game_mode, rel=True)] != 'Game World on Screen':
+_game_screen = read_int(game_screen, rel=True)
+if _game_screen not in game_screens or game_screens[_game_screen] != 'Game World':
     print(color("Error:", 'red'), "Game world not loaded.")
     exit()
 
@@ -441,6 +454,7 @@ zItemManager   = read_int(item_manager_pointer, rel=True)
 zLaserManager  = read_int(laser_manager_pointer, rel=True)
 zAnmManager    = read_int(anm_manager_pointer, rel=True)
 zSpellCard     = read_int(spellcard_pointer, rel=True)
+zFpsCounter    = read_int(fps_counter_pointer, rel=True)
 
 if game_id == 13:
     zSpiritManager = read_int(spirit_manager_pointer, rel=True)
@@ -449,11 +463,10 @@ elif game_id == 14:
     ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
 
 elif game_id == 16:
-    zSeasomBomb = read_int(season_bomb_ptr, rel=True)
+    zSeasomBomb = read_int(season_bomb_pointer, rel=True)
 
 elif game_id == 17:
     zTokenManager = read_int(token_manager_pointer, rel=True)
-    zAnmManager = read_int(anm_manager_pointer, rel=True)
 
 elif game_id == 19:
     zGaugeManager     = read_int(gauge_manager_pointer, rel=True)
@@ -504,7 +517,7 @@ game_constants = GameConstants(
 
 if game_id == 19:
     run_environment = RunEnvironmentUDoALG(
-        **run_environment.__dict__,
+        **vars(run_environment),
         card_count              = read_int(zAbilityManager + zAbilityManager_total_cards),
         charge_attack_threshold = read_int(charge_attack_threshold, rel=True),
         charge_skill_threshold  = read_int(skill_attack_threshold, rel=True),

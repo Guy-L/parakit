@@ -338,8 +338,8 @@ class GameState:
     boss_timer_shown: float #capped at 99.99, truncated to 2 decimals
     boss_timer_real: float #not capped, not truncated
     pause_state: int
-    game_mode: int
     game_speed: float #usually 1 (always 1 in pause menu)
+    fps: float
     score: int
     lives: int
     life_pieces: int #set to 0 in pre-SA + UDoALG for convenience
