@@ -897,7 +897,7 @@ class AnalysisPrintBulletsASCII(Analysis):
             print(line)
         print("```")
 
-# Bonus: "Calculate ratio of codirectional to non-codirectional pattern projectiles over time and plots it as a graph" [only requires bullets/lasers] [useless]
+# Bonus: "Calculate ratio of codirectional to non-codirectional pattern projectiles over time and plots it as a graph" [only requires bullets/lasers/enemies] [useless]
 class AnalysisPatternTurbulence(AnalysisDynamic):
     win_title = 'Turbulence Over Time'
 
@@ -915,7 +915,7 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
         self.graph.addItem(self.turb_percent)
 
     def update_graph(self):
-        if self.state.bullets or self.state.lasers:
+        if self.state.bullets or self.state.lasers or self.state.enemies:
             scalar_speed_acc = 0
             vector_x_vel_acc = 0
             vector_y_vel_acc = 0
