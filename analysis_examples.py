@@ -897,15 +897,55 @@ class AnalysisPrintBulletsASCII(Analysis):
             print(line)
         print("```")
 
-class AnalysisDebug1FPS(Analysis):
+# Bonus: "Calculate ratio of codirectional to non-codirectional pattern projectiles over time and plots it as a graph" [only requires bullets/lasers] [useless]
+class AnalysisPatternTurbulence(AnalysisDynamic):
+    win_title = 'Turbulence Over Time'
+
     def __init__(self):
-        pass
+        super().__init__()
+        self.turbulence_vals = []
+        self.turbulence_avgs = []
 
-    def step(self, state: GameState):
-        time.sleep(1)
+    def setup_graph(self):
+        self.graph.setLabel('left', 'Turbulence')
+        self.graph.setLabel('bottom', 'Time (frames)')
+        self.turbulence_curve = self.graph.plot(pen='y')
+        self.turb_percent = pg.TextItem()
+        self.turb_percent.setFont(QtGui.QFont("Arial", 12))
+        self.graph.addItem(self.turb_percent)
 
-    def done(self):
-        pass
+    def update_graph(self):
+        if self.state.bullets or self.state.lasers:
+            scalar_speed_acc = 0
+            vector_x_vel_acc = 0
+            vector_y_vel_acc = 0
+
+            for bullet in self.state.bullets:
+                scalar_speed_acc += bullet.speed
+                vector_x_vel_acc += bullet.velocity[0]
+                vector_y_vel_acc += bullet.velocity[1]
+
+            for laser in self.state.lasers:
+                scalar_speed_acc += laser.speed
+                vector_x_vel_acc += laser.speed * math.cos(laser.angle)
+                vector_y_vel_acc += laser.speed * math.sin(laser.angle)
+
+            for enemy in self.state.enemies:
+                scalar_speed_acc += math.sqrt(enemy.velocity[0] ** 2 + enemy.velocity[1] ** 2)
+                vector_x_vel_acc += enemy.velocity[0]
+                vector_y_vel_acc += enemy.velocity[1]
+
+            vector_speed_acc = math.sqrt(vector_x_vel_acc ** 2 + vector_y_vel_acc ** 2)
+            turbulence = 1 - (vector_speed_acc / scalar_speed_acc)
+
+            self.turbulence_vals.append(turbulence)
+            self.turbulence_avgs.append(sum(self.turbulence_vals)/len(self.turbulence_vals))
+
+        if self.turbulence_avgs:
+            self.turbulence_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
+            self.turb_percent.setText(f"{100*self.turbulence_avgs[-1]:.2f}%")
+            self.turb_percent.setPos(0.5, 1)
+
 
 # =======================================================================
 # Useful analyzers & templates for multiple games =======================

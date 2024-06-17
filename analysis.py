@@ -54,6 +54,7 @@ import time
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtGui
 import os
 os.environ['QT_LOGGING_RULES'] = '*=false;*.critical=true;*.fatal=true'
 import traceback
