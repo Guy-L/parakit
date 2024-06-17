@@ -921,7 +921,7 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
             vector_y_vel_acc = 0
 
             for bullet in self.state.bullets:
-                scalar_speed_acc += bullet.speed
+                scalar_speed_acc += math.sqrt(bullet.velocity[0] ** 2 + bullet.velocity[1] ** 2) #some patterns with special logic have velocity but no speed (ie Circular Creature)
                 vector_x_vel_acc += bullet.velocity[0]
                 vector_y_vel_acc += bullet.velocity[1]
 
@@ -935,11 +935,12 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
                 vector_x_vel_acc += enemy.velocity[0]
                 vector_y_vel_acc += enemy.velocity[1]
 
-            vector_speed_acc = math.sqrt(vector_x_vel_acc ** 2 + vector_y_vel_acc ** 2)
-            turbulence = 1 - (vector_speed_acc / scalar_speed_acc)
+            if scalar_speed_acc != 0:
+                vector_speed_acc = math.sqrt(vector_x_vel_acc ** 2 + vector_y_vel_acc ** 2)
+                turbulence = 1 - (vector_speed_acc / scalar_speed_acc)
 
-            self.turbulence_vals.append(turbulence)
-            self.turbulence_avgs.append(sum(self.turbulence_vals)/len(self.turbulence_vals))
+                self.turbulence_vals.append(turbulence)
+                self.turbulence_avgs.append(sum(self.turbulence_vals)/len(self.turbulence_vals))
 
         if self.turbulence_avgs:
             self.turbulence_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
