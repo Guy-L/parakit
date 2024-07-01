@@ -611,6 +611,9 @@ def extract_player_option_positions(player):
 
     return player_option_positions
 
+def extract_bomb(bomb):
+    return Bomb(read_int(bomb + zBomb_state))
+
 def extract_player_shots(player):
     player_shots = []
     player_shot_array_start = player + zPlayer_shots_array
@@ -631,6 +634,47 @@ def extract_player_shots(player):
             ))
 
     return player_shots
+
+def extract_player(player, in_dialogue, game_thread_flags, side2=False):
+    player_state = read_int(player + zPlayer_state)
+    player_flags = read_int(zPlayer + zPlayer_flags) if zPlayer_flags else 0
+
+    if side2: #udoalg p2
+        enemy_manager = zEnemyManagerP2
+    else:
+        enemy_manager = zEnemyManager
+
+    can_shoot = True
+    if in_dialogue or player_state != 1 or \
+                      (player_flags & zPlayerFlags_cant_shoot) or \
+                      read_int(enemy_manager + zEnemyManager_list_cnt) == 0 or \
+                      game_thread_flags & zGameThreadFlags_ending or \
+                      (game_id == 19 and game_thread_flags & zGameThreadFlags_fight_end):
+        can_shoot = False
+
+    deathbomb_f = 0
+    if player_state == 4:
+        deathbomb_f = max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer))
+
+    player = {
+        'position':    (read_float(player + zPlayer_pos), read_float(player + zPlayer_pos + 0x4)),
+        'hitbox_rad':  read_float(player + zPlayer_hit_rad),
+        'iframes':     read_int(player + zPlayer_iframes),
+        'focused':     read_int(player + zPlayer_focused) == 1,
+        'options_pos': extract_player_option_positions(player),
+        'shots':       extract_player_shots(player) if requires_player_shots else [],
+        'deathbomb_f': deathbomb_f,
+        'can_shoot':   can_shoot,
+    }
+
+    #Game-specific attributes
+    if game_id == 14:
+        return ScalablePlayer(
+            **player,
+            scale = read_float(zPlayer + zPlayer_scale),
+        )
+
+    return Player(**player)
 
 def extract_spell_card(spell_card):
     if read_int(spell_card + zSpellCard_indicator) != 0:
@@ -686,6 +730,9 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         game_constants.deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
         game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
 
+    in_dialogue = bool(read_int(zGui + zGui_dialogue))
+    game_thread_flags = read_int(zGameThread + zGameThread_flags)
+
     enemies = []
     boss_timer = None
     special_logic_enemy = None
@@ -714,14 +761,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'boss_timer_real':    boss_timer,
         'game_speed':         read_float(game_speed, rel=True),
         'fps':                read_float(zFpsCounter + zFpsCounter_fps),
-        'player_position':    (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
-        'player_hitbox_rad':  read_float(zPlayer + zPlayer_hit_rad),
-        'player_iframes':     read_int(zPlayer + zPlayer_iframes),
-        'player_focused':     read_int(zPlayer + zPlayer_focused) == 1,
-        'player_options_pos': extract_player_option_positions(),
-        'player_shots':       extract_player_shots() if requires_player_shots else [],
-        'player_deathbomb_f': max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
-        'bomb_state':         read_int(zBomb + zBomb_state),
+        'player':             extract_player(zPlayer, in_dialogue, game_thread_flags),
+        'bomb':               extract_bomb(zBomb),
         'bullets':            extract_bullets(zBulletManager) if requires_bullets else [],
         'enemies':            enemies,
         'items':              extract_items(zItemManager) if requires_items else [],
@@ -778,7 +819,6 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         return GameStateDDC(
             **state_base,
             bonus_count  = read_int(bonus_count, rel=True),
-            player_scale = read_float(zPlayer + zPlayer_scale),
             seija_flip   = ((-read_float(zSeijaAnm + seija_flip_x) + 1)/2, (-read_float(zSeijaAnm + seija_flip_y) + 1)/2),
             sukuna_penult_logic_active = special_logic_enemy and special_logic_enemy[0] == sukuna_penult_func,
         )
@@ -929,14 +969,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 boss_timer_real     = boss_timer,
                 spell_card          = extract_spell_card(zSpellCardP2),
                 input               = read_int(p2_input, rel=True),
-                player_position     = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
-                player_hitbox_rad   = read_float(zPlayerP2 + zPlayer_hit_rad),
-                player_iframes      = read_int(zPlayerP2 + zPlayer_iframes),
-                player_focused      = read_int(zPlayerP2 + zPlayer_focused) == 1,
-                player_options_pos  = extract_player_option_positions(zPlayerP2),
-                player_shots        = extract_player_shots(zPlayerP2) if requires_player_shots else [],
-                player_deathbomb_f  = max(0, game_constants.deathbomb_window_frames - read_int(zPlayerP2 + zPlayer_db_timer)) if read_int(zPlayerP2 + zPlayer_state) == 4 else 0,
-                bomb_state          = read_int(zBombP2 + zBomb_state),
+                player              = extract_player(zPlayerP2, in_dialogue, game_thread_flags, side2=True),
+                bomb                = extract_bomb(zBombP2),
                 bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
                 enemies             = enemies,
                 items               = extract_items(zItemManagerP2) if requires_items else [],
@@ -995,7 +1029,7 @@ def print_game_state(gs: GameState):
     print(bright(f"[Global Frame #{gs.global_frame} | Stage Frame #{gs.stage_frame} | {shottype} {difficulties[gs.env.difficulty]} {stage}] Score:"), f"{gs.score:,}")
 
     # Player status
-    print(bar, bright("Player status:" ), f"Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
+    print(bar, bright("Player status:" ), f"Player at ({round(gs.player.position[0], 2)}, {round(gs.player.position[1], 2)}); hitbox radius {gs.player.hitbox_rad}; {gs.player.iframes} iframes; {'un' if not gs.player.focused else ''}focused{'; can\'t shoot' if not gs.player.can_shoot else ''}")
 
     # Basic resources
     basic_resources = bar + bright(" Resources: ") + f"{gs.lives} lives"
@@ -1025,11 +1059,11 @@ def print_game_state(gs: GameState):
     if gs.game_speed != 1:
         print(bar, bright("Game speed:" ), f"{gs.game_speed}x")
 
-    if gs.player_deathbomb_f:
-        print(bar, bright("Deathbomb window:" ), f"{gs.player_deathbomb_f} frames left")
+    if gs.player.deathbomb_f:
+        print(bar, bright("Deathbomb window:" ), f"{gs.player.deathbomb_f} frames left")
 
-    if gs.bomb_state:
-        print(bar, bright("Bomb active" ), f"(state: {gs.bomb_state})")
+    if gs.bomb.state:
+        print(bar, bright("Bomb active" ), f"(state: {gs.bomb.state})")
 
     #======================================
     # Game-specific prints ================
@@ -1085,8 +1119,8 @@ def print_game_state(gs: GameState):
         if gs.seija_flip[1]:
             print(bar, f"DDC Seija Vertical Flip: {round(100*gs.seija_flip[1], 2)}%")
 
-        if gs.player_scale > 1:
-            print(bar, f"DDC Player Scale: grew {round(gs.player_scale, 2)}x bigger! (hitbox radius: {round(gs.player_hitbox_rad * gs.player_scale, 2)})")
+        if gs.player.scale > 1:
+            print(bar, f"DDC Player Scale: grew {round(gs.player.scale, 2)}x bigger! (hitbox radius: {round(gs.player.hitbox_rad * gs.player.scale, 2)})")
 
         if gs.sukuna_penult_logic_active:
             print(bar, "DDC Sukuna Penult: Orbs will start homing if player distance < 64, will stop when player distance >= 128")
@@ -1130,7 +1164,7 @@ def print_game_state(gs: GameState):
                 remaining_charge_desc = f" for level {gs.season_level+1}"
 
             releasability_desc = " (can't release)"
-            if gs.season_level and not gs.bomb_state and not gs.release_active:
+            if gs.season_level and not gs.bomb.state and not gs.release_active:
                 if gs.season_delay_post_use:
                     releasability_desc = f" (can release in {gs.season_delay_post_use}f)"
                 else:
@@ -1559,12 +1593,12 @@ def print_game_state(gs: GameState):
                 print(bp, darker(f'... [{len(gs.items)} items total]'))
                 break
 
-    if gs.player_shots and singlext_settings['show_player_shots']:
+    if gs.player.shots and singlext_settings['show_player_shots']:
         counter = 0
 
         print(bright(underline("\nList of player shots:")))
         print(bright("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer"))
-        for shot in gs.player_shots:
+        for shot in gs.player.shots:
             description = bp + " "
             description += tabulate(f"({round(shot.position[0], 1)}, {round(shot.position[1], 1)})", 17)
             description += tabulate(f"({round(shot.velocity[0], 1)}, {round(shot.velocity[1], 1)})", 17)
@@ -1578,7 +1612,7 @@ def print_game_state(gs: GameState):
 
             counter += 1
             if counter >= singlext_settings['list_print_limit']:
-                print(bp, darker(f'... [{len(gs.player_shots)} shots total]'))
+                print(bp, darker(f'... [{len(gs.player.shots)} shots total]'))
                 break
 
 def on_exit():

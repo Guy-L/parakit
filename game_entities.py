@@ -127,6 +127,10 @@ class CurveLaser(Laser):
     nodes: List[CurveNode]
 
 @dataclass
+class Bomb:
+    state: int #active if non-zero (usually 1)
+
+@dataclass
 class PlayerShot:
     id: int
     position: Tuple[float, float]
@@ -136,6 +140,17 @@ class PlayerShot:
     angle: float
     damage: int
     alive_timer: int
+
+@dataclass
+class Player:
+    position: Tuple[float, float]
+    hitbox_rad: float
+    iframes: int
+    focused: bool
+    options_pos: List[Tuple[float, float]]
+    shots: List[PlayerShot]
+    deathbomb_f: int #starts at deathbomb_window_frames (usually 8) on hit and goes down to 0, can db if non-0
+    can_shoot: bool
 
 @dataclass
 class SpellCard:
@@ -210,6 +225,11 @@ class CircleEcho:
 class SpiritDroppingEnemy(Enemy):
     speedkill_cur_drop_amt: int
     speedkill_time_left_for_amt: int
+
+# Double Dealing Character
+@dataclass
+class ScalablePlayer(Player):
+    scale: float #[1, 3]
 
 # DDC / ISC / HBM
 @dataclass
@@ -307,14 +327,8 @@ class P2Side:
     boss_timer_real: float
     spell_card: Optional[SpellCard]
     input: int
-    player_position: Tuple[float, float]
-    player_hitbox_rad: float
-    player_iframes: int
-    player_focused: bool
-    player_options_pos: List[Tuple[float, float]]
-    player_shots: List[PlayerShot]
-    player_deathbomb_f: int
-    bomb_state: int
+    player: Player
+    bomb: Bomb
     bullets: List[Bullet]
     enemies: List[Enemy]
     items: List[Item]
@@ -361,14 +375,8 @@ class GameState:
     section_ecl_sub: str #use this to tell apart stage/boss sections
     game_speed: float #usually 1 (always 1 in pause menu)
     fps: float
-    player_position: Tuple[float, float]
-    player_hitbox_rad: float
-    player_iframes: int
-    player_focused: bool
-    player_options_pos: List[Tuple[float, float]]
-    player_shots: List[PlayerShot]
-    player_deathbomb_f: int #starts at deathbomb_window_frames (usually 8) on hit and goes down to 0, can db if non-0
-    bomb_state: int
+    player: Player
+    bomb: Bomb
     bullets: List[Bullet]
     enemies: List[Enemy]
     items: List[Item]
@@ -400,7 +408,6 @@ class GameStateTD(GameState):
 @dataclass
 class GameStateDDC(GameState):
     bonus_count: int #increases with non-2.0 bonuses, life piece at every multiple of 5
-    player_scale: float #[1, 3]
     seija_flip: Tuple[float, float] #[0, 1] for x and y (0 = normal, 1 = fully flipped)
     sukuna_penult_logic_active: bool
 

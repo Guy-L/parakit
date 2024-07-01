@@ -62,14 +62,17 @@ class PlayerOffsets:
     zPlayer_hit_rad: int
     zPlayer_iframes: int
     zPlayer_focused: int
+    zPlayer_flags: Optional[int] #same as modeflags pre-DDC
     zPlayer_option_array: int
     zPlayer_option_array_len: int
     zPlayer_shots_array: int
     zPlayer_shots_array_len: int
+    zPlayerFlags_cant_shoot: int
 
 @dataclass
 class PlayerOptionOffsets:
     zPlayerOption_active: int
+    zPlayerOption_pos: int
     zPlayerOption_anm_id: int #(IDs of VMs)
     zPlayerOption_len: int
 
@@ -113,6 +116,7 @@ class EnemyOffsets:
     enemy_manager_pointer: int
     zEnemyManager_ecl_file: int
     zEnemyManager_list: int
+    zEnemyManager_list_cnt: int
     zEclFile_sub_count: int
     zEclFile_subroutines: int
     zEnemy_ecl_ref: int #sub id for games >= lolk, otherwise cur instruction ptr
@@ -248,9 +252,16 @@ class FpsCounterOffsets:
     zFpsCounter_fps: int
 
 @dataclass
+class GuiOffsets:
+    gui_pointer: int
+    zGui_dialogue: int
+
+@dataclass
 class GameThreadOffsets:
     game_thread_pointer: int
     zGameThread_stage_timer: int
+    zGameThread_flags: int
+    zGameThreadFlags_ending: int
 
 @dataclass
 class MiscOffsets:
@@ -294,6 +305,7 @@ class Offset:
     anm: AnmOffsets
     spell_card: SpellCardOffsets
     fps_counter: FpsCounterOffsets
+    gui: GuiOffsets
     game_thread: GameThreadOffsets
     misc: MiscOffsets
     associations: Associations
@@ -410,13 +422,16 @@ offsets = {
             zPlayer_hit_rad  = 0x620,
             zPlayer_iframes  = 0x14688,
             zPlayer_focused  = 0x14840,
+            zPlayer_flags    = None,
             zPlayer_option_array     = 0xa2b8,
             zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0x6a0,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b0,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xe4,
         ),
@@ -456,6 +471,7 @@ offsets = {
             enemy_manager_pointer  = 0xc2188,
             zEnemyManager_ecl_file = 0xac,
             zEnemyManager_list     = 0xb0,
+            zEnemyManager_list_cnt = 0xb8,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0xc,
@@ -581,9 +597,15 @@ offsets = {
             fps_counter_pointer = 0xc218c,
             zFpsCounter_fps     = 0x34,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xc2190,
+            zGui_dialogue = 0x198,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xc2194,
             zGameThread_stage_timer = 0x14,
+            zGameThread_flags       = 0x60,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xc2168,
@@ -674,13 +696,16 @@ offsets = {
             zPlayer_hit_rad  = 0x648,
             zPlayer_iframes  = 0x182c4,
             zPlayer_focused  = 0x184b0,
+            zPlayer_flags    = 0x182d4,
             zPlayer_option_array     = 0xd6ec,
             zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0x6c8,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b10100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xe4,
         ),
@@ -720,6 +745,7 @@ offsets = {
             enemy_manager_pointer  = 0xdb544,
             zEnemyManager_ecl_file = 0xcc,
             zEnemyManager_list     = 0xd0,
+            zEnemyManager_list_cnt = 0xd8,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0xc,
@@ -845,9 +871,15 @@ offsets = {
             fps_counter_pointer = 0xdb54c,
             zFpsCounter_fps     = 0x34,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xdb550,
+            zGui_dialogue = 0x194,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xdb558,
             zGameThread_stage_timer = 0x14,
+            zGameThread_flags       = 0x80,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xdb524,
@@ -921,13 +953,16 @@ offsets = {
             zPlayer_hit_rad  = 0x2bfc8,
             zPlayer_iframes  = 0x16284,
             zPlayer_focused  = 0x16240,
+            zPlayer_flags    = 0x16294,
             zPlayer_option_array     = 0x668,
             zPlayer_option_array_len = 0x8,
             zPlayer_shots_array      = 0xd88,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b10100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xe4,
         ),
@@ -967,6 +1002,7 @@ offsets = {
             enemy_manager_pointer  = 0xe9a80,
             zEnemyManager_ecl_file = 0x17c,
             zEnemyManager_list     = 0x180,
+            zEnemyManager_list_cnt = 0x18c,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0x14,
@@ -1092,9 +1128,15 @@ offsets = {
             fps_counter_pointer = 0xe9a88,
             zFpsCounter_fps     = 0x30,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xe9a8c,
+            zGui_dialogue = 0x1b8,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xe9a94,
             zGameThread_stage_timer = 0x10,
+            zGameThread_flags       = 0x90,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xe9a5c,
@@ -1169,13 +1211,16 @@ offsets = {
             zPlayer_hit_rad  = 0x2c748,
             zPlayer_iframes  = 0x1663c,
             zPlayer_focused  = 0x165c8,
+            zPlayer_flags    = 0x1664c,
             zPlayer_option_array     = 0x660,
             zPlayer_option_array_len = 0xc,
             zPlayer_shots_array      = 0x1110,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b10100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xe4,
         ),
@@ -1215,6 +1260,7 @@ offsets = {
             enemy_manager_pointer  = 0xa6dc0,
             zEnemyManager_ecl_file = 0x17c,
             zEnemyManager_list     = 0x180,
+            zEnemyManager_list_cnt = 0x18c,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0x14,
@@ -1340,9 +1386,15 @@ offsets = {
             fps_counter_pointer = 0xa6dc8,
             zFpsCounter_fps     = 0x30,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xa6dcc,
+            zGui_dialogue = 0x1c8,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xa6dd4,
             zGameThread_stage_timer = 0x10,
+            zGameThread_flags       = 0x88,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xa6d9c,
@@ -1427,13 +1479,16 @@ offsets = {
             zPlayer_hit_rad  = 0x18ffc,
             zPlayer_iframes  = 0x18e7c,
             zPlayer_focused  = 0x18dd0,
+            zPlayer_flags    = 0x18e8c,
             zPlayer_option_array     = 0x660,
             zPlayer_option_array_len = 0xc,
             zPlayer_shots_array      = 0x1110,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b10100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xe4,
         ),
@@ -1473,6 +1528,7 @@ offsets = {
             enemy_manager_pointer  = 0xb76a0,
             zEnemyManager_ecl_file = 0x17c,
             zEnemyManager_list     = 0x180,
+            zEnemyManager_list_cnt = 0x18c,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0x14,
@@ -1598,9 +1654,15 @@ offsets = {
             fps_counter_pointer = 0xb76a8,
             zFpsCounter_fps     = 0x30,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xb76ac,
+            zGui_dialogue = 0x1c0,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xb76b0,
             zGameThread_stage_timer = 0x10,
+            zGameThread_flags       = 0x8c,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xb767c,
@@ -1686,13 +1748,16 @@ offsets = {
             zPlayer_hit_rad  = 0x4799c,
             zPlayer_iframes  = 0x47778,
             zPlayer_focused  = 0x476cc,
+            zPlayer_flags    = 0x4779c,
             zPlayer_option_array     = 0x670,
             zPlayer_option_array_len = 0x10,
             zPlayer_shots_array      = 0x1570,
             zPlayer_shots_array_len  = 0x200,
+            zPlayerFlags_cant_shoot  = 0b110010100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x5c,
             zPlayerOption_anm_id = 0xb0,
             zPlayerOption_len    = 0xf0,
         ),
@@ -1732,6 +1797,7 @@ offsets = {
             enemy_manager_pointer  = 0xcf2d0,
             zEnemyManager_ecl_file = 0x188,
             zEnemyManager_list     = 0x18c,
+            zEnemyManager_list_cnt = 0x198,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x8c,
             zEnemy_ecl_ref         = 0x14,
@@ -1857,9 +1923,15 @@ offsets = {
             fps_counter_pointer = 0xcf2dc,
             zFpsCounter_fps     = 0x30,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0xcf2e0,
+            zGui_dialogue = 0x1b0,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0xcf2e4,
             zGameThread_stage_timer = 0x10,
+            zGameThread_flags       = 0xb0,
+            zGameThreadFlags_ending = 2**14,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0xcf2b0,
@@ -1943,13 +2015,16 @@ offsets = {
             zPlayer_hit_rad  = 0x20c4,
             zPlayer_iframes  = 0x2078,
             zPlayer_focused  = 0x2070,
+            zPlayer_flags    = 0x14,
             zPlayer_option_array     = 0x700,
             zPlayer_option_array_len = 0x16,
             zPlayer_shots_array      = 0x22f8,
             zPlayer_shots_array_len  = 0x100,
+            zPlayerFlags_cant_shoot  = 0b11010100,
         ),
         player_options = PlayerOptionOffsets(
             zPlayerOption_active = 0x0,
+            zPlayerOption_pos    = 0x78,
             zPlayerOption_anm_id = 0xdc,
             zPlayerOption_len    = 0x128,
         ),
@@ -1989,6 +2064,7 @@ offsets = {
             enemy_manager_pointer  = 0x1ae478,
             zEnemyManager_ecl_file = 0x4b48,
             zEnemyManager_list     = 0x4b5c,
+            zEnemyManager_list_cnt = 0x4b78,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x20c,
             zEnemy_ecl_ref         = 0x14,
@@ -2114,9 +2190,15 @@ offsets = {
             fps_counter_pointer = 0x1ae45c,
             zFpsCounter_fps     = 0x38,
         ),
+        gui = GuiOffsets(
+            gui_pointer   = 0x1ae460,
+            zGui_dialogue = 0x310,
+        ),
         game_thread = GameThreadOffsets(
             game_thread_pointer     = 0x1ae464,
             zGameThread_stage_timer = 0x14,
+            zGameThread_flags       = 0x140,
+            zGameThreadFlags_ending = 2**7,
         ),
         misc = MiscOffsets(
             transition_stage_ptr = 0x1ae448,
@@ -2154,6 +2236,7 @@ offsets = {
             'zGaugeManager_gauge_fill': 0xa4,
             'zAbilityManager_total_cards': 0x2c,
             'zAnmManager_list_p2': 0x744,
+            'zGameThreadFlags_fight_end': 2**19,
             'zAi_story_mode_ptr': 0x34,
             'zStoryAi_fight_phase': 0x4,
             'zStoryAi_progress_meter': 0x8,
@@ -2246,13 +2329,16 @@ offsets = {
 #            zPlayer_hit_rad  = None,
 #            zPlayer_iframes  = None,
 #            zPlayer_focused  = None,
+#            zPlayer_flags    = None,
 #            zPlayer_option_array     = None,
 #            zPlayer_option_array_len = None,
 #            zPlayer_shots_array      = None,
 #            zPlayer_shots_array_len  = None,
+#            zPlayerFlags_cant_shoot  = None,
 #        ),
 #        player_options = PlayerOptionOffsets(
 #            zPlayerOption_active = None,
+#            zPlayerOption_pos    = None,
 #            zPlayerOption_anm_id = None,
 #            zPlayerOption_len    = None,
 #        ),
@@ -2292,6 +2378,7 @@ offsets = {
 #            enemy_manager_pointer  = None,
 #            zEnemyManager_ecl_file = None,
 #            zEnemyManager_list     = None,
+#            zEnemyManager_list_cnt = None,
 #            zEclFile_sub_count     = None,
 #            zEclFile_subroutines   = None,
 #            zEnemy_ecl_ref         = None,
@@ -2417,9 +2504,15 @@ offsets = {
 #            fps_counter_pointer = None,
 #            zFpsCounter_fps     = None,
 #        ),
+#        gui = GuiOffsets(
+#            gui_pointer   = None,
+#            zGui_dialogue = None,
+#        ),
 #        game_thread = GameThreadOffsets(
 #            game_thread_pointer     = None,
 #            zGameThread_stage_timer = None,
+#            zGameThread_flags       = None,
+#            zGameThreadFlags_ending = None,
 #        ),
 #        misc = MiscOffsets(
 #            transition_stage_ptr = None,

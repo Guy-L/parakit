@@ -131,6 +131,7 @@ has_charging_youmu = [13, 17]
 has_bullet_delay = [14, 14.3, 18.5]
 has_bullet_intangible = [16, 16.5]
 has_ability_cards = [18, 18.5, 19]
+switch_to_player_owning_flags = 14 #first game where player flags are stored by the player, and not in static memory
 switch_to_serializable_ecl = 15 #first game where enemies store sub_id + offset within the sub as opposed to instruction pointers
 
 # Tweak graph colors here

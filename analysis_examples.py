@@ -38,7 +38,7 @@ class AnalysisCloseBulletsOverTime(Analysis):
         if state.bullets:
             nearby_bullets = 0
             for bullet in state.bullets:
-                if math.dist(state.player_position, bullet.position) < self.radius and bullet.is_active and (not hasattr(bullet, 'show_delay') or bullet.show_delay == 0):
+                if math.dist(state.player.position, bullet.position) < self.radius and bullet.is_active and (not hasattr(bullet, 'show_delay') or bullet.show_delay == 0):
                     nearby_bullets = nearby_bullets + 1
 
             self.bullet_counts.append(nearby_bullets)
@@ -295,20 +295,20 @@ class AnalysisPlot(Analysis, ABC):
             side2_res = self.plot(axarr[1], True)
             if side1_res != DONT_PLOT or (side2_res != DONT_PLOT and side2_res != HIDE_P2):
                 axarr[0].set_title('Player 1')
-                axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*self.lastframe.player_hitbox_rad, marker='X')
+                axarr[0].scatter(self.lastframe.player.position[0], self.lastframe.player.position[1], color='maroon', s=25*self.lastframe.player.hitbox_rad, marker='X')
 
                 if side2_res == HIDE_P2:
                     axarr[1].axis('off')
                 else:
                     axarr[1].set_title('Player 2')
-                    axarr[1].scatter(self.lastframe.side2.player_position[0], self.lastframe.side2.player_position[1], color='maroon', s=25*self.lastframe.side2.player_hitbox_rad, marker='X')
+                    axarr[1].scatter(self.lastframe.side2.player.position[0], self.lastframe.side2.player.position[1], color='maroon', s=25*self.lastframe.side2.player.hitbox_rad, marker='X')
 
                 plt.show()
 
         else:
-            player_size = self.lastframe.player_hitbox_rad
+            player_size = self.lastframe.player.hitbox_rad
             if game_id == 14:
-                player_size *= self.lastframe.player_scale
+                player_size *= self.lastframe.player.scale
 
                 if self.lastframe.seija_flip[0] == 1:
                     axarr[0].invert_xaxis()
@@ -318,7 +318,7 @@ class AnalysisPlot(Analysis, ABC):
 
             plt.title(self.plot_title)
             if self.plot(axarr[0], False) != DONT_PLOT:
-                axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_size, marker='X')
+                axarr[0].scatter(self.lastframe.player.position[0], self.lastframe.player.position[1], color='maroon', s=25*player_size, marker='X')
 
                 if self.photo_mode:
                     plt.savefig(self.photo_mode_folder + '/' + str(self.lastframe.pk.frame_counter) + '.png')
@@ -430,7 +430,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
                     similarity_tresh = 0.01
                     #enm_radius_tresh = max(enemy.hurtbox[0]/2, enemy.hurtbox[1]/2)*1.5
 
-                    for shot in self.lastframe.player_shots:
+                    for shot in self.lastframe.player.shots:
                         #if math.dist((enemy.position[0], enemy.position[1]), (shot.position[0], shot.position[1])) < enm_radius_tresh:
                         unique = True
 
@@ -484,7 +484,7 @@ class AnalysisPlotEnemies(AnalysisPlot):
 
                         lines = []
                         line_length = 50
-                        for shot in self.lastframe.player_shots:
+                        for shot in self.lastframe.player.shots:
                             if abs(shot.angle - angle) < similarity_tresh:
                                 line_x = [shot.position[0], shot.position[0] + line_length * math.cos(angle)]
                                 line_y = [shot.position[1], shot.position[1] + line_length * math.sin(angle)]
@@ -658,8 +658,8 @@ class AnalysisPlotPlayerShots(AnalysisPlot):
     show_damage = True
 
     def plot(self, ax, side2):
-        player_options_pos = self.lastframe.side2.player_options_pos if side2 else self.lastframe.player_options_pos
-        player_shots = self.lastframe.side2.player_shots if side2 else self.lastframe.player_shots
+        player_options_pos = self.lastframe.side2.player.options_pos if side2 else self.lastframe.player.options_pos
+        player_shots = self.lastframe.side2.player.shots if side2 else self.lastframe.player.shots
 
         ax.scatter([option_pos[0] for option_pos in player_options_pos], [option_pos[1] for option_pos in player_options_pos],
                     s=75, facecolor=(0,0,0,0.1), marker='o')
@@ -697,20 +697,20 @@ class AnalysisPlotAll(AnalysisPlot):
 
     def plot(self, ax, side2):
         if game_id == 13 and self.lastframe.miko_final_logic_active:
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 48, color=(1, 0, 0.5, 0.75), fill=False))
 
         elif game_id == 14 and self.lastframe.sukuna_penult_logic_active:
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False))
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 64, color=(1, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 128, color=(0, 1, 0.5, 0.75), fill=False))
 
         elif game_id == 15 and self.lastframe.graze_inferno_logic_active:
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), math.sqrt(1800), color=(1, 0, 0.5, 0.75), fill=False))
 
         elif game_id == 16 and self.lastframe.snowman_logic_active:
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 96, color=(1, 0, 0.5, 0.75), fill=False))
 
         elif game_id == 18 and self.lastframe.asylum_logic_active:
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 128, color=(0.5, 0, 0.5, 0.75), fill=False))
 
         plottedPlayerShots = AnalysisPlotPlayerShots(self.lastframe).plot(ax, side2)
         plottedEnemies = AnalysisPlotEnemies(self.lastframe).plot(ax, side2)
@@ -784,9 +784,9 @@ class AnalysisPlotDynamic(AnalysisDynamic, ABC):
         self.scatter.setPen(None)
 
     def update_graph(self):
-        player_scale = self.state.player_hitbox_rad
+        player_scale = self.state.player.hitbox_rad
         if game_id == 14:
-            player_scale *= self.state.player_scale
+            player_scale *= self.state.player.scale
 
             if self.state.seija_flip[0] == -1:
                 self.graph.invertX(True)
@@ -800,7 +800,7 @@ class AnalysisPlotDynamic(AnalysisDynamic, ABC):
 
         self.plot()
         self.scatter.addPoints([{
-            'pos': self.state.player_position,
+            'pos': self.state.player.position,
             'size': player_scale*10,
             'symbol': 'star',
             'brush': (100, 0, 0),
@@ -989,7 +989,7 @@ class AnalysisPlotGrazeableBullets(AnalysisPlot):
                     colors.append(pyplot_color(get_color(bullet.type, bullet.color)[0]))
 
             ax.scatter(x_coords, y_coords, color=colors, s=sizes, alpha=alphas)
-            ax.add_patch(Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]), 40, color=(0.5, 1, 0.5, 0.75), fill=False))
+            ax.add_patch(Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]), 40, color=(0.5, 1, 0.5, 0.75), fill=False))
             #TODO: check accuracy of graze radius value in all supported games; otherwise add to states & calculate during extraction
 
         else:
@@ -1208,13 +1208,13 @@ class AnalysisPlotWBaWC(AnalysisPlot):
 
         if hyper and hyper.type == 2:
             otter_color = self.type_colors[1]
-            ax.add_patch(plt.Circle((self.lastframe.player_position[0], self.lastframe.player_position[1]),
+            ax.add_patch(plt.Circle((self.lastframe.player.position[0], self.lastframe.player.position[1]),
                                     self.otter_distance, lw=self.otter_hitbox, zorder=-1,
                                     fill=False, color=otter_color + (0.3,)))
 
             for angle in hyper.otter_shield_angles:
-                otter_x = self.lastframe.player_position[0] + self.otter_distance * math.cos(angle)
-                otter_y = self.lastframe.player_position[1] + self.otter_distance * math.sin(angle)
+                otter_x = self.lastframe.player.position[0] + self.otter_distance * math.cos(angle)
+                otter_y = self.lastframe.player.position[1] + self.otter_distance * math.sin(angle)
 
                 ax.arrow(otter_x, otter_y, 5 * math.cos(angle + math.pi / 2), 5 * math.sin(angle + math.pi / 2),
                          head_width=8, head_length=12, color= (otter_color[0], otter_color[1]-0.15, otter_color[2], 0.8))
