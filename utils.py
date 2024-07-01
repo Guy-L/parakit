@@ -16,6 +16,15 @@ def truncate(x, size=10, spaces = 2):
 def round_down(f, digits=0):
     return float(str(f)[:str(f).index('.')+digits+1])
 
+def char_after_digits(s): #used for handling ECL sub names
+    has_number = False
+    for char in s:
+        if char.isdigit():
+            has_number = True
+        elif has_number:
+            return True
+    return False
+
 _std_term_colors = ['black', 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white']
 _custom_term_colors = {'orange':209}
 def color(txt = None, c = 'white'):

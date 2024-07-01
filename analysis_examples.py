@@ -129,21 +129,54 @@ class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObje
 
     def __init__(self, state: GameState = None):
         super().__init__()
+        self.last_seq_id = 1
+        self.last_section = None
 
         self.app_thread = QtCore.QThread()
         self.moveToThread(self.app_thread)
         self.app_thread.started.connect(self._start_graph_thread)
-        self.updateSignal.connect(self.update_graph)
+        self.updateSignal.connect(self._update_graph_thread)
 
         self.app_thread.start()
+        self.init()
+
+    @abstractmethod
+    def init(self):
+        pass #to implement
 
     @abstractmethod
     def setup_graph(self):
         pass #to implement
 
     @abstractmethod
+    def on_stage_change(self):
+        pass #to implement (optional)
+
+    @abstractmethod
+    def on_section_change(self):
+        pass #to implement (optional)
+
+    @abstractmethod
     def update_graph(self):
         pass #to implement
+
+    def add_separator_line(self, x, text=''):
+        self.graph.addItem(pg.InfiniteLine(
+            pos=x,
+            angle=90,
+            label=text,
+            labelOpts={'rotateAxis': (1, 0)},
+            pen=pg.mkPen('darkGray', width=2, style=QtCore.Qt.DashLine))
+        )
+
+    def clear_separator_lines(self):
+        section_lines = []
+        for item in self.graph.items:
+            if isinstance(item, pg.InfiniteLine):
+                section_lines.append(item)
+
+        for line in section_lines:
+            self.graph.removeItem(line)
 
     def _start_graph_thread(self):
         self.app = QApplication([])
@@ -168,9 +201,30 @@ class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObje
 
         self.app.exec_()
 
+    def _update_graph_thread(self):
+        self.update_graph()
+
+        for item in self.graph.items:
+            if isinstance(item, pg.InfiniteLine):
+                item.viewTransformChanged()
+
     def step(self, state):
         self.state = state
         self.updateSignal.emit()
+
+        if state.pk.sequence_counter > self.last_seq_id:
+            self.last_seq_id = state.pk.sequence_counter
+            self.last_section = None
+            self.on_stage_change()
+
+        if state.section_ecl_sub:
+            if self.last_section is None:
+                self.last_section = state.section_ecl_sub
+
+            elif state.section_ecl_sub != self.last_section:
+                self.last_section = state.section_ecl_sub
+                self.on_section_change()
+
 
     def done(self):
         QtCore.QMetaObject.invokeMethod(self.app, "quit", QtCore.Qt.QueuedConnection)
@@ -181,14 +235,20 @@ class AnalysisDynamic(QtCore.QObject, ABC, metaclass=type('', (type(QtCore.QObje
 class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
     win_title = 'Bullet Count Over Time'
 
-    def __init__(self):
-        super().__init__()
+    def init(self):
         self.bullet_counts = []
 
     def setup_graph(self):
         self.graph.setLabel('left', 'Bullets')
         self.graph.setLabel('bottom', 'Time (frames)')
         self.bullet_curve = self.graph.plot(pen='y')
+
+    def on_stage_change(self):
+        self.init()
+        self.clear_separator_lines()
+
+    def on_section_change(self):
+        self.add_separator_line(len(self.bullet_counts), self.state.section_ecl_sub)
 
     def update_graph(self):
         if self.state.bullets is not None:
@@ -200,8 +260,7 @@ class AnalysisBulletsOverTimeDynamic(AnalysisDynamic):
 class AnalysisItemCollectionDynamic(AnalysisDynamic):
     win_title = 'Item Collection Over Time'
 
-    def __init__(self):
-        super().__init__()
+    def init(self):
         self.collected_counts = [0]
         self.greyed_counts = [0]
         self.prev_frame_items = None
@@ -215,6 +274,13 @@ class AnalysisItemCollectionDynamic(AnalysisDynamic):
         legend.setParentItem(self.graph)
         legend.addItem(self.collect_curve, 'Total Collected')
         legend.addItem(self.greyed_curve, 'Total Greyed')
+
+    def on_stage_change(self):
+        self.init()
+        self.clear_separator_lines()
+
+    def on_section_change(self):
+        self.add_separator_line(len(self.collected_counts), self.state.section_ecl_sub)
 
     def update_graph(self):
         if self.state.items is not None:
@@ -901,8 +967,7 @@ class AnalysisPrintBulletsASCII(Analysis):
 class AnalysisPatternTurbulence(AnalysisDynamic):
     win_title = 'Turbulence Over Time'
 
-    def __init__(self):
-        super().__init__()
+    def init(self):
         self.turbulence_vals = []
         self.turbulence_avgs = []
 
@@ -914,6 +979,13 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
         self.turb_percent = pg.TextItem()
         self.turb_percent.setFont(QtGui.QFont("Arial", 12))
         self.graph.addItem(self.turb_percent)
+
+    def on_stage_change(self):
+        self.init()
+        self.clear_separator_lines()
+
+    def on_section_change(self):
+        self.add_separator_line(len(self.turbulence_vals), self.state.section_ecl_sub)
 
     def update_graph(self):
         if self.state.bullets or self.state.lasers or self.state.enemies:

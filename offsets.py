@@ -2231,6 +2231,8 @@ offsets = {
             'zBullet_can_gen_items_timer': 0x1004,
             'zBullet_can_gen_items': 0x1018,
             'zEnemyManager_pattern_count': 0x42ac,
+            'zEnemyManager_story_boss_difficulty': 0x40,
+            'zEnemyManager_story_boss_is_final': 0x44,
             'zGaugeManager_charging_bool': 0x2c,
             'zGaugeManager_gauge_charge': 0x94,
             'zGaugeManager_gauge_fill': 0xa4,

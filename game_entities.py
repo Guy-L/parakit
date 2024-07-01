@@ -325,6 +325,7 @@ class P2Side:
     graze: int
     boss_timer_shown: float
     boss_timer_real: float
+    section_ecl_sub: str
     spell_card: Optional[SpellCard]
     input: int
     player: Player
@@ -480,6 +481,7 @@ class GameStateUDoALG(GameState):
     boss_attack_level: int
     pvp_wins: int
     side2: Optional[P2Side]
+    story_boss_difficulty: int
     story_fight_phase: Optional[int]
     story_progress_meter: Optional[int]
     pvp_timer_start: int

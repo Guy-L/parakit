@@ -10,10 +10,13 @@ extraction_settings = {
     'requires_enemies': True,
     'requires_items':   True,
     'requires_lasers':  True,
-    'requires_curve_node_vels': False,
     'requires_player_shots': True,
     'requires_screenshots': False,
     'requires_side2_pvp': True,
+
+    # See settings.md for more info.
+    'requires_curve_node_vels': False,
+    'section_sub_default_to_any': False,
 }
 
 # Game Interfacing Settings

@@ -4,6 +4,7 @@ import sys
 import math
 import atexit
 import traceback
+import re
 
 try:
     print(italics(darker("Setting up extraction interface...")), clear(), end='\r')
@@ -16,7 +17,7 @@ except KeyboardInterrupt:
     exit()
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_curve_node_vels, requires_player_shots, requires_screenshots, requires_side2_pvp = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, requires_curve_node_vels, section_sub_default_to_any = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 
@@ -231,6 +232,7 @@ def extract_enemy_drops(drops_addr):
 
 def extract_enemies(enemy_manager):
     enemies = []
+    main_enemy_sub = ''
     special_logic_enemy = None #enemy that contains special state info, like kyouko echo, okina season disable...
     last_valid_enm_boss_timer = None
 
@@ -240,6 +242,14 @@ def extract_enemies(enemy_manager):
         except RuntimeError:
             continue
 
+        # Grab the sub of the main enemy if it hasn't been grabbed yet
+        zEnemyECLSub = None # This is only set while looking for the main enemy, but you might as well use it
+        if not main_enemy_sub:
+            zEnemyECLSub = get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref), ecl_sub_arrs[enemy_manager])
+            if zEnemyECLSub and (zEnemyECLSub.lower().startswith('main') or \
+                                (game_id == 19 and zEnemyECLSub.lower().startswith('world'))):
+                main_enemy_sub = zEnemyECLSub
+                continue
 
         # Filter invisible enemies (not bosses, they can sometimes be missed when switching ANMs)
         is_boss = zEnemyFlags & zEnemyFlags_is_boss != 0
@@ -268,7 +278,7 @@ def extract_enemies(enemy_manager):
             'pivot_angle':      0, #only checked for rectangular enemies
             'anm_page':         read_int(zEnemy + zEnemy_anm_page),
             'anm_id':           read_int(zEnemy + zEnemy_anm_id),
-            'ecl_sub_name':     get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref), ecl_sub_arrs[enemy_manager]),
+            'ecl_sub_name':     zEnemyECLSub if zEnemyECLSub is not None else get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref), ecl_sub_arrs[enemy_manager]),
             'ecl_sub_timer':    read_int(zEnemy + zEnemy_ecl_timer),
             'alive_timer':      read_int(zEnemy + zEnemy_alive_timer),
             'health':           read_int(zEnemy + zEnemy_hp),
@@ -366,7 +376,7 @@ def extract_enemies(enemy_manager):
         else:
             enemies.append(Enemy(**enemy))
 
-    return enemies, last_valid_enm_boss_timer, special_logic_enemy
+    return enemies, main_enemy_sub, last_valid_enm_boss_timer, special_logic_enemy
 
 def extract_items(item_manager):
     items = []
@@ -723,6 +733,56 @@ def extract_run_environment():
 
     return (RunEnvironment(**env_base),)
 
+def find_section_sub(enemies, main_enemy_sub, side2=False):
+    profile_record('Section Sub')
+    section_sub_prev = globals()['section_sub_prev_p2' if side2 else 'section_sub_prev']
+    cur_section_sub = ''
+    main_boss_sub = ''
+
+    for enemy in enemies:
+        if enemy.is_boss and not enemy.ecl_sub_name.endswith('Hide'):
+            main_boss_sub = enemy.ecl_sub_name
+            break
+
+    if main_boss_sub: #section sub == first boss' sub (instead of just MainBoss)
+        if game_id == 19: #no clue why this prefix exists (only for SOME chars)
+            main_boss_sub = main_boss_sub.split('Boss00')[-1]
+
+        # Ignored: any boss sub which doesn't match 'Boss' or 'BossCard' followed by a number,
+        #          which isn't a 'Hide' sub in duo fights, and with some exceptions (see below).
+        if (not section_sub_prev and section_sub_default_to_any) or re.match(r"(|M)Boss(|B)(|Card)\d+(p|B|H|)(_|$)", main_boss_sub):
+            # (...)p is used by Mai/Satono card 3 ("BossCard3" only extractable 1f) -> removed
+            # (...)_ is used by most bosses -> removed to get correct init. cur_section name in Boss[...]_ats
+            # BossB is used by LoLK s1 2nd midboss & DDC s4 Yatsuhasi (+BossBCard) -> kept to differentiate
+            # Boss(#)B is used by DDC ex midboss -> removed, not useful info + splits sp2 into two halves
+            # M prefix used instead of _at for Seija sp3 specifically -> removed
+            # Boss(#)B is used by HSiFS Satono -> kept to differentiate, but only for cards
+            # Boss(#)H is used by UDoALG for some Reimu/Marisa attacks -> removed
+            main_boss_sub = main_boss_sub.split('_')[0].replace('p','')
+            if (game_id == 14 and main_boss_sub[-1] == 'B') or \
+            (game_id == 16 and 'Card' not in main_boss_sub and main_boss_sub[-1] == 'B') or \
+            (game_id == 19 and main_boss_sub[-1] == 'H'):
+                main_boss_sub = main_boss_sub[:-1]
+            elif game_id == 14 and main_boss_sub.startswith('M') and main_enemy_sub.startswith('MainBoss'):
+                main_boss_sub = main_boss_sub[1:]
+
+            cur_section_sub = main_boss_sub
+
+    else:
+        if game_id == 19 and main_enemy_sub and not read_int(zEnemyManager + zEnemyManager_story_boss_is_final):
+            # Current wave sub can be derived from stage enemy subs
+            cur_section_sub = 'MainStage'
+
+        # Ignored: any sub which doesn't match 'Sub' followed only by a number
+        elif (not section_sub_prev and section_sub_default_to_any) or re.match(r'MainSub\d+$', main_enemy_sub):
+            cur_section_sub = main_enemy_sub
+
+    if cur_section_sub and cur_section_sub != section_sub_prev:
+        section_sub_prev = cur_section_sub
+        globals()['section_sub_prev_p2' if side2 else 'section_sub_prev'] = cur_section_sub
+
+    return section_sub_prev
+
 def extract_game_state(extraction_status, run_environment, stage_frame):
     if game_id == 13:
         game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
@@ -734,11 +794,13 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
     game_thread_flags = read_int(zGameThread + zGameThread_flags)
 
     enemies = []
+    cur_section_sub = ''
     boss_timer = None
     special_logic_enemy = None
 
     if requires_enemies:
-        enemies, boss_timer, special_logic_enemy = extract_enemies(zEnemyManager)
+        enemies, main_enemy_sub, boss_timer, special_logic_enemy = extract_enemies(zEnemyManager)
+        cur_section_sub = find_section_sub(enemies, main_enemy_sub)
 
     state_base = {
         'stage_frame':        current_stage_frame,
@@ -759,6 +821,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'stage_chapter':      read_int(stage_chapter, rel=True),
         'boss_timer_shown':   min(99.99, round_down(boss_timer, 2)) if boss_timer else None,
         'boss_timer_real':    boss_timer,
+        'section_ecl_sub':    cur_section_sub,
         'game_speed':         read_float(game_speed, rel=True),
         'fps':                read_float(zFpsCounter + zFpsCounter_fps),
         'player':             extract_player(zPlayer, in_dialogue, game_thread_flags),
@@ -953,10 +1016,12 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
 
         if requires_side2_pvp:
             enemies = []
+            cur_section_sub = ''
             boss_timer = None
 
             if requires_enemies:
-                enemies, boss_timer, _ = extract_enemies(zEnemyManagerP2)
+                enemies, main_enemy_sub, boss_timer, _ = extract_enemies(zEnemyManagerP2)
+                cur_section_sub = find_section_sub(enemies, main_enemy_sub, side2=True)
 
             side2 = P2Side(
                 lives               = read_int(p2_lives, signed=True, rel=True),
@@ -967,6 +1032,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 graze               = read_int(p2_graze, rel=True),
                 boss_timer_shown    = min(99.99, round_down(boss_timer, 2)) if boss_timer else None,
                 boss_timer_real     = boss_timer,
+                section_ecl_sub     = cur_section_sub,
                 spell_card          = extract_spell_card(zSpellCardP2),
                 input               = read_int(p2_input, rel=True),
                 player              = extract_player(zPlayerP2, in_dialogue, game_thread_flags, side2=True),
@@ -992,24 +1058,25 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
 
         return GameStateUDoALG(
             **state_base,
-            lives_max            = read_int(lives_max, rel=True),
-            hitstun_status       = read_int(zPlayer + zPlayer_hitstun_status),
-            shield_status        = read_int(zPlayer + zPlayer_shield_status),
-            last_combo_hits      = read_int(zPlayer + zPlayer_last_combo_hits),
-            current_combo_hits   = read_int(zPlayer + zPlayer_current_combo_hits),
-            current_combo_chain  = read_int(zPlayer + zPlayer_current_combo_chain),
-            enemy_pattern_count  = read_int(zEnemyManager + zEnemyManager_pattern_count),
-            gauge_charging       = read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
-            gauge_charge         = read_int(zGaugeManager + zGaugeManager_gauge_charge),
-            gauge_fill           = read_int(zGaugeManager + zGaugeManager_gauge_fill),
-            ex_attack_level      = read_int(ex_attack_level, rel=True),
-            boss_attack_level    = read_int(boss_attack_level, rel=True),
-            pvp_timer_start      = read_int(pvp_timer_start, rel=True),
-            pvp_timer            = read_int(pvp_timer, rel=True),
-            pvp_wins             = read_int(pvp_wins, rel=True),
-            story_fight_phase    = story_fight_phase,
-            story_progress_meter = story_progress_meter,
-            side2                = side2,
+            lives_max             = read_int(lives_max, rel=True),
+            hitstun_status        = read_int(zPlayer + zPlayer_hitstun_status),
+            shield_status         = read_int(zPlayer + zPlayer_shield_status),
+            last_combo_hits       = read_int(zPlayer + zPlayer_last_combo_hits),
+            current_combo_hits    = read_int(zPlayer + zPlayer_current_combo_hits),
+            current_combo_chain   = read_int(zPlayer + zPlayer_current_combo_chain),
+            enemy_pattern_count   = read_int(zEnemyManager + zEnemyManager_pattern_count),
+            gauge_charging        = read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
+            gauge_charge          = read_int(zGaugeManager + zGaugeManager_gauge_charge),
+            gauge_fill            = read_int(zGaugeManager + zGaugeManager_gauge_fill),
+            ex_attack_level       = read_int(ex_attack_level, rel=True),
+            boss_attack_level     = read_int(boss_attack_level, rel=True),
+            pvp_timer_start       = read_int(pvp_timer_start, rel=True),
+            pvp_timer             = read_int(pvp_timer, rel=True),
+            pvp_wins              = read_int(pvp_wins, rel=True),
+            story_boss_difficulty = read_int(zEnemyManager + zEnemyManager_story_boss_difficulty),
+            story_fight_phase     = story_fight_phase,
+            story_progress_meter  = story_progress_meter,
+            side2                 = side2,
         )
 
     return GameState(**state_base)
