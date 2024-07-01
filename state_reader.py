@@ -75,20 +75,33 @@ def load_extraction_context():
 
     return True
 
+def extract_list_entries(entry_addr, tail=False):
+    list_entries = []
+    next_offset = 0x8 if tail else 0x4
+
+    while entry_addr:
+        try:
+            entry = read_int(entry_addr)
+            entry_addr = read_int(entry_addr + next_offset)
+
+            if entry:
+                list_entries.append(entry)
+
+        except RuntimeError:
+            # If exact mode is off & multiple entities are deallocated together during extraction,
+            # there's no clean way to know to stop iterating the list other than this.
+            break
+
+    return list_entries
+
 def extract_bullets(bullet_manager):
     bullets = []
-    current_bullet_list = read_zList(bullet_manager + zBulletManager_list)
 
-    #may need logic group if multiple games have pointer as tick list head
-    if game_id == 19:
-        if current_bullet_list["entry"] == 0:
-            return bullets
-        current_bullet_list = read_zList(current_bullet_list["entry"])
+    bullet_list_head_addr = bullet_manager + zBulletManager_list
+    if game_id == 19: #may need logic group if multiple games have pointer as tick list head
+        bullet_list_head_addr = read_int(bullet_list_head_addr)
 
-    while current_bullet_list["next"]:
-        current_bullet_list = read_zList(current_bullet_list["next"])
-        zBullet = current_bullet_list["entry"]
-
+    for zBullet in extract_list_entries(bullet_list_head_addr):
         bullet_type = read_int(zBullet + zBullet_type, 2)
         bullet_color = read_int(zBullet + zBullet_color, 2)
         bullet_hitbox_rad = read_float(zBullet + zBullet_hitbox_radius)
@@ -218,26 +231,20 @@ def extract_enemy_drops(drops_addr):
 
 def extract_enemies(enemy_manager):
     enemies = []
-    current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
-    ecl_sub_names, ecl_sub_starts = ecl_sub_arrs[enemy_manager]
+    special_logic_enemy = None #enemy that contains special state info, like kyouko echo, okina season disable...
+    last_valid_enm_boss_timer = None
 
-    while current_enemy_list["next"]:
-        try:
-            current_enemy_list = read_zList(current_enemy_list["next"])
-            zEnemy = current_enemy_list["entry"]
+    for zEnemy in extract_list_entries(read_int(enemy_manager + zEnemyManager_list), tail=(game_id == 19)):
+        try: # Filter deallocated enemies (only reliably see this w/ Miko sp4)
+            zEnemyFlags = (read_int(zEnemy + zEnemy_flags + 0x4) << 32) | read_int(zEnemy + zEnemy_flags)
         except RuntimeError:
-            #if exact mode is off & multiple enemies are deallocated together during extraction, there's no clean way to know to stop iterating the list other than this
-            break
+            continue
 
-        zEnemyFlags = (read_int(zEnemy + zEnemy_flags + 0x4) << 32) | read_int(zEnemy + zEnemy_flags)
 
-        if enemy_manager != zEnemyManager: #udoalg p2
-            zEnemyAnmVM = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id), zAnmManager_list_p2)
-        else:
-            zEnemyAnmVM = find_anm_vm_by_id(read_int(zEnemy + zEnemy_anm_vm_id))
-
-        # Filter invisible enemies
-        if not zEnemyAnmVM:
+        # Filter invisible enemies (not bosses, they can sometimes be missed when switching ANMs)
+        is_boss = zEnemyFlags & zEnemyFlags_is_boss != 0
+        anm_vm_id = read_int(zEnemy + zEnemy_anm_vm_id)
+        if not anm_vm_id and not is_boss:
             continue
 
         enemy = {
@@ -253,15 +260,15 @@ def extract_enemies(enemy_manager):
             'intangible':       zEnemyFlags & zEnemyFlags_intangible != 0,
             'is_grazeable':     zEnemyFlags & zEnemyFlags_is_grazeable != 0,
             'is_rectangle':     zEnemyFlags & zEnemyFlags_is_rectangle != 0,
-            'is_boss':          zEnemyFlags & zEnemyFlags_is_boss != 0,
+            'is_boss':          is_boss,
             'subboss_id':       read_int(zEnemy + zEnemy_subboss_id, signed=True),
             'health_threshold': None, #only checked for boss & boss-related enemies
             'time_threshold':   None, #only checked for boss & boss-related enemies
-            'rotation':         read_float(zEnemy + zEnemy_rotation) if game_id != 13 else read_float(zEnemyAnmVM + zAnmVm_rotation_z),
-            'pivot_angle':      read_float(zEnemyAnmVM + zAnmVm_rotation_z) if game_id in uses_pivot_angle else 0,
+            'rotation':         0, #only checked for rectangular enemies
+            'pivot_angle':      0, #only checked for rectangular enemies
             'anm_page':         read_int(zEnemy + zEnemy_anm_page),
             'anm_id':           read_int(zEnemy + zEnemy_anm_id),
-            'ecl_sub_name':     get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref)),
+            'ecl_sub_name':     get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref), ecl_sub_arrs[enemy_manager]),
             'ecl_sub_timer':    read_int(zEnemy + zEnemy_ecl_timer),
             'alive_timer':      read_int(zEnemy + zEnemy_alive_timer),
             'health':           read_int(zEnemy + zEnemy_hp),
@@ -271,9 +278,34 @@ def extract_enemies(enemy_manager):
             'iframes':          read_int(zEnemy + zEnemy_iframes),
         }
 
-        # Checking thresholds for boss & boss-related enemies
-        if enemy['is_boss'] or enemy['anm_page'] == 0 or enemy['anm_page'] > 2:
+        # Checking thresholds (+special logic) for boss & boss-related enemies
+        if is_boss or enemy['anm_page'] == 0 or enemy['anm_page'] > 2:
             enemy['health_threshold'], enemy['time_threshold'] = extract_enemy_thresholds(zEnemy + zEnemy_interrupts_arr)
+
+            # Any enemy with a special func should be returned (so far, no case where there's
+            # more than one enemy with a special func we care about at the same time)
+            special_func = read_int(zEnemy + zEnemy_special_func)
+            if special_func:
+                special_logic_enemy = (special_func, zEnemy)
+
+            # Boss timer GUI updates off *last* boss enemy with valid time threshold
+            if is_boss and enemy['time_threshold']:
+                #note: + 1 accounts for extra frame from time > threshold comparison (instead of >=)
+                last_valid_enm_boss_timer = (enemy['time_threshold'][0] - enemy['ecl_sub_timer'] + 1)/60
+
+        # Checking rotation for rectangular enemies
+        if enemy['is_rectangle']:
+            if game_id in uses_pivot_angle or not zEnemy_rotation:
+                anm_vm = find_anm_vm_by_id(anm_vm_id)
+
+            if game_id in uses_pivot_angle:
+                enemy['pivot_angle'] = read_float(anm_vm + zAnmVm_rotation_z)
+
+            if not zEnemy_rotation:
+                #so far only seen TD where enemy rotation exists but is only stored in AnmVM
+                enemy['rotation'] = read_float(anm_vm + zAnmVm_rotation_z)
+            else:
+                enemy['rotation'] = read_float(zEnemy + zEnemy_rotation)
 
         # Game-specific extensions
         if game_id in has_enemy_score_reward:
@@ -334,34 +366,18 @@ def extract_enemies(enemy_manager):
         else:
             enemies.append(Enemy(**enemy))
 
-    return enemies
-
-#used to get special state info contained by the boss, like kyouko echo, okina season disable...
-def find_special_enemy_addr(special_func, enemy_manager):
-    current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
-
-    while current_enemy_list["next"]:
-        current_enemy_list = read_zList(current_enemy_list["next"])
-
-        zEnemy = current_enemy_list["entry"]
-        if read_int(zEnemy + zEnemy_special_func) == special_func:
-            return zEnemy
-
-#used to get the (uncapped) boss timer from extracted enemies
-def get_boss_timer(enemies):
-    #boss timer GUI updates off last boss enemy with valid time threshold
-    for enemy in reversed(enemies):
-        if enemy.time_threshold and enemy.is_boss:
-
-            #note: + 1 accounts for extra frame from time > threshold comparison (instead of >=)
-            return (enemy.time_threshold[0] + 1 - enemy.ecl_sub_timer)/60
+    return enemies, last_valid_enm_boss_timer, special_logic_enemy
 
 def extract_items(item_manager):
     items = []
-    item_array_start = item_manager + zItemManager_array
-    item_array_end   = item_array_start + zItemManager_array_len * zItem_len
+    active_item_count = read_int(item_manager + zItemManager_item_cnt)
+    item_array_start  = item_manager + zItemManager_array
+    item_array_end    = item_array_start + zItemManager_array_len * zItem_len
 
     for item in range(item_array_start, item_array_end, zItem_len):
+        if len(items) >= active_item_count:
+            break
+
         item_state = read_int(item + zItem_state)
         if item_state == 0:
             continue
@@ -406,11 +422,7 @@ def extract_spirit_items():
 def extract_animal_tokens():
     animal_tokens = []
 
-    current_token_list = {"entry": 0, "next": read_int(zTokenManager + zTokenManager_list)}
-
-    while current_token_list["next"]:
-        current_token_list = read_zList(current_token_list["next"])
-        zToken = current_token_list["entry"]
+    for zToken in extract_list_entries(read_int(zTokenManager + zTokenManager_list)):
         token_flags = read_int(zToken + zToken_flags)
 
         animal_tokens.append(AnimalToken(
@@ -589,15 +601,11 @@ def extract_player_option_positions(player):
 
     for player_option in range(player_option_array_start, player_option_array_end, zPlayerOption_len):
         if read_int(player_option + zPlayerOption_active) != 0:
-            option_vm = None
 
-            if player != zPlayer:
-                option_vm = find_anm_vm_by_id(read_int(player_option + zPlayerOption_anm_id), zAnmManager_list_p2)
-            else:
-                option_vm = find_anm_vm_by_id(read_int(player_option + zPlayerOption_anm_id))
-
-            if option_vm:
-                player_option_positions.append((read_float(option_vm + zAnmVm_entity_pos), read_float(option_vm + zAnmVm_entity_pos + 0x4)))
+            player_option_positions.append((
+                read_int(player_option + zPlayerOption_pos, signed=True) / 128,
+                read_int(player_option + zPlayerOption_pos + 0x4, signed=True) / 128,
+            ))
 
     return player_option_positions
 
@@ -676,6 +684,13 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         game_constants.deathbomb_window_frames = read_int(zPlayer + zPlayer_deathbomb_window)
         game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
 
+    enemies = []
+    boss_timer = None
+    special_logic_enemy = None
+
+    if requires_enemies:
+        enemies, boss_timer, special_logic_enemy = extract_enemies(zEnemyManager)
+
     state_base = {
         'stage_frame':        current_stage_frame,
         'global_frame':       read_int(global_timer),
@@ -693,8 +708,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'rng':                read_int(replay_rng, rel=True),
         'continues':          read_int(continues, rel=True),
         'stage_chapter':      read_int(stage_chapter, rel=True),
-        'boss_timer_shown':   None, #need to extract enemies
-        'boss_timer_real':    None, #need to extract enemies
+        'boss_timer_shown':   min(99.99, round_down(boss_timer, 2)) if boss_timer else None,
+        'boss_timer_real':    boss_timer,
         'game_speed':         read_float(game_speed, rel=True),
         'fps':                read_float(zFpsCounter + zFpsCounter_fps),
         'player_position':    (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
@@ -706,7 +721,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'player_deathbomb_f': max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
         'bomb_state':         read_int(zBomb + zBomb_state),
         'bullets':            extract_bullets(zBulletManager) if requires_bullets else [],
-        'enemies':            extract_enemies(zEnemyManager) if requires_enemies else [],
+        'enemies':            enemies,
         'items':              extract_items(zItemManager) if requires_items else [],
         'lasers':             extract_lasers(zLaserManager) if requires_lasers else [],
         'screen':             get_rgb_screenshot() if requires_screenshots else None,
@@ -715,42 +730,33 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'pk':                 extraction_status,
     }
 
-    boss_timer = get_boss_timer(state_base['enemies'])
-    if boss_timer:
-        state_base['boss_timer_real'] = boss_timer
-        state_base['boss_timer_shown'] = min(99.99, round_down(boss_timer, 2))
 
     if game_id == 13:
-        kyouko = None
-        echo_func = 0x0
-        for kyouko_echo_func in (square_echo_func, inv_square_echo_func, circle_echo_func):
-            kyouko = find_special_enemy_addr(kyouko_echo_func)
-            if kyouko:
-                echo_func = kyouko_echo_func
-                break
-
         kyouko_echo = None
-        if kyouko:
-            if echo_func == square_echo_func:
+
+        if special_logic_enemy:
+            zSpecialEnemy = special_logic_enemy[1]
+
+            if special_logic_enemy[0] == square_echo_func:
                 kyouko_echo = RectangleEcho(
-                    left_x   = read_float(kyouko + zEnemy_pos)       + read_float(kyouko + zEnemy_f0_echo_x1),
-                    right_x  = read_float(kyouko + zEnemy_pos)       + read_float(kyouko + zEnemy_f1_echo_x2),
-                    top_y    = read_float(kyouko + zEnemy_pos + 0x4) + read_float(kyouko + zEnemy_f2_echo_y1),
-                    bottom_y = read_float(kyouko + zEnemy_pos + 0x4) + read_float(kyouko + zEnemy_f3_echo_y2),
+                    left_x   = read_float(zSpecialEnemy + zEnemy_pos)       + read_float(zSpecialEnemy + zEnemy_f0_echo_x1),
+                    right_x  = read_float(zSpecialEnemy + zEnemy_pos)       + read_float(zSpecialEnemy + zEnemy_f1_echo_x2),
+                    top_y    = read_float(zSpecialEnemy + zEnemy_pos + 0x4) + read_float(zSpecialEnemy + zEnemy_f2_echo_y1),
+                    bottom_y = read_float(zSpecialEnemy + zEnemy_pos + 0x4) + read_float(zSpecialEnemy + zEnemy_f3_echo_y2),
                 )
 
-            elif echo_func == inv_square_echo_func:
+            elif special_logic_enemy[0] == inv_square_echo_func:
                 kyouko_echo = RectangleEcho(
-                    left_x   = read_float(kyouko + zEnemy_f0_echo_x1),
-                    right_x  = read_float(kyouko + zEnemy_f1_echo_x2),
-                    top_y    = read_float(kyouko + zEnemy_f2_echo_y1),
-                    bottom_y = read_float(kyouko + zEnemy_f3_echo_y2),
+                    left_x   = read_float(zSpecialEnemy + zEnemy_f0_echo_x1),
+                    right_x  = read_float(zSpecialEnemy + zEnemy_f1_echo_x2),
+                    top_y    = read_float(zSpecialEnemy + zEnemy_f2_echo_y1),
+                    bottom_y = read_float(zSpecialEnemy + zEnemy_f3_echo_y2),
                 )
 
-            elif echo_func == circle_echo_func:
+            elif special_logic_enemy[0] == circle_echo_func:
                 kyouko_echo = CircleEcho(
-                    position = (read_float(kyouko + zEnemy_f1_echo_x2), read_float(kyouko + zEnemy_f2_echo_y1)),
-                    radius   = read_float(kyouko + zEnemy_f0_echo_x1),
+                    position = (read_float(zSpecialEnemy + zEnemy_f1_echo_x2), read_float(zSpecialEnemy + zEnemy_f2_echo_y1)),
+                    radius   = read_float(zSpecialEnemy + zEnemy_f0_echo_x1),
                 )
 
         return GameStateTD(
@@ -763,7 +769,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             spirit_items            = extract_spirit_items() if requires_items else [],
             kyouko_echo             = kyouko_echo,
             youmu_charge_timer      = read_int(zPlayer + zPlayer_youmu_charge_timer, signed=True),
-            miko_final_logic_active = bool(find_special_enemy_addr(miko_final_func))
+            miko_final_logic_active = special_logic_enemy and special_logic_enemy[0] == miko_final_func,
         )
 
     elif game_id == 14:
@@ -771,8 +777,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             **state_base,
             bonus_count  = read_int(bonus_count, rel=True),
             player_scale = read_float(zPlayer + zPlayer_scale),
-            seija_flip   = ((-read_float(ddcSeijaAnm + seija_flip_x) + 1)/2, (-read_float(ddcSeijaAnm + seija_flip_y) + 1)/2),
-            sukuna_penult_logic_active = bool(find_special_enemy_addr(sukuna_penult_func)),
+            seija_flip   = ((-read_float(zSeijaAnm + seija_flip_x) + 1)/2, (-read_float(zSeijaAnm + seija_flip_y) + 1)/2),
+            sukuna_penult_logic_active = special_logic_enemy and special_logic_enemy[0] == sukuna_penult_func,
         )
 
     elif game_id == 15:
@@ -787,7 +793,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             in_pointdevice                 = read_int(modeflags, rel=True) & 2**8 != 0,
             pointdevice_resets_total       = read_int(pointdevice_resets_total, rel=True),
             pointdevice_resets_chapter     = read_int(pointdevice_resets_chapter, rel=True),
-            graze_inferno_logic_active     = bool(find_special_enemy_addr(graze_inferno_func))
+            graze_inferno_logic_active     = special_logic_enemy and special_logic_enemy[0] == graze_inferno_func,
         )
 
     elif game_id == 16:
@@ -802,8 +808,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             next_level_season_power = read_int(season_power_thresholds + player_season_level * 0x4, rel=True),
             season_delay_post_use = -season_bomb_timer if season_bomb_timer < 0 else 0,
             release_active = read_int(zSeasonBomb + zBomb_state),
-            season_disabled = bool(find_special_enemy_addr(season_disable_func)),
-            snowman_logic_active = bool(find_special_enemy_addr(snowman_func)),
+            season_disabled = special_logic_enemy and special_logic_enemy[0] == season_disable_func,
+            snowman_logic_active = special_logic_enemy and special_logic_enemy[0] == snowman_func,
         )
 
     elif game_id == 17:
@@ -853,12 +859,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         centipede_multiplier = None
         active_cards = []
 
-        current_active_list = read_zList(zAbilityManager + zAbilityManager_list)
-
-        while current_active_list["next"]:
-            current_active_list = read_zList(current_active_list["next"])
-
-            zCard                  = current_active_list["entry"]
+        for zCard in extract_list_entries(read_int(zAbilityManager + zAbilityManager_list)):
             card_type              = read_int(zCard + zCard_type)
             card_charge_max        = read_int(zCard + zCard_charge_max) #the first 20% of the cooldown time is always skipped
             card_charge            = card_charge_max - read_int(zCard + zCard_charge) #game counts down rather than up, but up is more intuitive
@@ -892,7 +893,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             lily_counter         = lily_counter,
             centipede_multiplier = centipede_multiplier,
             active_cards         = active_cards,
-            asylum_logic_active  = bool(find_special_enemy_addr(asylum_func)),
+            asylum_logic_active  = special_logic_enemy and special_logic_enemy[0] == asylum_func,
             sakuya_knives_angle  = -read_float(zPlayer + zPlayer_sakuya_knives_angle),
             sakuya_knives_spread = read_float(zPlayer + zPlayer_sakuya_knives_spread),
         )
@@ -909,6 +910,12 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 story_progress_meter = read_int(zStoryAi + zStoryAi_progress_meter)
 
         if requires_side2_pvp:
+            enemies = []
+            boss_timer = None
+
+            if requires_enemies:
+                enemies, boss_timer, _ = extract_enemies(zEnemyManagerP2)
+
             side2 = P2Side(
                 lives               = read_int(p2_lives, signed=True, rel=True),
                 lives_max           = read_int(p2_lives_max, rel=True),
@@ -916,8 +923,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 bomb_pieces         = read_int(p2_bomb_pieces, rel=True),
                 power               = read_int(p2_power, rel=True),
                 graze               = read_int(p2_graze, rel=True),
-                boss_timer_shown    = None, #need to extract enemies
-                boss_timer_real     = None, #need to extract enemies
+                boss_timer_shown    = min(99.99, round_down(boss_timer, 2)) if boss_timer else None,
+                boss_timer_real     = boss_timer,
                 spell_card          = extract_spell_card(zSpellCardP2),
                 input               = read_int(p2_input, rel=True),
                 player_position     = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
@@ -929,7 +936,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 player_deathbomb_f  = max(0, game_constants.deathbomb_window_frames - read_int(zPlayerP2 + zPlayer_db_timer)) if read_int(zPlayerP2 + zPlayer_state) == 4 else 0,
                 bomb_state          = read_int(zBombP2 + zBomb_state),
                 bullets             = extract_bullets(zBulletManagerP2) if requires_bullets else [],
-                enemies             = extract_enemies(zEnemyManagerP2) if requires_enemies else [],
+                enemies             = enemies,
                 items               = extract_items(zItemManagerP2) if requires_items else [],
                 lasers              = extract_lasers(zLaserManagerP2) if requires_lasers else [],
                 hitstun_status      = read_int(zPlayerP2 + zPlayer_hitstun_status),
@@ -938,20 +945,14 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 current_combo_hits  = read_int(zPlayerP2 + zPlayer_current_combo_hits),
                 current_combo_chain = read_int(zPlayerP2 + zPlayer_current_combo_chain),
                 enemy_pattern_count = read_int(zEnemyManagerP2 + zEnemyManager_pattern_count),
-                item_spawn_total    = read_int(zItemManagerP2 + zItemManager_spawn_total),
                 gauge_charging      = read_int(zGaugeManagerP2 + zGaugeManager_charging_bool) == 1,
                 gauge_charge        = read_int(zGaugeManagerP2 + zGaugeManager_gauge_charge),
                 gauge_fill          = read_int(zGaugeManagerP2 + zGaugeManager_gauge_fill),
                 ex_attack_level     = read_int(p2_ex_attack_level, rel=True),
                 boss_attack_level   = read_int(p2_boss_attack_level, rel=True),
                 pvp_wins            = read_int(p2_pvp_wins, rel=True),
-                env                 = p2_run_environment,
+                env                 = run_environment[1],
             )
-
-            boss_timer_p2 = get_boss_timer(side2.enemies)
-            if boss_timer_p2:
-                side2.boss_timer_real = boss_timer_p2
-                side2.boss_timer_shown = min(99.99, round_down(boss_timer_p2, 2))
 
         return GameStateUDoALG(
             **state_base,
@@ -962,7 +963,6 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             current_combo_hits   = read_int(zPlayer + zPlayer_current_combo_hits),
             current_combo_chain  = read_int(zPlayer + zPlayer_current_combo_chain),
             enemy_pattern_count  = read_int(zEnemyManager + zEnemyManager_pattern_count),
-            item_spawn_total     = read_int(zItemManager + zItemManager_spawn_total),
             gauge_charging       = read_int(zGaugeManager + zGaugeManager_charging_bool) == 1,
             gauge_charge         = read_int(zGaugeManager + zGaugeManager_gauge_charge),
             gauge_fill           = read_int(zGaugeManager + zGaugeManager_gauge_fill),
@@ -975,6 +975,8 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             story_progress_meter = story_progress_meter,
             side2                = side2,
         )
+
+    return GameState(**state_base)
 
 def print_game_state(gs: GameState):
     #======================================

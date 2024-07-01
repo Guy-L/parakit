@@ -158,6 +158,7 @@ class ItemOffsets:
     item_manager_pointer: int
     zItemManager_array: int
     zItemManager_array_len: int
+    zItemManager_item_cnt: int #cant use to speed up extr.; filters iframe items
     zItem_state: int
     zItem_type: int
     zItem_pos: int
@@ -495,6 +496,7 @@ offsets = {
             item_manager_pointer   = 0xc229c,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0xa58,
+            zItemManager_item_cnt  = 0x79dcf4,
             zItem_state = 0xba0,
             zItem_type  = 0xba4,
             zItem_pos   = 0xb5c,
@@ -754,6 +756,7 @@ offsets = {
             item_manager_pointer   = 0xdb660,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
+            zItemManager_item_cnt  = 0xddd874,
             zItem_state = 0xbf0,
             zItem_type  = 0xbf4,
             zItem_pos   = 0xbac,
@@ -996,6 +999,7 @@ offsets = {
             item_manager_pointer   = 0xe9a9c,
             zItemManager_array     = 0x0,
             zItemManager_array_len = 0x1258,
+            zItemManager_item_cnt  = 0x1cbbdd8,
             zItem_state = 0xc74,
             zItem_type  = 0xc78,
             zItem_pos   = 0xc30,
@@ -1239,6 +1243,7 @@ offsets = {
             item_manager_pointer   = 0xa6ddc,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
+            zItemManager_item_cnt  = 0x1c972dc,
             zItem_state = 0xc50,
             zItem_type  = 0xc54,
             zItem_pos   = 0xc08,
@@ -1492,6 +1497,7 @@ offsets = {
             item_manager_pointer   = 0xb76b8,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
+            zItemManager_item_cnt  = 0xe4b978,
             zItem_state = 0xc58,
             zItem_type  = 0xc5c,
             zItem_pos   = 0xc10,
@@ -1746,6 +1752,7 @@ offsets = {
             item_manager_pointer   = 0xcf2ec,
             zItemManager_array     = 0x14,
             zItemManager_array_len = 0x1258,
+            zItemManager_item_cnt  = 0xe6bb18,
             zItem_state = 0xc74,
             zItem_type  = 0xc78,
             zItem_pos   = 0xc2c,
@@ -1852,7 +1859,7 @@ offsets = {
             'card_nicknames': {41: "Gap", 42: "Mallet", 43: "Keystone", 44: "Moon", 45: "Miko", 46: "Fang", 47: "Sun", 48: "Lily", 49: "Drum", 50: "Sumireko", 52: "Bottle", 53: "Rice"},
             'zBulletManager_cancel_counter': 0x7a41d0,
             'ability_manager_pointer': 0xcf298,
-            'zAbilityManager_list': 0x18,
+            'zAbilityManager_list': 0x1c,
             'zAbilityManager_total_cards': 0x28,
             'zAbilityManager_total_actives': 0x2c,
             'zAbilityManager_total_equipmt': 0x30,
@@ -1953,7 +1960,7 @@ offsets = {
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0x1ae478,
             zEnemyManager_ecl_file = 0x4b48,
-            zEnemyManager_list     = 0x4b50,
+            zEnemyManager_list     = 0x4b5c,
             zEclFile_sub_count     = 0x8,
             zEclFile_subroutines   = 0x20c,
             zEnemy_ecl_ref         = 0x14,
@@ -1998,6 +2005,7 @@ offsets = {
             item_manager_pointer   = 0x1ae47c,
             zItemManager_array     = 0x18,
             zItemManager_array_len = 0x13c,
+            zItemManager_item_cnt  = 0xff8d4,
             zItem_state = 0xcc8,
             zItem_type  = 0xccc,
             zItem_pos   = 0xc80,
@@ -2113,7 +2121,6 @@ offsets = {
             'zBullet_can_gen_items_timer': 0x1004,
             'zBullet_can_gen_items': 0x1018,
             'zEnemyManager_pattern_count': 0x42ac,
-            'zItemManager_spawn_total': 0xff8d8,
             'zGaugeManager_charging_bool': 0x2c,
             'zGaugeManager_gauge_charge': 0x94,
             'zGaugeManager_gauge_fill': 0xa4,
@@ -2301,6 +2308,7 @@ offsets = {
 #            item_manager_pointer   = None,
 #            zItemManager_array     = None,
 #            zItemManager_array_len = None,
+#            zItemManager_item_cnt  = None,
 #            zItem_state = None,
 #            zItem_type  = None,
 #            zItem_pos   = None,

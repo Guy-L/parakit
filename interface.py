@@ -192,9 +192,6 @@ def read_float(offset, rel = False):
 def read_string(offset, length, rel = False):
     return _read_memory(offset, length, rel).decode('utf-8', 'ignore').split('\x00', 1)[0]
 
-def read_zList(offset):
-    return {"entry": read_int(offset), "next": read_int(offset + 0x4)}
-
 def get_color(sprite, color):
     if bullet_types[sprite][1] == 0:
         sprite_str = bullet_types[sprite][0]

@@ -325,7 +325,6 @@ class P2Side:
     current_combo_hits: int
     current_combo_chain: int
     enemy_pattern_count: int
-    item_spawn_total: int
     gauge_charging: bool
     gauge_charge: int
     gauge_fill: int
@@ -467,7 +466,6 @@ class GameStateUDoALG(GameState):
     current_combo_hits: int
     current_combo_chain: int
     enemy_pattern_count: int
-    item_spawn_total: int
     gauge_charging: bool
     gauge_charge: int
     gauge_fill: int
