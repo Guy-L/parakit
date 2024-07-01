@@ -72,6 +72,7 @@ def default():
 
 separator = bright("\n================================") + clear()
 bp = bright(color("•", 'yellow'))
+sub_bp = darker('└─') + bp
 
 def print_status(txt):
     print(blink("\n"+str(txt)+"\033[F\033[K"), end='')
@@ -79,7 +80,11 @@ def print_status(txt):
 _py_print = print
 _status = ''
 def _status_print(*args, **kwargs):
-    _py_print(*args, clear(), **kwargs)
+    clear_args = []
+    for arg in args:
+        clear_args.append(str(arg).replace('\n', '\033[K\n'))
+
+    _py_print(*clear_args, clear(), **kwargs)
     _py_print("\n"+_status+"\033[K\033[F\033[K", end='\r')
 
 def set_status(txt):

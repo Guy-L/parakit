@@ -63,7 +63,7 @@ class AnalysisMostBulletsFrame(Analysis):
 
     def done(self):
         if self.frame_with_most_bullets:
-            print(bright("Analysis results:"), f"frame with most bullets was stage frame #{self.frame_with_most_bullets.frame_stage} at {self.max_bullets} bullets.")
+            print(bright("Analysis results:"), f"frame with most bullets was stage frame #{self.frame_with_most_bullets.stage_frame} at {self.max_bullets} bullets.")
 
             if self.frame_with_most_bullets.screen is not None:
                 print("Saved screenshot of frame in most_bullets.png")
@@ -113,7 +113,7 @@ class AnalysisMostBulletsCircleFrame():
             print("No frame had bullets on screen.")
             return
 
-        print(f"Circle radius {self.circle_radius} with most bullet found @ stage frame {self.best_frame.frame_stage} {'('+str(self.best_frame.boss_timer_shown)+' on boss timer)' if self.best_frame.boss_timer_shown else ''}")
+        print(f"Circle radius {self.circle_radius} with most bullet found @ stage frame {self.best_frame.stage_frame} {'('+str(self.best_frame.boss_timer_shown)+' on boss timer)' if self.best_frame.boss_timer_shown else ''}")
         print(f"Circle encompasses {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]})")
         print("\nNote: The first optimal solution found was displayed - it may be\nunnecessarily biased towards the left/top but remains optimal.")
 
@@ -256,7 +256,7 @@ class AnalysisPlot(Analysis, ABC):
 
     def step(self, state: GameState):
         self.lastframe = state #if sequence, use last frame
-        if self.photo_mode and state.seq_frame_id % self.photo_mode_frequency == 0:
+        if self.photo_mode and state.pk.frame_counter % self.photo_mode_frequency == 0:
             self.done()
 
     @abstractmethod
@@ -321,7 +321,7 @@ class AnalysisPlot(Analysis, ABC):
                 axarr[0].scatter(self.lastframe.player_position[0], self.lastframe.player_position[1], color='maroon', s=25*player_size, marker='X')
 
                 if self.photo_mode:
-                    plt.savefig(self.photo_mode_folder + '/' + str(self.lastframe.seq_frame_id) + '.png')
+                    plt.savefig(self.photo_mode_folder + '/' + str(self.lastframe.pk.frame_counter) + '.png')
 
                 else:
                     plt.show()
@@ -347,7 +347,7 @@ class AnalysisPlotBullets(AnalysisPlot):
                              head_width=4, head_length=8, color=(0,0,0,0.2))
 
                 if not bullet.is_active or (hasattr(bullet, 'show_delay') and bullet.show_delay):
-                    alphas.append(0.1)
+                    alphas.append(0.15)
                 elif hasattr(bullet, 'is_intangible') and bullet.is_intangible:
                     alphas.append(0.75)
                 else:
@@ -950,11 +950,10 @@ class AnalysisPatternTurbulence(AnalysisDynamic):
                 self.turbulence_vals.append(turbulence)
                 self.turbulence_avgs.append(sum(self.turbulence_vals)/len(self.turbulence_vals))
 
-        if self.turbulence_avgs:
-            self.turbulence_val_curve.setData(np.arange(len(self.turbulence_vals)), self.turbulence_vals)
-            self.turbulence_avg_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
-            self.turb_percent.setText(f"{100*self.turbulence_avgs[-1]:.2f}%")
-            self.turb_percent.setPos(0.5, 1)
+        self.turbulence_val_curve.setData(np.arange(len(self.turbulence_vals)), self.turbulence_vals)
+        self.turbulence_avg_curve.setData(np.arange(len(self.turbulence_avgs)), self.turbulence_avgs)
+        self.turb_percent.setText(f"{100*self.turbulence_avgs[-1]:.2f}%" if self.turbulence_avgs else '')
+        self.turb_percent.setPos(0.5, 1)
 
 
 # =======================================================================
@@ -1252,7 +1251,7 @@ class AnalysisBestMallet(AnalysisPlot, AnalysisMostBulletsCircleFrame):
 
         ax.add_patch(Circle((self.best_position[0], self.best_position[1]), self.circle_radius, color='red', fill=False))
 
-        print(f"Best mallet @ stage frame {self.best_frame.frame_stage} {'('+str(self.best_frame.boss_timer_shown)+' on boss timer)' if self.best_frame.boss_timer_shown else ''}")
+        print(f"Best mallet @ stage frame {self.best_frame.stage_frame} {'('+str(self.best_frame.boss_timer_shown)+' on boss timer)' if self.best_frame.boss_timer_shown else ''}")
         print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]}); required player position ({self.best_position[0]}, {self.best_position[1] - self.mallet_player_distance})")
         print(f"Vanilla expected gold gain ~= {int(self.best_bullet_count*0.365692)}") #thanks to Dai for ZUN-rng distribution analysis
         print(f"Static mallet gold gain = {int(self.best_bullet_count*(11/30))}")

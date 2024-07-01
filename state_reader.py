@@ -20,7 +20,62 @@ analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, r
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 
-def extract_bullets(bullet_manager = zBulletManager):
+game_constants = GameConstants(
+    deathbomb_window_frames = deathbomb_window_frames,
+    poc_line_height         = 128,
+    life_piece_req          = life_piece_req,
+    bomb_piece_req          = bomb_piece_req,
+    world_width             = world_width,
+    world_height            = world_height,
+    game_id                 = game_id,
+)
+
+#loads major objects like player & managers + stage ECL subs
+#returns False if any pointer read was a nullptr
+def load_extraction_context():
+    static_pointers = [(name, value) for name, value in globals().items() if '_pointer' in name]
+    for name, value in static_pointers:
+        if '_pointer' in name:
+            obj_name = 'z'
+            parts = name.split('_')[:-1]
+
+            if parts[0] == 'p2': #move p2 to the end
+                parts.append(parts.pop(0))
+
+            for part in parts:
+                obj_name += part.capitalize()
+
+            globals()[obj_name] = read_int(value, rel=True)
+            if not globals()[obj_name]:
+                return False
+
+    ecl_sub_arrs = {} #extract ECL sub name & offsets from ECL file
+    if 'zEnemyManagerP2' in globals():
+        enemy_managers = (zEnemyManager, zEnemyManagerP2)
+    else:
+        enemy_managers = (zEnemyManager,)
+
+    for enemy_manager in enemy_managers:
+        ecl_sub_names = []
+        ecl_sub_starts = []
+        file_manager = read_int(enemy_manager + zEnemyManager_ecl_file)
+        subroutine_count = read_int(file_manager + zEclFile_sub_count)
+        subroutines = read_int(file_manager + zEclFile_subroutines)
+
+        for i in range(subroutine_count):
+            ecl_sub_names.append(read_string(read_int(subroutines + 0x8 * i), 64))
+            ecl_sub_starts.append(read_int(subroutines + 0x4 + 0x8 * i))
+
+        ecl_sub_arrs[enemy_manager] = (ecl_sub_names, ecl_sub_starts)
+
+    globals()['ecl_sub_arrs'] = ecl_sub_arrs
+    globals()['section_sub_prev'] = ''
+    if game_id == 19:
+        globals()['section_sub_prev_p2'] = ''
+
+    return True
+
+def extract_bullets(bullet_manager):
     bullets = []
     current_bullet_list = read_zList(bullet_manager + zBulletManager_list)
 
@@ -48,8 +103,8 @@ def extract_bullets(bullet_manager = zBulletManager):
 
         bullet = {
             'id':            zBullet,
-            'position':     (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
-            'velocity':     (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
+            'position':      (read_float(zBullet + zBullet_pos), read_float(zBullet + zBullet_pos + 0x4)),
+            'velocity':      (read_float(zBullet + zBullet_velocity), read_float(zBullet + zBullet_velocity + 0x4)),
             'speed':         read_float(zBullet + zBullet_speed),
             'angle':         read_float(zBullet + zBullet_angle),
             'scale':         read_float(zBullet + zBullet_scale) if zBullet_scale else 1,
@@ -93,7 +148,9 @@ def extract_enemy_movement_limit(movement_bounds_addr, flags):
             height = read_float(movement_bounds_addr + 0xc),
         )
 
-def get_sub_name_from_ref(ecl_ref):
+def get_sub_name_from_ref(ecl_ref, ecl_sub_arrs):
+    ecl_sub_names, ecl_sub_starts = ecl_sub_arrs
+
     if game_id >= switch_to_serializable_ecl:
         enemy_sub_id = ecl_ref #may be -1 for spawning enemies
 
@@ -110,6 +167,7 @@ def get_sub_name_from_ref(ecl_ref):
 
         if enemy_sub_id:
             return ecl_sub_names[enemy_sub_id]
+    return ''
 
 def extract_sub_name(sub_name_addr):
     if game_id < switch_to_serializable_ecl: #pointer in older games
@@ -158,7 +216,7 @@ def extract_enemy_drops(drops_addr):
 
     return drops
 
-def extract_enemies(enemy_manager = zEnemyManager):
+def extract_enemies(enemy_manager):
     enemies = []
     current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
     ecl_sub_names, ecl_sub_starts = ecl_sub_arrs[enemy_manager]
@@ -279,7 +337,7 @@ def extract_enemies(enemy_manager = zEnemyManager):
     return enemies
 
 #used to get special state info contained by the boss, like kyouko echo, okina season disable...
-def find_special_enemy_addr(special_func, enemy_manager = zEnemyManager):
+def find_special_enemy_addr(special_func, enemy_manager):
     current_enemy_list = {"entry": 0, "next": read_int(enemy_manager + zEnemyManager_list)}
 
     while current_enemy_list["next"]:
@@ -298,7 +356,7 @@ def get_boss_timer(enemies):
             #note: + 1 accounts for extra frame from time > threshold comparison (instead of >=)
             return (enemy.time_threshold[0] + 1 - enemy.ecl_sub_timer)/60
 
-def extract_items(item_manager = zItemManager):
+def extract_items(item_manager):
     items = []
     item_array_start = item_manager + zItemManager_array
     item_array_end   = item_array_start + zItemManager_array_len * zItem_len
@@ -369,7 +427,7 @@ def extract_animal_tokens():
 
     return animal_tokens
 
-def extract_lasers(laser_manager = zLaserManager):
+def extract_lasers(laser_manager):
     lasers = []
     current_laser_ptr = read_int(laser_manager + zLaserManager_list) #pointer to head laser 
 
@@ -499,11 +557,11 @@ def extract_curve_laser(laser_addr):
             node_speed = read_float(current_node_ptr + zLaserCurveNode_speed)
 
         curve_nodes.append(CurveNode(
-            id = current_node_ptr,
+            id       = current_node_ptr,
             position = (node_pos_x, node_pos_y),
             velocity = node_vel,
-            angle = node_angle,
-            speed = node_speed,
+            angle    = node_angle,
+            speed    = node_speed,
         ))
 
         current_node_ptr += zLaserCurveNode_size
@@ -524,7 +582,7 @@ def find_anm_vm_by_id(anm_id, list_offset=zAnmManager_list):
         if read_int(zAnmVm + zAnmVm_id) == anm_id:
             return zAnmVm
 
-def extract_player_option_positions(player = zPlayer):
+def extract_player_option_positions(player):
     player_option_positions = []
     player_option_array_start = player + zPlayer_option_array
     player_option_array_end   = player_option_array_start + zPlayer_option_array_len * zPlayerOption_len
@@ -543,7 +601,7 @@ def extract_player_option_positions(player = zPlayer):
 
     return player_option_positions
 
-def extract_player_shots(player = zPlayer):
+def extract_player_shots(player):
     player_shots = []
     player_shot_array_start = player + zPlayer_shots_array
     player_shot_array_end   = player_shot_array_start + zPlayer_shots_array_len * zPlayerShot_len
@@ -564,19 +622,54 @@ def extract_player_shots(player = zPlayer):
 
     return player_shots
 
-def extract_spellcard(spellcard = zSpellCard):
-    if read_int(spellcard + zSpellcard_indicator) == 0:
-        return None
+def extract_spell_card(spell_card):
+    if read_int(spell_card + zSpellCard_indicator) != 0:
+        spell_id = read_int(spell_card + zSpellCard_id)
+        spell_capture_bonus = read_int(spell_card + zSpellCard_bonus, signed=True)
 
-    spell_id = read_int(spellcard + zSpellcard_id)
-    spell_capture_bonus = read_int(spellcard + zSpellcard_bonus, signed=True)
+        return SpellCard(
+            spell_id = spell_id,
+            capture_bonus = spell_capture_bonus,
+        )
 
-    return Spellcard(
-        spell_id = spell_id,
-        capture_bonus = spell_capture_bonus,
-    )
+#only executed on stage load
+def extract_run_environment():
+    env_base = {
+        'difficulty': read_int(difficulty, rel=True),
+        'character':  read_int(character, rel=True),
+        'subshot':    read_int(subshot, rel=True),
+        'stage':      read_int(stage, rel=True),
+    }
 
-def extract_game_state(frame_id = 0, real_time = 0):
+    if marisa_lower_poc_line and characters[env_base['character']] == 'Marisa':
+        game_constants.poc_line_height = 148
+    else:
+        game_constants.poc_line_height = 128
+
+    if game_id == 19:
+        return (RunEnvironmentUDoALG( #player 1
+            **env_base,
+            card_count              = read_int(zAbilityManager + zAbilityManager_total_cards),
+            charge_attack_threshold = read_int(charge_attack_threshold, rel=True),
+            charge_skill_threshold  = read_int(skill_attack_threshold, rel=True),
+            ex_attack_threshold     = read_int(ex_attack_threshold, rel=True),
+            boss_attack_threshold   = read_int(boss_attack_threshold, rel=True),
+
+        ), RunEnvironmentUDoALG( #player 2
+            difficulty = env_base['difficulty'],
+            character  = read_int(p2_shottype, rel=True),
+            subshot    = env_base['subshot'],
+            stage      = env_base['stage'],
+            card_count              = read_int(zAbilityManagerP2 + zAbilityManager_total_cards),
+            charge_attack_threshold = read_int(p2_charge_attack_threshold, rel=True),
+            charge_skill_threshold  = read_int(p2_skill_attack_threshold, rel=True),
+            ex_attack_threshold     = read_int(p2_ex_attack_threshold, rel=True),
+            boss_attack_threshold   = read_int(p2_boss_attack_threshold, rel=True),
+        ) if requires_side2_pvp else None)
+
+    return (RunEnvironment(**env_base),)
+
+def extract_game_state(extraction_status, run_environment, stage_frame):
     if game_id == 13:
         game_constants.life_piece_req = life_piece_reqs[read_int(extend_count, rel=True)]
     elif game_id == 18:
@@ -584,16 +677,8 @@ def extract_game_state(frame_id = 0, real_time = 0):
         game_constants.poc_line_height = read_int(zPlayer + zPlayer_poc_line_height)
 
     state_base = {
-        'frame_stage':        read_int(stage_timer),
-        'frame_global':       read_int(global_timer),
-        'stage_chapter':      read_int(stage_chapter, rel=True),
-        'seq_frame_id':       frame_id,
-        'seq_real_time':      real_time,
-        'boss_timer_shown':   None, #need to extract enemies
-        'boss_timer_real':    None, #need to extract enemies
-        'pause_state':        read_int(pause_state, rel=True),
-        'game_speed':         read_float(game_speed, rel=True),
-        'fps':                read_float(zFpsCounter + fps),
+        'stage_frame':        current_stage_frame,
+        'global_frame':       read_int(global_timer),
         'score':              read_int(score, rel=True) * 10,
         'lives':              read_int(lives, rel=True, signed=True),
         'life_pieces':        read_int(life_pieces, rel=True) if life_pieces else 0,
@@ -602,11 +687,16 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'power':              read_int(power, rel=True),
         'piv':                int(read_int(piv, rel=True) / 100),
         'graze':              read_int(graze, rel=True),
-        'spellcard':          extract_spellcard(),
+        'spell_card':         extract_spell_card(zSpellCard),
         'rank':               read_int(rank, rel=True),
         'input':              read_int(input, rel=True),
         'rng':                read_int(replay_rng, rel=True),
         'continues':          read_int(continues, rel=True),
+        'stage_chapter':      read_int(stage_chapter, rel=True),
+        'boss_timer_shown':   None, #need to extract enemies
+        'boss_timer_real':    None, #need to extract enemies
+        'game_speed':         read_float(game_speed, rel=True),
+        'fps':                read_float(zFpsCounter + zFpsCounter_fps),
         'player_position':    (read_float(zPlayer + zPlayer_pos), read_float(zPlayer + zPlayer_pos + 0x4)),
         'player_hitbox_rad':  read_float(zPlayer + zPlayer_hit_rad),
         'player_iframes':     read_int(zPlayer + zPlayer_iframes),
@@ -615,13 +705,14 @@ def extract_game_state(frame_id = 0, real_time = 0):
         'player_shots':       extract_player_shots() if requires_player_shots else [],
         'player_deathbomb_f': max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer)) if read_int(zPlayer + zPlayer_state) == 4 else 0,
         'bomb_state':         read_int(zBomb + zBomb_state),
-        'bullets':            extract_bullets() if requires_bullets else [],
-        'enemies':            extract_enemies() if requires_enemies else [],
-        'items':              extract_items() if requires_items else [],
-        'lasers':             extract_lasers() if requires_lasers else [],
+        'bullets':            extract_bullets(zBulletManager) if requires_bullets else [],
+        'enemies':            extract_enemies(zEnemyManager) if requires_enemies else [],
+        'items':              extract_items(zItemManager) if requires_items else [],
+        'lasers':             extract_lasers(zLaserManager) if requires_lasers else [],
         'screen':             get_rgb_screenshot() if requires_screenshots else None,
         'constants':          game_constants,
-        'env':                run_environment,
+        'env':                run_environment[0],
+        'pk':                 extraction_status,
     }
 
     boss_timer = get_boss_timer(state_base['enemies'])
@@ -701,7 +792,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
 
     elif game_id == 16:
         player_season_level = read_int(zPlayer + zPlayer_season_level)
-        season_bomb_timer = read_int(zSeasomBomb + zBomb_timer, signed=True)
+        season_bomb_timer = read_int(zSeasonBomb + zBomb_timer, signed=True)
 
         return GameStateHSiFS(
             **state_base,
@@ -710,7 +801,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
             season_power = read_int(season_power, rel=True),
             next_level_season_power = read_int(season_power_thresholds + player_season_level * 0x4, rel=True),
             season_delay_post_use = -season_bomb_timer if season_bomb_timer < 0 else 0,
-            release_active = read_int(zSeasomBomb + zBomb_state),
+            release_active = read_int(zSeasonBomb + zBomb_state),
             season_disabled = bool(find_special_enemy_addr(season_disable_func)),
             snowman_logic_active = bool(find_special_enemy_addr(snowman_func)),
         )
@@ -812,14 +903,14 @@ def extract_game_state(frame_id = 0, real_time = 0):
         #technically side2, but important singleplayer info so stored at the root of the state
         story_fight_phase, story_progress_meter = None, None
         if zAiP2:
-            zStoryAi = read_int(zAiP2 + zAi_story_mode_pointer)
+            zStoryAi = read_int(zAiP2 + zAi_story_mode_ptr)
             if zStoryAi:
                 story_fight_phase = read_int(zStoryAi + zStoryAi_fight_phase)
                 story_progress_meter = read_int(zStoryAi + zStoryAi_progress_meter)
 
         if requires_side2_pvp:
             side2 = P2Side(
-                lives               = read_int(p2_lives, rel=True),
+                lives               = read_int(p2_lives, signed=True, rel=True),
                 lives_max           = read_int(p2_lives_max, rel=True),
                 bombs               = read_int(p2_bombs, rel=True),
                 bomb_pieces         = read_int(p2_bomb_pieces, rel=True),
@@ -827,7 +918,7 @@ def extract_game_state(frame_id = 0, real_time = 0):
                 graze               = read_int(p2_graze, rel=True),
                 boss_timer_shown    = None, #need to extract enemies
                 boss_timer_real     = None, #need to extract enemies
-                spellcard           = extract_spellcard(zSpellCardP2),
+                spell_card          = extract_spell_card(zSpellCardP2),
                 input               = read_int(p2_input, rel=True),
                 player_position     = (read_float(zPlayerP2 + zPlayer_pos), read_float(zPlayerP2 + zPlayer_pos + 0x4)),
                 player_hitbox_rad   = read_float(zPlayerP2 + zPlayer_hit_rad),
@@ -897,7 +988,7 @@ def print_game_state(gs: GameState):
     else:
         stage = f'Stage {gs.env.stage}'
 
-    print(bright(f"[Global Frame #{gs.frame_global} | Stage Frame #{gs.frame_stage} | {shottype} {difficulties[gs.env.difficulty]} {stage}] Score:"), f"{gs.score:,}")
+    print(bright(f"[Global Frame #{gs.global_frame} | Stage Frame #{gs.stage_frame} | {shottype} {difficulties[gs.env.difficulty]} {stage}] Score:"), f"{gs.score:,}")
 
     # Player status
     print(bar, bright("Player status:" ), f"Player at ({round(gs.player_position[0], 2)}, {round(gs.player_position[1], 2)}); hitbox radius {gs.player_hitbox_rad}; {gs.player_iframes} iframes; {'un' if not gs.player_focused else ''}focused movement")
@@ -912,9 +1003,7 @@ def print_game_state(gs: GameState):
     print(basic_resources + f"; {gs.power/100:.2f} power; {gs.piv:,} PIV; {gs.graze:,} graze")
 
     # Useful internals
-    print(bar, bright("Game state:" ), f"{pause_states[gs.pause_state]} ({round_down(gs.fps, 1) + 0.1:.1f}fps)")
-    print(bar, bright("Input bitflag:" ), f"{gs.input:08b}")
-    print(bar, bright("RNG value:" ), f"{gs.rng}")
+    print(bar, bright("Input bitflag:"), f"{gs.input:08b},", bright("RNG value:"), f"{gs.rng},", bright("FPS:"), f"{round_down(gs.fps, 1) + 0.1:.1f}fps")
 
     if game_id in uses_rank:
         print(bar, bright("Rank value:" ), f"{gs.rank}")
@@ -926,8 +1015,8 @@ def print_game_state(gs: GameState):
     if gs.boss_timer_shown:
         print(bar, bright("Boss timer:" ), f"{gs.boss_timer_shown:.2f}", darker(f"({round(gs.boss_timer_real, 3)}s)") if round(gs.boss_timer_real, 3) != gs.boss_timer_shown else '')
 
-    if gs.spellcard:
-        print(bar, bright(f"Spell #{gs.spellcard.spell_id+1}; SCB:"), f"{gs.spellcard.capture_bonus:,}" if gs.spellcard.capture_bonus > 0 else 'Failed')
+    if gs.spell_card:
+        print(bar, bright(f"Spell #{gs.spell_card.spell_id+1}; SCB:"), f"{gs.spell_card.capture_bonus:,}" if gs.spell_card.capture_bonus > 0 else 'Failed')
 
     if gs.game_speed != 1:
         print(bar, bright("Game speed:" ), f"{gs.game_speed}x")
@@ -1029,6 +1118,9 @@ def print_game_state(gs: GameState):
             print(bar, f"HSiFS Season Gauge: Disabled by Okina final")
 
         else:
+            if gs.snowman_logic_active:
+                print(bar, f"HSiFS Snowman: Dark mentos will transform if player distance < 96")
+
             remaining_charge_desc = ""
             if gs.next_level_season_power - gs.season_power:
                 remaining_charge_desc = f" for level {gs.season_level+1}"
@@ -1399,7 +1491,7 @@ def print_game_state(gs: GameState):
 
             #note: boss drops are never properly set prior to the frame they're instructed to drop
             if singlext_settings['show_enemy_drops'] and enemy.drops and not enemy.is_boss:
-                description += "\n  " + bp + " Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
+                description += f"\n{sub_bp} Drops: " + ", ".join(f"{enemy.drops[drop]} {item_types[drop]}" for drop in enemy.drops)
                 if game_id == 13 and enemy.speedkill_cur_drop_amt:
                     description += f" (+ {enemy.speedkill_cur_drop_amt} Blue Spirit; will be {enemy.speedkill_cur_drop_amt-1} in {enemy.speedkill_time_left_for_amt}f)"
 
@@ -1419,14 +1511,14 @@ def print_game_state(gs: GameState):
                     max_cur_len = max(len(str(enemy.health))+3, len(str(enemy.ecl_sub_timer))+1)
 
                 if enemy.health_threshold:
-                    description += f"\n  {bp} Boss Health Threshold: Sub "
+                    description += f"\n{sub_bp} Boss Health Threshold: Sub "
                     description += tabulate(f"'{enemy.health_threshold[1]}'", max_sub_len + 2)
                     description += tabulate(f" @ {enemy.health_threshold[0]} HP", max_thresh_len + 3)
                     description += tabulate(f" (current: {enemy.health} HP", max_cur_len + 11)
                     description += f" → {(100*(enemy.health_max - enemy.health))//(enemy.health_max - enemy.health_threshold[0])}%)"
 
                 if enemy.time_threshold:
-                    description += f"\n  {bp} Boss Time Threshold:   Sub "
+                    description += f"\n{sub_bp} Boss Time Threshold:   Sub "
                     description += tabulate(f"'{enemy.time_threshold[1]}'", max_sub_len + 2)
                     description += tabulate(f" @ {enemy.time_threshold[0]}f", max_thresh_len + 3)
                     description += tabulate(f" (current: {enemy.ecl_sub_timer}f", max_cur_len + 11)
@@ -1486,9 +1578,10 @@ def print_game_state(gs: GameState):
                 break
 
 def on_exit():
-    if game_process.is_running():
+    if not lost_game_contact and game_process.is_running():
         game_process.resume()
 atexit.register(on_exit)
+lost_game_contact = False
 
 def parse_frame_count(expr):
     if not expr or expr[-1].lower() not in "fs":
@@ -1506,14 +1599,15 @@ def parse_frame_count(expr):
 print(separator.replace('\n',''))
 
 
-# Extraction parameters processing
+# 1. Extraction parameters processing
 # Get extraction params from settings.py
 printed_warning = False
 if seqext_settings['ingame_duration'].lower() in ['inf', 'infinite', 'endless', 'forever']:
     frame_duration = -1
 else:
     frame_duration = parse_frame_count(seqext_settings['ingame_duration'])
-#(analyzer & exact defined via import)
+analyzer_name = analyzer.strip() #from settings import
+#(exact defined via settings import)
 
 # Overwrite settings with supplied arguments
 if len(sys.argv) > 4:
@@ -1530,7 +1624,7 @@ for arg in sys.argv[1:]:
     elif parse_frame_count(arg.lower()):
         frame_duration = parse_frame_count(arg.lower())
     elif hasattr(analysis, arg):
-        analyzer = arg
+        analyzer_name = arg
     else:
         print(color("Warning:", 'orange'), f"Unrecognized argument '{bright(arg)}'.")
         printed_warning = True
@@ -1543,134 +1637,197 @@ if not frame_duration:
         printed_warning = True
     frame_duration = 1
 
-if not hasattr(analysis, analyzer):
-    print(color("Warning:", 'orange'), f"Unrecognized analyzer '{bright(analyzer)}'; defaulting to template.")
+if not hasattr(analysis, analyzer_name):
+    print(color("Warning:", 'orange'), f"Unrecognized analyzer '{bright(analyzer_name)}'; defaulting to template.")
     printed_warning = True
-    analyzer = 'AnalysisTemplate'
+    analyzer_name = 'AnalysisTemplate'
 
 if printed_warning:
-    print()
+    print(color("--------", 'orange'))
 
 
-# Single-State Extraction
-if frame_duration in [0, 1]:
-    analysis = getattr(analysis, analyzer)()
 
-    if requires_screenshots:
-        get_focus()
-
-    state = extract_game_state()
-    print_game_state(state)
-
-    try:
-        print(separator)
-        set_status(f"Running {bright(analyzer)}...")
-        status_start()
-        analysis.step(state)
-        analysis.done()
-
-    except KeyboardInterrupt:
-        print(f"{bright(analyzer)} interrupted by user.", clear())
-
-    except Exception as e:
-        status_stop()
-        print(color(f"{analyzer} error:", 'red'), str(e), darker(), clear())
-        traceback.print_exc()
-        print(default())
-
-    finally:
-        status_stop()
+def handle_extraction_error(e, cause):
+    status_stop()
+    print(color(cause + " error:", 'red'), str(e) + "; terminating now.", darker(), clear())
+    traceback.print_exc()
+    print(default(), end='')
 
 
-# Sequence Extraction
-else:
+
+
+
+
+
+
+# 2. Run extraction
+if frame_duration != 1:
     if frame_duration < 0:
-        print(f"Extracting until termination triggered by user or analyzer {bright(analyzer)}{' (exact mode)' if exact else ''}.")
+        print(bright("ParaKit:"), f"Extracting until termination triggered by user or analyzer {bright(analyzer_name)}{' (exact mode)' if exact else ''}.")
     else:
         print(bright(f"Extracting for {frame_duration} frames{' (exact mode)' if exact else ''}."))
 
     if seqext_settings['auto_unpause']:
         unpause_game()
-    elif seqext_settings['auto_focus']:
+    elif seqext_settings['auto_focus'] or requires_screenshots:
         get_focus()
 
-    analysis = getattr(analysis, analyzer)()
+status_start()
+set_status(f"Initializing {bright(analyzer_name)}...")
 
-    try:
-        start_time = time.perf_counter()
-        terminated = False
-        frame_counter = 0
+try:
+    analyzer = getattr(analysis, analyzer_name)()
+except KeyboardInterrupt:
+    status_stop()
+    print(f"{bright(analyzer_name)}.init interrupted by user.", clear())
+    exit()
+except Exception as e:
+    handle_extraction_error(e, f"{bright(analyzer_name)}.init")
+    exit()
 
-        status_start()
-        while frame_duration < 0 or frame_counter < frame_duration:
-            if terminated:
-                break
+try:
+    start_time = time.perf_counter()
+    work_time = 0
+    frame_counter = 0
+    sequence_counter = 0
+    last_stage_frame = 2**31 - 1
+    step_error = False
+    percent = ""
 
-            frame_timestamp = read_int(stage_timer)
-            percent = ""
-            if frame_duration > 0:
-                percent = bright(f"[{int(100*frame_counter/frame_duration)}%] ")
-            set_status(percent + f"Extracting from frame #{frame_counter+1} (in-stage: #{frame_timestamp})")
+    keyboard_queue = keyboard.start_recording()[0]
+    while frame_duration < 0 or frame_counter < frame_duration:
+        term_return = eval_termination_conditions(need_active)
 
-            if exact:
-                game_process.suspend()
+        if not term_return:
+            try:
+                zGameThread = read_int(game_thread_pointer, rel=True)
 
-            current_time = time.perf_counter()
-            state = extract_game_state(frame_counter, current_time - start_time)
-            analysis.step(state)
-            frame_counter += 1
+                # There are more appropriate places to put these reads, but
+                # sometimes zGameThread is read right before the game closes
+                # (so this lowers the chance of a PK crash when game is closed)
+                if zGameThread:
+                    current_stage_frame = read_int(zGameThread + zGameThread_stage_timer)
+                else:
+                    current_game_screen = read_int(game_screen, rel=True)
+            except RuntimeError:
+                term_return = "Game was closed"
 
-            if exact:
-                game_process.resume()
+        if term_return:
+            print(bright("ParaKit:"), f"{term_return}; terminating now.", clear())
+            break
 
-            #busy wait for new frame
-            pause_time = 0
-            while True: #(do...while, ensuring term conditions evaluated at least once)
-                current_pause_state = read_int(pause_state, rel=True)
-                term_return = eval_termination_conditions(current_pause_state, need_active)
+        if not zGameThread: #pause until game thread exists
+            if current_game_screen != 7:
+                set_status(percent + "(Open the game world to continue extraction)")
+            continue
 
-                if term_return:
-                    print(f"{term_return}; terminating now.", clear())
-                    terminated = True
-                    break
+        if current_stage_frame == last_stage_frame: #wait for new frame
+            if read_int(pause_state, rel=True) != 2:
+                set_status(percent + "(Unpause the game to continue extraction)")
+            continue
 
-                if read_int(stage_timer) != frame_timestamp:
-                    break
-                elif current_pause_state == 0:
-                    pause_time = time.perf_counter() - current_time
-                    set_status(percent + "(Unpause the game to continue extraction)")
-            start_time += pause_time
+        elif current_stage_frame < last_stage_frame: #game thread was (re)loaded
+            if read_int(transition_stage_ptr, rel=True):
+                set_status(percent + "(Stage transition...)")
+                continue  #major objects not loaded on frame 0
 
-        if not terminated:
-            print(f"{bright('[100%] ') if frame_duration > 0 else ''}Finished extraction in { round(time.perf_counter() - start_time, 2) } seconds.", clear())
+            #VERY rarely seen that the above checks pass but some
+            #pointers (usualy enemyManager) are null, usually when exiting world
+            if not load_extraction_context():
+                continue
 
-    except KeyboardInterrupt:
-        print("User interrupted extraction; terminating now.", clear())
+            if sequence_counter > 0:
+                print(darker(bright('ParaKit:')), darker("Reloading stage..."))
 
-    except Exception as e:
-        status_stop()
-        print(color("Error:", 'red'), str(e) + "; terminating now.", darker(), clear())
-        traceback.print_exc()
-        print(default())
+            env = extract_run_environment()
+            sequence_counter += 1
 
-    finally:
-        if game_process.is_running():
+        if frame_duration > 0:
+            percent = bright(f"[{int(100*frame_counter/frame_duration)}%] ")
+
+        #retrieve keycodes pressed since last extraction
+        pressed_keycodes = set()
+        while not keyboard_queue.empty():
+            pressed_keycodes.add(keyboard_queue.get().scan_code)
+
+        status = ExtractionStatus(
+            frame_counter    = frame_counter,
+            sequence_counter = sequence_counter,
+            work_time        = work_time,
+            total_time       = time.perf_counter() - start_time,
+            system_time      = time.localtime(),
+            system_input     = sorted(pressed_keycodes),
+        )
+
+        if exact: #start frame processing
+            game_process.suspend()
+        work_start_time = time.perf_counter()
+
+        set_status(percent + f"Extracting & running {bright(analyzer_name)}.step() for frame #{frame_counter+1} (in-stage: #{current_stage_frame})")
+        state = extract_game_state(status, env, current_stage_frame)
+
+        # This is the most logical place to put this,
+        # since we always want to print the single-state if it
+        # was successfully extracted, and want to print any
+        # error in the analyzer *after* the state print.
+        if frame_duration == 1:
+            status_stop()
+            print_game_state(state)
+            print(separator, clear())
+
+        step_error = True
+        analyzer.step(state)
+        step_error = False
+
+        frame_counter += 1 #doubles as count of successfull step calls
+        last_stage_frame = current_stage_frame
+
+        if exact: #end frame processing
             game_process.resume()
 
-    if seqext_settings['auto_repause']:
-        pause_game()
+        work_time += time.perf_counter() - work_start_time
 
-    set_status(f"Running {bright(analyzer)}.done()...")
-    print(separator, clear())
+    if frame_duration != 1:
+        print(f"{bright('[100%] ') if frame_duration > 1 else ''}Finished extraction in { round(work_time, 2) } seconds.", clear())
+    status_stop()
+
+except KeyboardInterrupt:
+    status_stop()
+    print(bright("ParaKit:"), f"User interrupted {bright(analyzer_name)+'.step' if step_error else 'extraction'}; terminating now.", clear())
+
+except Exception as e:
+    handle_extraction_error(e, f"{bright(analyzer_name)}.step" if step_error else "ParaKit")
+    if not step_error:
+        print(bright("Please " + underline("report this error") + " to the developers!"))
+
+finally: #ensure keyboard recording stopped & game never left frozen
+    if "keyboard_queue" in locals():
+        keyboard.stop_recording()
+    if game_process.is_running():
+        try:
+            game_process.resume()
+        except Exception:
+            #seen psutil.NoSuchProcess here once, but most of the time this error isnt thrown (.is_running() works)
+            #seen psutil.AccessDenied here once, in a replay's stage st4 transition in wbawc (thprac-related crash)
+            lost_game_contact = True
+
+
+# 3. Run analysis.done
+if frame_counter > 0: #skip if step was never succesfully called
+    if frame_duration != 1:
+        print(separator, clear())
+        if not lost_game_contact and seqext_settings['auto_repause']:
+            pause_game()
+
+    status_start()
+    set_status(f"Running {bright(analyzer_name)}.done()...")
 
     try:
-        analysis.done()
+        analyzer.done()
     except KeyboardInterrupt:
-        print(f"{bright(analyzer)} interrupted by user.", clear())
+        print(f"{bright(analyzer_name)}.done interrupted by user.", clear())
     except Exception as e:
-        status_stop()
-        print(color(f"{analyzer} error:", 'red'), str(e), darker(), clear())
-        traceback.print_exc()
-        print(default())
+        handle_extraction_error(e, f"{bright(analyzer_name)}.done")
+        print()
     finally:
         status_stop()

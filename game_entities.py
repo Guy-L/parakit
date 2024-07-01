@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from abc import ABC
 from typing import List, Tuple, Optional, Dict, Any, Union
-import numpy as np
+from numpy import ndarray
+from time import struct_time
 
 # ================================================
 # All-game entities ==============================
@@ -50,7 +51,7 @@ class Enemy:
     health_threshold: Tuple[int, str] #if health <= int, run ECL sub str, only used by bosses
     time_threshold: Tuple[int, str] #if ecl timer > int, run ECL sub str, only used by bosses
     rotation: float
-    pivot_angle: float #used to rotate retangle enemies in DDC-UM in janky way (see AnalysisPlotEnemies); 0 in other games
+    pivot_angle: float #used to rotate rectangle enemies in DDC-UM in janky way (see AnalysisPlotEnemies); 0 in other games
     anm_page: int #usually: 0 for bosses sprites, 1 for stage enemy sprites, 2 for custom enemy sprites
     anm_id: int #id of the sprite within the page
     ecl_sub_name: str #name of the ecl subroutine ran by the enemy. useful to tell apart stage enemies
@@ -117,7 +118,7 @@ class CurveNode:
     velocity: Optional[Tuple[float, float]]
     angle: Optional[float]
     speed: Optional[float]
-    
+
 @dataclass
 class CurveLaser(Laser):
     #start_pos: stored as laser pos
@@ -137,15 +138,24 @@ class PlayerShot:
     alive_timer: int
 
 @dataclass
-class Spellcard:
+class SpellCard:
     spell_id: int
     capture_bonus: int
 
 # ================================================
 # Environment data ===============================
 # ================================================
-# Note: RunEnvironment variables are only
-# extracted once in sequence extraction.
+@dataclass
+class ExtractionStatus:
+    frame_counter: int #frames extracted so far
+    sequence_counter: int #increases each time the game world is loaded (resets/stage transition/loads from menu)
+    work_time: float #excludes time in menus
+    total_time: float #includes time in menus
+    system_time: struct_time #converted to local time
+    system_input: List[int] #pressed keyboard scancodes
+
+# Note: RunEnvironment variables are only extracted
+# once per game world load in sequence extraction.
 @dataclass
 class RunEnvironment:
     difficulty: int #meaning: difficulties[difficulty]
@@ -161,6 +171,7 @@ class GameConstants:
     bomb_piece_req: int
     world_width: int
     world_height: int
+    game_id: int
 
 # ================================================
 # Game specific environment data =================
@@ -294,7 +305,7 @@ class P2Side:
     graze: int
     boss_timer_shown: float
     boss_timer_real: float
-    spellcard: Optional[Spellcard]
+    spell_card: Optional[SpellCard]
     input: int
     player_position: Tuple[float, float]
     player_hitbox_rad: float
@@ -330,16 +341,8 @@ class P2Side:
 
 @dataclass
 class GameState:
-    frame_stage: int
-    frame_global: int
-    stage_chapter: int
-    seq_frame_id: Optional[int]
-    seq_real_time: Optional[float] #ignores pause time
-    boss_timer_shown: float #capped at 99.99, truncated to 2 decimals
-    boss_timer_real: float #not capped, not truncated
-    pause_state: int
-    game_speed: float #usually 1 (always 1 in pause menu)
-    fps: float
+    stage_frame: int
+    global_frame: int
     score: int
     lives: int
     life_pieces: int #set to 0 in pre-SA + UDoALG for convenience
@@ -348,11 +351,17 @@ class GameState:
     power: int
     piv: int
     graze: int
-    spellcard: Optional[Spellcard]
+    spell_card: Optional[SpellCard]
     rank: int
     input: int
     rng: int
     continues: int
+    stage_chapter: int
+    boss_timer_shown: float #capped at 99.99, truncated to 2 decimals
+    boss_timer_real: float #not capped, not truncated
+    section_ecl_sub: str #use this to tell apart stage/boss sections
+    game_speed: float #usually 1 (always 1 in pause menu)
+    fps: float
     player_position: Tuple[float, float]
     player_hitbox_rad: float
     player_iframes: int
@@ -365,9 +374,10 @@ class GameState:
     enemies: List[Enemy]
     items: List[Item]
     lasers: List[Laser]
-    screen: Optional[np.ndarray]
+    screen: Optional[ndarray]
     constants: GameConstants
     env: RunEnvironment
+    pk: ExtractionStatus
 
 
 # ================================================

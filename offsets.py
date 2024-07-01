@@ -43,6 +43,7 @@ class StaticsOffsets:
     input: int
     visual_rng: int #not extracted
     replay_rng: int
+    game_screen: int
     pause_state: int
 
 @dataclass
@@ -105,6 +106,7 @@ class BulletOffsets:
     zBullet_timer: int
     zBullet_type: int
     zBullet_color: int
+    zBulletFlags_grazed: int
 
 @dataclass
 class EnemyOffsets:
@@ -142,6 +144,14 @@ class EnemyOffsets:
     zEnemyInterrupt_len: int
     zEnemyData_revenge_ecl_sub: int
     zEnemyData_special_func: int
+    zEnemyFlags_no_hurtbox: int
+    zEnemyFlags_no_hitbox: int
+    zEnemyFlags_invincible: int
+    zEnemyFlags_intangible: int
+    zEnemyFlags_is_grazeable: int
+    zEnemyFlags_is_rectangle: int
+    zEnemyFlags_has_move_limit: int
+    zEnemyFlags_is_boss: int
 
 @dataclass
 class ItemOffsets:
@@ -154,6 +164,8 @@ class ItemOffsets:
     zItem_vel: int
     zItem_timer: int
     zItem_len: int
+    zItemState_autocollect: int
+    zItemState_attracted: int
 
 @dataclass
 class LaserBaseOffsets:
@@ -211,11 +223,6 @@ class LaserCurveNodeOffsets:
     zLaserCurveNode_size: int
 
 @dataclass
-class AsciiOffsets:
-    ascii_manager_pointer: int
-    global_timer: int #frames the ascii manager has been alive (never destroyed)
-
-@dataclass
 class AnmOffsets:
     anm_manager_pointer: int
     zAnmManager_list: int
@@ -225,26 +232,26 @@ class AnmOffsets:
 
 @dataclass
 class SpellCardOffsets:
-    spellcard_pointer: int
-    zSpellcard_indicator: int
-    zSpellcard_id: int
-    zSpellcard_bonus: int
+    spell_card_pointer: int
+    zSpellCard_indicator: int
+    zSpellCard_id: int
+    zSpellCard_bonus: int
 
 @dataclass
 class FpsCounterOffsets:
     fps_counter_pointer: int
-    fps: int
+    zFpsCounter_fps: int
 
 @dataclass
 class GameThreadOffsets:
     game_thread_pointer: int
-    stage_timer: int
+    zGameThread_stage_timer: int
 
 @dataclass
-class SupervisorOffsets:
-    supervisor_addr: int
-    zSupervisor_game_screen: int #to relate to the game screens dict in Associations
-    zSupervisor_rng_seed: int #based on time when game was launched; never changes; not extracted
+class MiscOffsets:
+    transition_stage_ptr: int
+    ascii_manager_ptr: int
+    global_timer: int #frames the ascii manager has been alive (never destroyed)
 
 @dataclass
 class Associations:
@@ -256,17 +263,6 @@ class Associations:
     characters: List[str]
     subshots: List[str]
     difficulties: List[str]
-    zBulletFlags_grazed: int
-    zEnemyFlags_no_hurtbox: int
-    zEnemyFlags_no_hitbox: int
-    zEnemyFlags_invincible: int
-    zEnemyFlags_intangible: int
-    zEnemyFlags_is_grazeable: int
-    zEnemyFlags_is_rectangle: int
-    zEnemyFlags_has_move_limit: int
-    zEnemyFlags_is_boss: int
-    zItemState_autocollect: int
-    zItemState_attracted: int
     deathbomb_window_frames: int
     marisa_lower_poc_line: int
     life_piece_req: int
@@ -290,12 +286,11 @@ class Offset:
     laser_infinite: LaserInfiniteOffsets
     laser_curve: LaserCurveOffsets
     laser_curve_node: LaserCurveNodeOffsets
-    ascii: AsciiOffsets
     anm: AnmOffsets
     spell_card: SpellCardOffsets
     fps_counter: FpsCounterOffsets
     game_thread: GameThreadOffsets
-    supervisor: SupervisorOffsets
+    misc: MiscOffsets
     associations: Associations
     game_specific: Optional[Dict[str, any]]
 
@@ -323,7 +318,7 @@ item_types_post_hsifs = {**item_types_post_ddc, 10:"Green++", 11:"Cancel", 12:"C
 item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
 
 modern_pause_states = ["Pause (/Stage Transition/Ending Sequence)", "Not in Run (Main Menu/Game Over/Practice End)", "Actively Playing"]
-modern_game_screens = {4: 'Main Menu', 7: 'Game World', 15: 'Ending/Credits'}
+modern_game_screens = {1: 'Loading', 4: 'Main Menu', 7: 'Game World', 15: 'Ending/Credits'}
 
 usual_difficulties = ['Easy', 'Normal', 'Hard', 'Lunatic', 'Extra']
 difficulties_pre_td = usual_difficulties + ['Phantasm']
@@ -393,6 +388,7 @@ offsets = {
             input         = 0xe4c08,
             visual_rng    = 0xdc31c,
             replay_rng    = 0xdc324,
+            game_screen   = 0xdcc20,
             pause_state   = 0xdf120,
         ),
         environment = EnvironmentOffsets(
@@ -449,6 +445,7 @@ offsets = {
             zBullet_timer          = 0x132c,
             zBullet_type           = 0x1354,
             zBullet_color          = 0x1356,
+            zBulletFlags_grazed    = 2**2,
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xc2188,
@@ -485,6 +482,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x10,
             zEnemyData_revenge_ecl_sub = 0x40e4,
             zEnemyData_special_func    = 0x40e8,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**15,
+            zEnemyFlags_has_move_limit = 2**18,
+            zEnemyFlags_is_boss        = 2**24,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xc229c,
@@ -496,6 +501,8 @@ offsets = {
             zItem_vel   = 0xb68,
             zItem_timer = 0xb7c,
             zItem_len   = 0xbc8,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xc22a0,
@@ -547,10 +554,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xc2160,
-            global_timer          = 0x19190,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0xdc688,
             zAnmManager_list    = 0xf48208,
@@ -559,23 +562,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x574,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xc2178,
-            zSpellcard_indicator = 0x20,
-            zSpellcard_id        = 0x78,
-            zSpellcard_bonus     = 0x80,
+            spell_card_pointer   = 0xc2178,
+            zSpellCard_indicator = 0x20,
+            zSpellCard_id        = 0x78,
+            zSpellCard_bonus     = 0x80,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xc218c,
-            fps = 0x34,
+            zFpsCounter_fps     = 0x34,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xc2194,
-            stage_timer = 0x14,
+            game_thread_pointer     = 0xc2194,
+            zGameThread_stage_timer = 0x14,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xdc6a0,
-            zSupervisor_game_screen = 0x580,
-            zSupervisor_rng_seed    = 0x5c0,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xc2168,
+            ascii_manager_ptr    = 0xc2160,
+            global_timer         = 0x19190,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_td,
@@ -586,17 +589,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Youmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2,
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**15,
-            zEnemyFlags_has_move_limit = 2**18,
-            zEnemyFlags_is_boss        = 2**24,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = False,
             life_piece_req = None, #changes based on extend_count
@@ -655,6 +647,7 @@ offsets = {
             input         = 0xd6a90,
             visual_rng    = 0xdb508,
             replay_rng    = 0xdb510,
+            game_screen   = 0xd9648,
             pause_state   = 0xf7ac8,
         ),
         environment = EnvironmentOffsets(
@@ -711,6 +704,7 @@ offsets = {
             zBullet_timer          = 0x13c4,
             zBullet_type           = 0x13ec,
             zBullet_color          = 0x13ee,
+            zBulletFlags_grazed    = 2**2,
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xdb544,
@@ -747,6 +741,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x10,
             zEnemyData_revenge_ecl_sub = 0x4108,
             zEnemyData_special_func    = 0x410c,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**17,
+            zEnemyFlags_is_boss        = 2**23,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xdb660,
@@ -758,6 +760,8 @@ offsets = {
             zItem_vel   = 0xbb8,
             zItem_timer = 0xbcc,
             zItem_len   = 0xc18,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xdb664,
@@ -809,10 +813,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xdb520,
-            global_timer          = 0x191e0,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0xf56cc,
             zAnmManager_list    = 0xfe8208,
@@ -821,23 +821,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x59c,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xdb534,
-            zSpellcard_indicator = 0x20,
-            zSpellcard_id        = 0x78,
-            zSpellcard_bonus     = 0x80,
+            spell_card_pointer   = 0xdb534,
+            zSpellCard_indicator = 0x20,
+            zSpellCard_id        = 0x78,
+            zSpellCard_bonus     = 0x80,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xdb54c,
-            fps = 0x34,
+            zFpsCounter_fps     = 0x34,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xdb558,
-            stage_timer = 0x14,
+            game_thread_pointer     = 0xdb558,
+            zGameThread_stage_timer = 0x14,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xd8f60,
-            zSupervisor_game_screen = 0x6e8,
-            zSupervisor_rng_seed    = 0x728,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xdb524,
+            ascii_manager_ptr    = 0xdb520,
+            global_timer         = 0x191e0,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_ddc,
@@ -848,17 +848,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya'],
             subshots      = ['A', 'B'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2,
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**17,
-            zEnemyFlags_is_boss        = 2**23,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = True,
             life_piece_req = 3,
@@ -900,6 +889,7 @@ offsets = {
             input         = 0xe6f28,
             replay_rng    = 0xe9a48,
             visual_rng    = 0xe9a40,
+            game_screen   = 0xe7ec8,
             pause_state   = 0x11bc60,
         ),
         environment = EnvironmentOffsets(
@@ -956,6 +946,7 @@ offsets = {
             zBullet_timer          = 0x146c,
             zBullet_type           = 0x1490,
             zBullet_color          = 0x1492,
+            zBulletFlags_grazed    = 2**2, #note: unused
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xe9a80,
@@ -992,6 +983,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x88,
             zEnemyData_revenge_ecl_sub = 0x44d8,
             zEnemyData_special_func    = 0x4518,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**17,
+            zEnemyFlags_is_boss        = 2**23,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xe9a9c,
@@ -1003,6 +1002,8 @@ offsets = {
             zItem_vel   = 0xc3c,
             zItem_timer = 0xc50,
             zItem_len   = 0xc88,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xe9ba0,
@@ -1054,10 +1055,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xe9a58,
-            global_timer          = 0x19254,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0x103c18,
             zAnmManager_list    = 0xdc,
@@ -1066,23 +1063,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x5ec,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xe9a70,
-            zSpellcard_indicator = 0x1c,
-            zSpellcard_id        = 0x74,
-            zSpellcard_bonus     = 0x7c,
+            spell_card_pointer   = 0xe9a70,
+            zSpellCard_indicator = 0x1c,
+            zSpellCard_id        = 0x74,
+            zSpellCard_bonus     = 0x7c,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xe9a88,
-            fps = 0x30,
+            zFpsCounter_fps     = 0x30,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xe9a94,
-            stage_timer = 0x10,
+            game_thread_pointer     = 0xe9a94,
+            zGameThread_stage_timer = 0x10,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xe77d0,
-            zSupervisor_game_screen = 0x6f8,
-            zSupervisor_rng_seed    = 0x73c,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xe9a5c,
+            ascii_manager_ptr    = 0xe9a58,
+            global_timer         = 0x19254,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
@@ -1093,17 +1090,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Reisen'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2, #note: unused
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**17,
-            zEnemyFlags_is_boss        = 2**23,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = True,
             life_piece_req = 3,
@@ -1146,6 +1132,7 @@ offsets = {
             input         = 0xa52c8,
             visual_rng    = 0xa6d80,
             replay_rng    = 0xa6d88,
+            game_screen   = 0xc17c0,
             pause_state   = 0xd9d90,
         ),
         environment = EnvironmentOffsets(
@@ -1202,6 +1189,7 @@ offsets = {
             zBullet_timer          = 0x1450,
             zBullet_type           = 0x1474,
             zBullet_color          = 0x1476,
+            zBulletFlags_grazed    = 2**2,
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xa6dc0,
@@ -1238,6 +1226,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x88,
             zEnemyData_revenge_ecl_sub = 0x44d8,
             zEnemyData_special_func    = 0x4518,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**17,
+            zEnemyFlags_is_boss        = 2**23,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xa6ddc,
@@ -1249,6 +1245,8 @@ offsets = {
             zItem_vel   = 0xc14,
             zItem_timer = 0xc2c,
             zItem_len   = 0xc78,
+            zItemState_autocollect = 4,
+            zItemState_attracted   = 5,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xa6ee0,
@@ -1300,10 +1298,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xa6d98,
-            global_timer          = 0x1923c,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0xc0f48,
             zAnmManager_list    = 0xdc,
@@ -1312,23 +1306,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x5e0,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xa6db0,
-            zSpellcard_indicator = 0x1c,
-            zSpellcard_id        = 0x74,
-            zSpellcard_bonus     = 0x7c,
+            spell_card_pointer   = 0xa6db0,
+            zSpellCard_indicator = 0x1c,
+            zSpellCard_id        = 0x74,
+            zSpellCard_bonus     = 0x7c,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xa6dc8,
-            fps = 0x30,
+            zFpsCounter_fps     = 0x30,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xa6dd4,
-            stage_timer = 0x10,
+            game_thread_pointer     = 0xa6dd4,
+            zGameThread_stage_timer = 0x10,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xc10d0,
-            zSupervisor_game_screen = 0x6f0,
-            zSupervisor_rng_seed    = 0x734,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xa6d9c,
+            ascii_manager_ptr    = 0xa6d98,
+            global_timer         = 0x1923c,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
@@ -1339,17 +1333,6 @@ offsets = {
             characters    = ['Reimu', 'Cirno', 'Aya', 'Marisa'],
             subshots      = ['Spring', 'Summer', 'Autumn', 'Winter', 'Full'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2,
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**17,
-            zEnemyFlags_is_boss        = 2**23,
-            zItemState_autocollect  = 4,
-            zItemState_attracted    = 5,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = True,
             life_piece_req = None, #note: not in this game
@@ -1402,6 +1385,7 @@ offsets = {
             input         = 0xb3448,
             visual_rng    = 0xb7660,
             replay_rng    = 0xb7668,
+            game_screen   = 0xb61d0,
             pause_state   = 0x124778,
         ),
         environment = EnvironmentOffsets(
@@ -1458,6 +1442,7 @@ offsets = {
             zBullet_timer          = 0xe58,
             zBullet_type           = 0xe80,
             zBullet_color          = 0xe82,
+            zBulletFlags_grazed    = 2**2,
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xb76a0,
@@ -1494,6 +1479,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x88,
             zEnemyData_revenge_ecl_sub = 0x44f8,
             zEnemyData_special_func    = 0x4538,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**17,
+            zEnemyFlags_is_boss        = 2**23,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xb76b8,
@@ -1505,6 +1498,8 @@ offsets = {
             zItem_vel   = 0xc1c,
             zItem_timer = 0xc34,
             zItem_len   = 0xc78,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xb76bc,
@@ -1556,10 +1551,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xb7678,
-            global_timer          = 0x19244,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0x109a20,
             zAnmManager_list    = 0x6dc,
@@ -1568,23 +1559,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x5e4,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xb7690,
-            zSpellcard_indicator = 0x1c,
-            zSpellcard_id        = 0x74,
-            zSpellcard_bonus     = 0x7c,
+            spell_card_pointer   = 0xb7690,
+            zSpellCard_indicator = 0x1c,
+            zSpellCard_id        = 0x74,
+            zSpellCard_bonus     = 0x7c,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xb76a8,
-            fps = 0x30,
+            zFpsCounter_fps     = 0x30,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xb76b0,
-            stage_timer = 0x10,
+            game_thread_pointer     = 0xb76b0,
+            zGameThread_stage_timer = 0x10,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xb5ae0,
-            zSupervisor_game_screen = 0x6f0,
-            zSupervisor_rng_seed    = 0x734,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xb767c,
+            ascii_manager_ptr    = 0xb7678,
+            global_timer         = 0x19244,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_lolk,
@@ -1595,17 +1586,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Youmu'],
             subshots      = ['Wolf', 'Otter', 'Eagle'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2,
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**17,
-            zEnemyFlags_is_boss        = 2**23,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = True,
             life_piece_req = 3,
@@ -1659,6 +1639,7 @@ offsets = {
             input         = 0xca428,
             visual_rng    = 0xcf280,
             replay_rng    = 0xcf288,
+            game_screen   = 0xcd5e4,
             pause_state   = 0x16ad00,
         ),
         environment = EnvironmentOffsets(
@@ -1715,6 +1696,7 @@ offsets = {
             zBullet_timer          = 0xf70,
             zBullet_type           = 0xf98,
             zBullet_color          = 0xf9a,
+            zBulletFlags_grazed    = 2**2,
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0xcf2d0,
@@ -1751,6 +1733,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x88,
             zEnemyData_revenge_ecl_sub = 0x55a8,
             zEnemyData_special_func    = 0x55e8,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**17,
+            zEnemyFlags_is_boss        = 2**23,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0xcf2ec,
@@ -1762,6 +1752,8 @@ offsets = {
             zItem_vel   = 0xc38,
             zItem_timer = 0xc50,
             zItem_len   = 0xc94,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0xcf3f4,
@@ -1813,10 +1805,6 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0xcf2ac,
-            global_timer          = 0x1925c,
-        ),
         anm = AnmOffsets(
             anm_manager_pointer = 0x11f65c,
             zAnmManager_list    = 0x6f0,
@@ -1825,23 +1813,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x5f0,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0xcf2c0,
-            zSpellcard_indicator = 0x1c,
-            zSpellcard_id        = 0x74,
-            zSpellcard_bonus     = 0x7c,
+            spell_card_pointer   = 0xcf2c0,
+            zSpellCard_indicator = 0x1c,
+            zSpellCard_id        = 0x74,
+            zSpellCard_bonus     = 0x7c,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0xcf2dc,
-            fps = 0x30,
+            zFpsCounter_fps     = 0x30,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0xcf2e4,
-            stage_timer = 0x10,
+            game_thread_pointer     = 0xcf2e4,
+            zGameThread_stage_timer = 0x10,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0xccdf0,
-            zSupervisor_game_screen = 0x7f4,
-            zSupervisor_rng_seed    = 0x838,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0xcf2b0,
+            ascii_manager_ptr    = 0xcf2ac,
+            global_timer         = 0x1925c,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_um,
@@ -1852,17 +1840,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sakuya', 'Sanae'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2,
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**17,
-            zEnemyFlags_is_boss        = 2**23,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = None, #changes, see zPlayer_deathbomb_window
             marisa_lower_poc_line   = False,
             life_piece_req = 3,
@@ -1914,6 +1891,7 @@ offsets = {
             input         = 0x200aec,
             visual_rng    = 0x1ae410,
             replay_rng    = 0x1ae420,
+            game_screen   = 0x208c8c,
             pause_state   = 0x20b210,
         ),
         environment = EnvironmentOffsets(
@@ -1970,6 +1948,7 @@ offsets = {
             zBullet_timer          = 0x104c,
             zBullet_type           = 0x1078,
             zBullet_color          = 0x107a,
+            zBulletFlags_grazed    = 2**2, #note: unused
         ),
         enemies = EnemyOffsets(
             enemy_manager_pointer  = 0x1ae478,
@@ -2006,6 +1985,14 @@ offsets = {
             zEnemyInterrupt_len      = 0x88,
             zEnemyData_revenge_ecl_sub = 0x55e8,
             zEnemyData_special_func    = 0x5648,
+            zEnemyFlags_no_hurtbox     = 2**0,
+            zEnemyFlags_no_hitbox      = 2**1,
+            zEnemyFlags_invincible     = 2**4,
+            zEnemyFlags_intangible     = 2**5,
+            zEnemyFlags_is_grazeable   = 2**9,
+            zEnemyFlags_is_rectangle   = 2**12,
+            zEnemyFlags_has_move_limit = 2**33,
+            zEnemyFlags_is_boss        = 2**6,
         ),
         items = ItemOffsets(
             item_manager_pointer   = 0x1ae47c,
@@ -2017,6 +2004,8 @@ offsets = {
             zItem_vel   = 0xc8c,
             zItem_timer = 0xca4,
             zItem_len   = 0xcf0,
+            zItemState_autocollect = 3,
+            zItemState_attracted   = 4,
         ),
         laser_base = LaserBaseOffsets(
             laser_manager_pointer   = 0x1ae484,
@@ -2080,23 +2069,23 @@ offsets = {
             zAnmVm_entity_pos   = 0x614,
         ),
         spell_card = SpellCardOffsets(
-            spellcard_pointer    = 0x1ae480,
-            zSpellcard_indicator = 0x10,
-            zSpellcard_id        = 0x78,
-            zSpellcard_bonus     = 0x80,
+            spell_card_pointer   = 0x1ae480,
+            zSpellCard_indicator = 0x10,
+            zSpellCard_id        = 0x78,
+            zSpellCard_bonus     = 0x80,
         ),
         fps_counter = FpsCounterOffsets(
             fps_counter_pointer = 0x1ae45c,
-            fps = 0x38,
+            zFpsCounter_fps     = 0x38,
         ),
         game_thread = GameThreadOffsets(
-            game_thread_pointer = 0x1ae464,
-            stage_timer = 0x14,
+            game_thread_pointer     = 0x1ae464,
+            zGameThread_stage_timer = 0x14,
         ),
-        supervisor = SupervisorOffsets(
-            supervisor_addr = 0x208380,
-            zSupervisor_game_screen = 0x90c,
-            zSupervisor_rng_seed    = 0x950,
+        misc = MiscOffsets(
+            transition_stage_ptr = 0x1ae448,
+            ascii_manager_ptr    = 0x1ae444,
+            global_timer         = 0x197b4,
         ),
         associations = Associations(
             bullet_types  = bullet_types_post_um,
@@ -2107,17 +2096,6 @@ offsets = {
             characters    = ['Reimu', 'Marisa', 'Sanae', 'Ran', 'Aunn', 'Nazrin', 'Seiran', 'Rin', 'Tsukasa', 'Mamizou', 'Yachie', 'Saki', 'Yuuma', 'Suika', 'Biten', 'Enoko', 'Chiyari', 'Hisami', 'Zanmu'],
             subshots      = ['N/A'],
             difficulties  = difficulties_post_td,
-            zBulletFlags_grazed        = 2**2, #note: unused
-            zEnemyFlags_no_hurtbox     = 2**0,
-            zEnemyFlags_no_hitbox      = 2**1,
-            zEnemyFlags_invincible     = 2**4,
-            zEnemyFlags_intangible     = 2**5,
-            zEnemyFlags_is_grazeable   = 2**9,
-            zEnemyFlags_is_rectangle   = 2**12,
-            zEnemyFlags_has_move_limit = 2**33,
-            zEnemyFlags_is_boss        = 2**6,
-            zItemState_autocollect  = 3,
-            zItemState_attracted    = 4,
             deathbomb_window_frames = 8,
             marisa_lower_poc_line   = False,
             life_piece_req = None, #note: not in this game
@@ -2141,7 +2119,7 @@ offsets = {
             'zGaugeManager_gauge_fill': 0xa4,
             'zAbilityManager_total_cards': 0x2c,
             'zAnmManager_list_p2': 0x744,
-            'zAi_story_mode_pointer': 0x34,
+            'zAi_story_mode_ptr': 0x34,
             'zStoryAi_fight_phase': 0x4,
             'zStoryAi_progress_meter': 0x8,
 
@@ -2155,7 +2133,7 @@ offsets = {
             'p2_bomb_pointer': 0x1ae4c8,
             'p2_enemy_manager_pointer': 0x1ae4b4,
             'p2_item_manager_pointer': 0x1ae4b8,
-            'p2_spellcard_pointer': 0x1ae4bc,
+            'p2_spell_card_pointer': 0x1ae4bc,
             'p2_laser_manager_pointer': 0x1ae4c0,
             'p2_gauge_manager_pointer': 0x1ae4c4,
             'p2_ability_manager_pointer': 0x1ae4cc,
@@ -2216,6 +2194,7 @@ offsets = {
 #            input         = None,
 #            visual_rng    = None,
 #            replay_rng    = None,
+#            game_screen   = None,
 #            pause_state   = None,
 #        ),
 #        environment = EnvironmentOffsets(
@@ -2272,6 +2251,7 @@ offsets = {
 #            zBullet_timer          = None,
 #            zBullet_type           = None,
 #            zBullet_color          = None,
+#            zBulletFlags_grazed    = None,
 #        ),
 #        enemies = EnemyOffsets(
 #            enemy_manager_pointer  = None,
@@ -2308,6 +2288,14 @@ offsets = {
 #            zEnemyInterrupt_len      = None,
 #            zEnemyData_revenge_ecl_sub = None,
 #            zEnemyData_special_func    = None,
+#            zEnemyFlags_no_hurtbox     = None,
+#            zEnemyFlags_no_hitbox      = None,
+#            zEnemyFlags_invincible     = None,
+#            zEnemyFlags_intangible     = None,
+#            zEnemyFlags_is_grazeable   = None,
+#            zEnemyFlags_is_rectangle   = None,
+#            zEnemyFlags_has_move_limit = None,
+#            zEnemyFlags_is_boss        = None,
 #        ),
 #        items = ItemOffsets(
 #            item_manager_pointer   = None,
@@ -2319,6 +2307,8 @@ offsets = {
 #            zItem_vel   = None,
 #            zItem_timer = None,
 #            zItem_len   = None,
+#            zItemState_autocollect = None,
+#            zItemState_attracted   = None,
 #        ),
 #        laser_base = LaserBaseOffsets(
 #            laser_manager_pointer   = None,
@@ -2370,10 +2360,6 @@ offsets = {
 #            zLaserCurveNode_speed = None,
 #            zLaserCurveNode_size  = None,
 #        ),
-#        ascii = AsciiOffsets(
-#            ascii_manager_pointer = None,
-#            global_timer          = None,
-#        ),
 #        anm = AnmOffsets(
 #            anm_manager_pointer = None,
 #            zAnmManager_list    = None,
@@ -2382,23 +2368,23 @@ offsets = {
 #            zAnmVm_entity_pos   = None,
 #        ),
 #        spell_card = SpellCardOffsets(
-#            spellcard_pointer    = None,
-#            zSpellcard_indicator = None,
-#            zSpellcard_id        = None,
-#            zSpellcard_bonus     = None,
+#            spell_card_pointer   = None,
+#            zSpellCard_indicator = None,
+#            zSpellCard_id        = None,
+#            zSpellCard_bonus     = None,
 #        ),
 #        fps_counter = FpsCounterOffsets(
 #            fps_counter_pointer = None,
-#            fps = None,
+#            zFpsCounter_fps     = None,
 #        ),
 #        game_thread = GameThreadOffsets(
-#            game_thread_pointer = None,
-#            stage_timer = None,
+#            game_thread_pointer     = None,
+#            zGameThread_stage_timer = None,
 #        ),
-#        supervisor = SupervisorOffsets(
-#            supervisor_addr = None,
-#            zSupervisor_game_screen = None,
-#            zSupervisor_rng_seed    = None,
+#        misc = MiscOffsets(
+#            transition_stage_ptr = None,
+#            ascii_manager_ptr    = None,
+#            global_timer         = None,
 #        ),
 #        associations = Associations(
 #            bullet_types  = None,
@@ -2409,17 +2395,6 @@ offsets = {
 #            characters    = None,
 #            subshots      = None,
 #            difficulties  = None,
-#            zBulletFlags_grazed        = None,
-#            zEnemyFlags_no_hurtbox     = None,
-#            zEnemyFlags_no_hitbox      = None,
-#            zEnemyFlags_invincible     = None,
-#            zEnemyFlags_intangible     = None,
-#            zEnemyFlags_is_grazeable   = None,
-#            zEnemyFlags_is_rectangle   = None,
-#            zEnemyFlags_has_move_limit = None,
-#            zEnemyFlags_is_boss        = None,
-#            zItemState_autocollect  = None,
-#            zItemState_attracted    = None,
 #            deathbomb_window_frames = None,
 #            marisa_lower_poc_line   = None,
 #            life_piece_req = None,
@@ -2428,4 +2403,9 @@ offsets = {
 #            world_height   = None,
 #        ),
 #        game_specific = { }
+#        #TODO: Check enemy ANM map
+#        #TODO: Check usual scenarios for GameMode, GameState, and GameThread flags
+#        #TODO: Check logic for getting the enemy which determines the boss timer
+#        #TODO: Check ECL sub names for "current section ecl"
+#        #TODO: Check conditions for player being able to shoot (player flags?)
 #    ),

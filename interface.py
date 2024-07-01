@@ -92,8 +92,6 @@ for offset_category in offsets[_module_name].__dict__.values():
             globals()[name.replace('Data', '')] = (zEnemy_data + val if val != None else val)
         elif any(classname in name for classname in ['zLaserLine_', 'zLaserInfinite_', 'zLaserCurve_', 'zLaserBeam_']):
             globals()[name] = (zLaserBaseClass_len + val if val != None else val)
-        elif 'zSupervisor_' in name:
-            globals()[name.replace('zSupervisor_', '')] = (supervisor_addr + val if val != None else val)
         else:
             globals()[name] = val
 del offsets #be kind to your namespace :)
@@ -272,7 +270,7 @@ def apply_action_str(action_text):
 def wait_global_frame(cur_global_frame=None, count=0):
     if not cur_global_frame:
         cur_global_frame = read_int(global_timer)
-        
+
     while read_int(global_timer) <= cur_global_frame + count:
         pass
 
@@ -281,12 +279,8 @@ def terminate():
     global auto_termination
     auto_termination = True
 
-def eval_termination_conditions(pause_state, need_active):
-    if pause_state == 1:
-        return "Non-run game state detected"
-    elif not game_process.is_running():
-        return "Game was closed" #bugged, but not worth fixing (edge case)
-    elif keyboard.is_pressed(_settings['termination_key']):
+def eval_termination_conditions(need_active):
+    if keyboard.is_pressed(_settings['termination_key']):
         return "User pressed termination key"
     elif auto_termination:
         return "Automatic termination triggered by analyzer"
@@ -295,9 +289,9 @@ def eval_termination_conditions(pause_state, need_active):
 
 def wait_game_frame(cur_game_frame=None, need_active=False):
     if not cur_game_frame:
-        cur_game_frame = read_int(stage_timer)
+        cur_game_frame = read_int(zGameThread + zGameThread_stage_timer)
 
-    while read_int(stage_timer) == cur_game_frame: 
+    while read_int(zGameThread + zGameThread_stage_timer) == cur_game_frame:
         term_ret = eval_termination_conditions(need_active)
         if term_ret:
             return term_ret
@@ -318,11 +312,13 @@ def restart_run():
     press_key('z')
 
 def pause_game(wait_for_input=False):
-    if read_int(pause_state, rel=True) == 2:
+    if game_process.is_running() and read_int(game_screen, rel=True) == 7 and read_int(pause_state, rel=True) == 2:
         #seems to be a delay before you can pause after
         #alt tabbing (no such delay for unpausing)
         if get_focus():
             wait_global_frame(count=1)
+
+        keyboard.stash_state()
         press_key('esc')
 
         while read_int(pause_state, rel=True) != 0:
@@ -334,8 +330,8 @@ def pause_game(wait_for_input=False):
             wait_global_frame(count=8)
 
 def unpause_game():
-    get_focus()
-    if read_int(pause_state, rel=True) == 0:
+    if game_process.is_running() and read_int(game_screen, rel=True) == 7 and read_int(pause_state, rel=True) == 0:
+        get_focus()
         press_key('esc')
 
         while read_int(pause_state, rel=True) != 2:
@@ -350,8 +346,7 @@ def get_focus():
             _game_window.activate()
         except gw.PyGetWindowException as e:
             print(bright("Note:"), "Game window failed to focus (most likely because ParaKit also lost focus).")
-            print("      Trying again after sending blank input.")
-            print("      It's unknown why this works.")
+            print("      Trying again after sending blank input.", darker("It's unknown why this works."))
             win32com.client.Dispatch("WScript.Shell").SendKeys('')
             time.sleep(0.5)
         pass
@@ -394,7 +389,7 @@ def _read_memory(address, size, rel):
     if not _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref):
         raise RuntimeError(f"Failed to read memory at address {hex(address if not rel else _base_address + address)} with size {size}")
     return buffer.raw
-
+global_timer += read_int(ascii_manager_ptr, rel=True)
 
 # Debug Method Definitions
 
@@ -405,7 +400,7 @@ def _random_player():
     print(np.array(["Lives", "L.Pieces", "Bombs", "B.Pieces", "Bonus", "Power", "PIV", "Graze", "Game State", "Action", "Time in Stage"]))
 
     while True:            
-        cur_frame = read_int(stage_timer)
+        cur_frame = read_int(zGameThread + zGameThread_stage_timer)
         if wait_game_frame(cur_frame, True):
             apply_action_int(0) #un-press everything
             return
@@ -435,104 +430,3 @@ def _scan_region(offset, size):
             desc += " | " + truncate(''.join(char for char in read_string(address, 8) if ord(char) > 32), 8)
             address = read_int(address)
         print(desc)
-
-
-# Step 6 - Initial reads used by extraction context
-_game_screen = read_int(game_screen, rel=True)
-if _game_screen not in game_screens or game_screens[_game_screen] != 'Game World':
-    print(color("Error:", 'red'), "Game world not loaded.")
-    exit()
-
-global_timer += read_int(ascii_manager_pointer, rel=True)
-stage_timer += read_int(game_thread_pointer, rel=True)
-
-zPlayer        = read_int(player_pointer, rel=True)
-zBomb          = read_int(bomb_pointer, rel=True)
-zBulletManager = read_int(bullet_manager_pointer, rel=True)
-zEnemyManager  = read_int(enemy_manager_pointer, rel=True)
-zItemManager   = read_int(item_manager_pointer, rel=True)
-zLaserManager  = read_int(laser_manager_pointer, rel=True)
-zAnmManager    = read_int(anm_manager_pointer, rel=True)
-zSpellCard     = read_int(spellcard_pointer, rel=True)
-zFpsCounter    = read_int(fps_counter_pointer, rel=True)
-
-if game_id == 13:
-    zSpiritManager = read_int(spirit_manager_pointer, rel=True)
-
-elif game_id == 14:
-    ddcSeijaAnm = read_int(seija_anm_pointer, rel=True)
-
-elif game_id == 16:
-    zSeasomBomb = read_int(season_bomb_pointer, rel=True)
-
-elif game_id == 17:
-    zTokenManager = read_int(token_manager_pointer, rel=True)
-
-elif game_id == 19:
-    zGaugeManager     = read_int(gauge_manager_pointer, rel=True)
-    zPlayerP2         = read_int(p2_player_pointer, rel=True)
-    zBombP2           = read_int(p2_bomb_pointer, rel=True)
-    zBulletManagerP2  = read_int(p2_bullet_manager_pointer, rel=True)
-    zEnemyManagerP2   = read_int(p2_enemy_manager_pointer, rel=True)
-    zItemManagerP2    = read_int(p2_item_manager_pointer, rel=True)
-    zLaserManagerP2   = read_int(p2_laser_manager_pointer, rel=True)
-    zSpellCardP2      = read_int(p2_spellcard_pointer, rel=True)
-    zGaugeManagerP2   = read_int(p2_gauge_manager_pointer, rel=True)
-    zAbilityManagerP2 = read_int(p2_ability_manager_pointer, rel=True)
-    zAiP2             = read_int(p2_ai_pointer, rel=True)
-
-if game_id in has_ability_cards:
-    zAbilityManager = read_int(ability_manager_pointer, rel=True)
-
-ecl_sub_arrs = {}
-for enemy_manager in ((zEnemyManager, zEnemyManagerP2) if 'zBulletManagerP2' in globals() else (zEnemyManager,)):
-    ecl_sub_names = []
-    ecl_sub_starts = []
-    file_manager = read_int(enemy_manager + zEnemyManager_ecl_file)
-    subroutine_count = read_int(file_manager + zEclFile_sub_count)
-    subroutines = read_int(file_manager + zEclFile_subroutines)
-
-    for i in range(subroutine_count):
-        ecl_sub_names.append(read_string(read_int(subroutines + 0x8 * i), 64))
-        ecl_sub_starts.append(read_int(subroutines + 0x4 + 0x8 * i))
-
-    ecl_sub_arrs[enemy_manager] = (ecl_sub_names, ecl_sub_starts)
-
-
-run_environment = RunEnvironment(
-    difficulty = read_int(difficulty, rel=True),
-    character = read_int(character, rel=True),
-    subshot = read_int(subshot, rel=True),
-    stage = read_int(stage, rel=True),
-)
-
-game_constants = GameConstants(
-    deathbomb_window_frames = deathbomb_window_frames,
-    poc_line_height         = 148 if marisa_lower_poc_line and characters[run_environment.character] == 'Marisa' else 128,
-    life_piece_req          = life_piece_req,
-    bomb_piece_req          = bomb_piece_req,
-    world_width             = world_width,
-    world_height            = world_height,
-)
-
-if game_id == 19:
-    run_environment = RunEnvironmentUDoALG(
-        **vars(run_environment),
-        card_count              = read_int(zAbilityManager + zAbilityManager_total_cards),
-        charge_attack_threshold = read_int(charge_attack_threshold, rel=True),
-        charge_skill_threshold  = read_int(skill_attack_threshold, rel=True),
-        ex_attack_threshold     = read_int(ex_attack_threshold, rel=True),
-        boss_attack_threshold   = read_int(boss_attack_threshold, rel=True),
-    )
-
-    p2_run_environment = RunEnvironmentUDoALG(
-        difficulty = run_environment.difficulty,
-        character  = read_int(p2_shottype, rel=True),
-        subshot    = 0,
-        stage      = run_environment.stage,
-        card_count              = read_int(zAbilityManagerP2 + zAbilityManager_total_cards),
-        charge_attack_threshold = read_int(p2_charge_attack_threshold, rel=True),
-        charge_skill_threshold  = read_int(p2_skill_attack_threshold, rel=True),
-        ex_attack_threshold     = read_int(p2_ex_attack_threshold, rel=True),
-        boss_attack_threshold   = read_int(p2_boss_attack_threshold, rel=True),
-    )

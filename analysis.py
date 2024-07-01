@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from interface import game_id
 from utils import *
 
-#Base class (abstract), shouldn't be touched
+# Base class (abstract), shouldn't be touched
 class Analysis(ABC):
     @abstractmethod
     def __init__(self):
@@ -17,28 +17,29 @@ class Analysis(ABC):
     def done(self):
         pass
 
-#Feel free to duplicate and implement to make your own! (make sure to rename the class)
+# Feel free to duplicate and implement to make your own! (make sure to rename the class)
 class AnalysisTemplate(Analysis):
-    #Called right before extraction starts
+    # Called right before extraction starts
     def __init__(self):
-        #Your initialization code here
+        # Your initialization code here
         pass
 
-    #Called for each extracted frame 
+    # Called for each extracted frame
     def step(self, state):
-        #Your analysis code here
+        # Your data processing code here
         pass
 
-    #Called after extraction finishes
+    # Called after extraction finishes
     def done(self):
         print(bright("(Template)"), "Analysis results go here.")
-        #Your printing code here
+        # Your data analysis code here
 
 
 
 
-#useful stuff, see analysis_examples.py for usages
-#(note: put your custom analysis under these lines so you can use 'em)
+# Useful stuff, see analysis_examples.py for usages
+# (note: put your custom analysis under these lines so you can use 'em)
+# (note: this may be a bit confusing and will be changed soon)
 from settings import pyplot_settings
 from interface import save_screenshot, terminate, get_color, get_curve_color, item_types
 from interface import enemy_anms, world_width, world_height, np, uses_pivot_angle
@@ -59,7 +60,7 @@ import os
 os.environ['QT_LOGGING_RULES'] = '*=false;*.critical=true;*.fatal=true'
 import traceback
 
-#cursed pyplot stuff, idem
+#cursed pyplot stuff
 def pyplot_color(color_str):
     if color_str == 'White':
         return 'lightgrey'

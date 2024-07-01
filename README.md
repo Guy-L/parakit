@@ -23,7 +23,6 @@ If you have feature requests or need help making your own custom analyzer, feel 
 * Damage sources
 * Cancel sources
 * API collision check methods
-* Cross-run and cross-stage extraction
 * Better UX
 
 ## Installation & Setup
@@ -73,10 +72,11 @@ This comes with the added benefit of being able to specify three important param
 ```
 **Note**: If the same parameter is specified multiple times, the last value will be used.
 
+ParaKit will wait while in menus, endings, and stage transitions.<br>You can start ParaKit while in the main menu, and it will start extracting as soon as the game screen loads.
+
 You can disable extraction of various game entities (i.e., bullets, enemies, items, lasers, player shots & the other side of the screen in PvP games) in `settings.py` to improve ParaKit's performance if the analysis you're doing doesn't require some of them. You may also enable adding game screenshots to the extracted states, though this has a significant performance and memory impact.
 
 **<u>Documentation explaining every available setting in `settings.py` can be found [here](./settings.md).</u>**
-
 
 ## Custom Analyzers
 

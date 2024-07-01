@@ -124,9 +124,6 @@ try:
             print("If you see this message, please contact the developer!")
             input_exit()
 
-    #Run state-reader
-    subprocess.run([_python_exe, _worker_script_path] + sys.argv[1:])
-
 except KeyboardInterrupt:
     print("Setup interrupted by user.")
     input_exit()
@@ -140,6 +137,12 @@ except Exception as e:
 finally:
     if not valid_venv('Scripts') and not valid_venv('bin') and os.path.exists(_venv_path):
         shutil.rmtree(_venv_path)
+
+#Run state-reader
+try:
+    subprocess.run([_python_exe, _worker_script_path] + sys.argv[1:])
+except KeyboardInterrupt:
+    pass #keyboard interrupts are processed by the script, but propagate here for some reason
 
 #Inform users if running non-latest version
 try:
