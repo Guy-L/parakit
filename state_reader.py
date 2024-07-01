@@ -17,9 +17,10 @@ except KeyboardInterrupt:
     exit()
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, requires_curve_node_vels, section_sub_default_to_any = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, requires_curve_node_vels, section_sub_default_to_any, profiling = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
+profiling_times = []
 
 game_constants = GameConstants(
     deathbomb_window_frames = deathbomb_window_frames,
@@ -96,6 +97,7 @@ def extract_list_entries(entry_addr, tail=False):
     return list_entries
 
 def extract_bullets(bullet_manager):
+    profile_record('Bullets')
     bullets = []
 
     bullet_list_head_addr = bullet_manager + zBulletManager_list
@@ -231,6 +233,7 @@ def extract_enemy_drops(drops_addr):
     return drops
 
 def extract_enemies(enemy_manager):
+    profile_record('Enemies')
     enemies = []
     main_enemy_sub = ''
     special_logic_enemy = None #enemy that contains special state info, like kyouko echo, okina season disable...
@@ -379,6 +382,7 @@ def extract_enemies(enemy_manager):
     return enemies, main_enemy_sub, last_valid_enm_boss_timer, special_logic_enemy
 
 def extract_items(item_manager):
+    profile_record('Items')
     items = []
     active_item_count = read_int(item_manager + zItemManager_item_cnt)
     item_array_start  = item_manager + zItemManager_array
@@ -408,6 +412,7 @@ def extract_items(item_manager):
 
 # Ten Desires only
 def extract_spirit_items():
+    profile_record('Spirit Items')
     spirit_items = []
     spirit_array_start = zSpiritManager + zSpiritManager_array
     spirit_array_end   = spirit_array_start + zSpiritManager_array_len * zSpiritItem_len
@@ -427,6 +432,7 @@ def extract_spirit_items():
 
 # Wily Beast & Weakest Creature only
 def extract_animal_tokens():
+    profile_record('Animal Tokens')
     animal_tokens = []
 
     for zToken in extract_list_entries(read_int(zTokenManager + zTokenManager_list)):
@@ -447,6 +453,7 @@ def extract_animal_tokens():
     return animal_tokens
 
 def extract_lasers(laser_manager):
+    profile_record('Lasers')
     lasers = []
     current_laser_ptr = read_int(laser_manager + zLaserManager_list) #pointer to head laser 
 
@@ -625,6 +632,7 @@ def extract_bomb(bomb):
     return Bomb(read_int(bomb + zBomb_state))
 
 def extract_player_shots(player):
+    profile_record('Player Shots')
     player_shots = []
     player_shot_array_start = player + zPlayer_shots_array
     player_shot_array_end   = player_shot_array_start + zPlayer_shots_array_len * zPlayerShot_len
@@ -646,6 +654,7 @@ def extract_player_shots(player):
     return player_shots
 
 def extract_player(player, in_dialogue, game_thread_flags, side2=False):
+    profile_record('Player')
     player_state = read_int(player + zPlayer_state)
     player_flags = read_int(zPlayer + zPlayer_flags) if zPlayer_flags else 0
 
@@ -802,6 +811,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         enemies, main_enemy_sub, boss_timer, special_logic_enemy = extract_enemies(zEnemyManager)
         cur_section_sub = find_section_sub(enemies, main_enemy_sub)
 
+    profile_record('Statics')
     state_base = {
         'stage_frame':        current_stage_frame,
         'global_frame':       read_int(global_timer),
@@ -836,6 +846,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         'pk':                 extraction_status,
     }
 
+    profile_record('Game-Specific')
 
     if game_id == 13:
         kyouko_echo = None
@@ -1758,11 +1769,30 @@ def handle_extraction_error(e, cause):
     traceback.print_exc()
     print(default(), end='')
 
+def profile_frame():
+    if profiling:
+        global profiling_times
 
+        if len(profiling_times) > 1:
+            total_time = profiling_times[-1][0] - profiling_times[0][0]
+            max_label_len = max(len(t[1]) for t in profiling_times)
+            print(bright("Profiling:"), f"Total frame duration {100*total_time:.2f}ms")
 
+            for i in range(1, len(profiling_times)):
+                t = profiling_times[i]
+                t_prev = profiling_times[i - 1]
+                print(bright("Profiling:"), f"{tabulate(t_prev[1], max_label_len)} -> {tabulate(t[1], max_label_len)} | {100*(t[0]-t_prev[0]):.2f} ({100*(t[0]-t_prev[0])/total_time:.2f}%)")
+            print()
 
+        profiling_times = []
 
+def profile_record(label=None):
+    if profiling:
+        global profiling_times
 
+        if not label:
+            label = f'T{len(profiling_times)}'
+        profiling_times.append((time.perf_counter(), label))
 
 
 # 2. Run extraction
@@ -1847,6 +1877,7 @@ try:
             env = extract_run_environment()
             sequence_counter += 1
 
+        profile_record('Frame Start')
         if frame_duration > 0:
             percent = bright(f"[{int(100*frame_counter/frame_duration)}%] ")
 
@@ -1867,6 +1898,7 @@ try:
         if exact: #start frame processing
             game_process.suspend()
         work_start_time = time.perf_counter()
+        profile_record('Extract Start')
 
         set_status(percent + f"Extracting & running {bright(analyzer_name)}.step() for frame #{frame_counter+1} (in-stage: #{current_stage_frame})")
         state = extract_game_state(status, env, current_stage_frame)
@@ -1881,7 +1913,9 @@ try:
             print(separator, clear())
 
         step_error = True
+        profile_record('Analyzer Step')
         analyzer.step(state)
+        profile_record('Frame Done')
         step_error = False
 
         frame_counter += 1 #doubles as count of successfull step calls
@@ -1891,6 +1925,7 @@ try:
             game_process.resume()
 
         work_time += time.perf_counter() - work_start_time
+        profile_frame()
 
     if frame_duration != 1:
         print(f"{bright('[100%] ') if frame_duration > 1 else ''}Finished extraction in { round(work_time, 2) } seconds.", clear())

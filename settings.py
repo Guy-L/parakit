@@ -17,6 +17,7 @@ extraction_settings = {
     # See settings.md for more info.
     'requires_curve_node_vels': False,
     'section_sub_default_to_any': False,
+    'profile_performance': False,
 }
 
 # Game Interfacing Settings
