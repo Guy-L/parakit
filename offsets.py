@@ -227,9 +227,13 @@ class LaserCurveNodeOffsets:
 class AnmOffsets:
     anm_manager_pointer: int
     zAnmManager_list: int
+    zAnmManager_fast_arr: int
     zAnmVm_rotation_z : int
     zAnmVm_id: int
     zAnmVm_entity_pos: int
+    zAnmFastVm_alive: int
+    zAnmFastVm_size: int
+    zAnmFastVmId_mask: int
 
 @dataclass
 class SpellCardOffsets:
@@ -557,11 +561,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0xdc688,
-            zAnmManager_list    = 0xf48208,
-            zAnmVm_rotation_z   = 0x50,
-            zAnmVm_id           = 0x530,
-            zAnmVm_entity_pos   = 0x574,
+            anm_manager_pointer  = 0xdc688,
+            zAnmManager_list     = 0xf48208,
+            zAnmManager_fast_arr = 0xdc,
+            zAnmVm_rotation_z = 0x50,
+            zAnmVm_id         = 0x530,
+            zAnmVm_entity_pos = 0x574,
+            zAnmFastVm_alive  = 0x5b4,
+            zAnmFastVm_size   = 0x5bc,
+            zAnmFastVmId_mask = 2**13 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xc2178,
@@ -817,11 +825,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0xf56cc,
-            zAnmManager_list    = 0xfe8208,
-            zAnmVm_rotation_z   = 0x50,
-            zAnmVm_id           = 0x540,
-            zAnmVm_entity_pos   = 0x59c,
+            anm_manager_pointer  = 0xf56cc,
+            zAnmManager_list     = 0xfe8208,
+            zAnmManager_fast_arr = 0xdc,
+            zAnmVm_rotation_z = 0x50,
+            zAnmVm_id         = 0x540,
+            zAnmVm_entity_pos = 0x59c,
+            zAnmFastVm_alive  = 0x5dc,
+            zAnmFastVm_size   = 0x5e4,
+            zAnmFastVmId_mask = 2**13 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xdb534,
@@ -1060,11 +1072,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0x103c18,
-            zAnmManager_list    = 0xdc,
-            zAnmVm_rotation_z   = 0x4c,
-            zAnmVm_id           = 0x544,
-            zAnmVm_entity_pos   = 0x5ec,
+            anm_manager_pointer  = 0x103c18,
+            zAnmManager_list     = 0xdc,
+            zAnmManager_fast_arr = 0xec,
+            zAnmVm_rotation_z = 0x4c,
+            zAnmVm_id         = 0x544,
+            zAnmVm_entity_pos = 0x5ec,
+            zAnmFastVm_alive  = 0x618,
+            zAnmFastVm_size   = 0x620,
+            zAnmFastVmId_mask = 2**13 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xe9a70,
@@ -1304,11 +1320,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0xc0f48,
-            zAnmManager_list    = 0xdc,
-            zAnmVm_rotation_z   = 0x40,
-            zAnmVm_id           = 0x538,
-            zAnmVm_entity_pos   = 0x5e0,
+            anm_manager_pointer  = 0xc0f48,
+            zAnmManager_list     = 0xdc,
+            zAnmManager_fast_arr = 0xec,
+            zAnmVm_rotation_z = 0x40,
+            zAnmVm_id         = 0x538,
+            zAnmVm_entity_pos = 0x5e0,
+            zAnmFastVm_alive  = 0x60c,
+            zAnmFastVm_size   = 0x614,
+            zAnmFastVmId_mask = 2**13 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xa6db0,
@@ -1558,11 +1578,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0x109a20,
-            zAnmManager_list    = 0x6dc,
-            zAnmVm_rotation_z   = 0x40,
-            zAnmVm_id           = 0x538,
-            zAnmVm_entity_pos   = 0x5e4,
+            anm_manager_pointer  = 0x109a20,
+            zAnmManager_list     = 0x6dc,
+            zAnmManager_fast_arr = 0x6ec,
+            zAnmVm_rotation_z = 0x40,
+            zAnmVm_id         = 0x538,
+            zAnmVm_entity_pos = 0x5e4,
+            zAnmFastVm_alive  = 0x610,
+            zAnmFastVm_size   = 0x618,
+            zAnmFastVmId_mask = 2**14 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xb7690,
@@ -1813,11 +1837,15 @@ offsets = {
             zLaserCurveNode_size  = 0x20,
         ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0x11f65c,
-            zAnmManager_list    = 0x6f0,
-            zAnmVm_rotation_z   = 0x44,
-            zAnmVm_id           = 0x544,
-            zAnmVm_entity_pos   = 0x5f0,
+            anm_manager_pointer  = 0x11f65c,
+            zAnmManager_list     = 0x6f0,
+            zAnmManager_fast_arr = 0x700,
+            zAnmVm_rotation_z = 0x44,
+            zAnmVm_id         = 0x544,
+            zAnmVm_entity_pos = 0x5f0,
+            zAnmFastVm_alive  = 0x61c,
+            zAnmFastVm_size   = 0x624,
+            zAnmFastVmId_mask = 2**15 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0xcf2c0,
@@ -2065,16 +2093,16 @@ offsets = {
             zLaserCurveNode_speed = 0x1c,
             zLaserCurveNode_size  = 0x20,
         ),
-        ascii = AsciiOffsets(
-            ascii_manager_pointer = 0x1ae444,
-            global_timer          = 0x197b4,
-        ),
         anm = AnmOffsets(
-            anm_manager_pointer = 0x1ae3ac,
-            zAnmManager_list    = 0x724,
-            zAnmVm_rotation_z   = 0x44,
-            zAnmVm_id           = 0x4d8,
-            zAnmVm_entity_pos   = 0x614,
+            anm_manager_pointer  = 0x1ae3ac,
+            zAnmManager_list     = 0x724,
+            zAnmManager_fast_arr = 0x764,
+            zAnmVm_rotation_z = 0x44,
+            zAnmVm_id         = 0x4d8,
+            zAnmVm_entity_pos = 0x614,
+            zAnmFastVm_alive  = 0x644,
+            zAnmFastVm_size   = 0x64c,
+            zAnmFastVmId_mask = 2**15 - 1,
         ),
         spell_card = SpellCardOffsets(
             spell_card_pointer   = 0x1ae480,
@@ -2368,12 +2396,16 @@ offsets = {
 #            zLaserCurveNode_speed = None,
 #            zLaserCurveNode_size  = None,
 #        ),
-#        anm = AnmOffsets(
-#            anm_manager_pointer = None,
-#            zAnmManager_list    = None,
-#            zAnmVm_rotation_z   = None,
-#            zAnmVm_id           = None,
-#            zAnmVm_entity_pos   = None,
+#        anm = AnmOffsets
+#            anm_manager_pointer  = None,
+#            zAnmManager_list     = None,
+#            zAnmManager_fast_arr = None,
+#            zAnmVm_rotation_z = None,
+#            zAnmVm_id         = None,
+#            zAnmVm_entity_pos = None,
+#            zAnmFastVm_alive  = None,
+#            zAnmFastVm_size   = None,
+#            zAnmFastVmId_mask = None,
 #        ),
 #        spell_card = SpellCardOffsets(
 #            spell_card_pointer   = None,

@@ -183,6 +183,9 @@ def save_screenshot(filename, screenshot):
     bgr_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
     cv2.imwrite(filename, bgr_screenshot)
 
+def read_bool(offset, rel = False):
+    return bool(read_int(offset, 1, rel))
+
 def read_int(offset, bytes = 4, rel = False, signed = False):
     return int.from_bytes(_read_memory(offset, bytes, rel), byteorder='little', signed=signed)
 

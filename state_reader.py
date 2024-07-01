@@ -375,9 +375,6 @@ def extract_items(item_manager):
     item_array_end    = item_array_start + zItemManager_array_len * zItem_len
 
     for item in range(item_array_start, item_array_end, zItem_len):
-        if len(items) >= active_item_count:
-            break
-
         item_state = read_int(item + zItem_state)
         if item_state == 0:
             continue
@@ -585,14 +582,19 @@ def extract_curve_laser(laser_addr):
     }
 
 def find_anm_vm_by_id(anm_id, list_offset=zAnmManager_list):
-    current_anm_vm_list = {"entry": 0, "next": read_int(zAnmManager + list_offset)}
+    if anm_id:
+        fast_id = anm_id & zAnmFastVmId_mask
 
-    while current_anm_vm_list['next']:
-        current_anm_vm_list = read_zList(current_anm_vm_list['next'])
-        zAnmVm = current_anm_vm_list['entry']
+        if fast_id != zAnmFastVmId_mask:
+            fastVm = zAnmManager + zAnmManager_fast_arr + fast_id * zAnmFastVm_size
 
-        if read_int(zAnmVm + zAnmVm_id) == anm_id:
-            return zAnmVm
+            if read_bool(fastVm + zAnmFastVm_alive) and read_int(fastVm + zAnmVm_id) == anm_id:
+                return fastVm
+
+        else:
+            for anm_vm in extract_list_entries(read_int(zAnmManager + list_offset)):
+                if read_int(anm_vm + zAnmVm_id) == anm_id:
+                    return anm_vm
 
 def extract_player_option_positions(player):
     player_option_positions = []
