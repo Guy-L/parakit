@@ -47,6 +47,7 @@ class Enemy:
     is_grazeable: bool
     is_rectangle: bool
     is_boss: bool
+    is_fake: bool #always False if filter_fake_enemies is True
     subboss_id: int
     health_threshold: Tuple[int, str] #if health <= int, run ECL sub str, only used by bosses
     time_threshold: Tuple[int, str] #if ecl timer > int, run ECL sub str, only used by bosses

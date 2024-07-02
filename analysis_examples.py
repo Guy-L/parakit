@@ -431,9 +431,11 @@ class AnalysisPlotEnemies(AnalysisPlot):
 
     def plot(self, ax, side2):
         enemies = self.lastframe.side2.enemies if side2 else self.lastframe.enemies
+        enemies = [enemy for enemy in enemies if not enemy.is_fake]
 
         if enemies:
             for enemy in enemies:
+
                 color_rgb = mcolors.to_rgba(enemy_color(enemy.anm_page, enemy.anm_id))
 
                 if enemy.move_limit and plot_enemy_move_limits:
@@ -1147,7 +1149,7 @@ class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
         return f"Scatter Plot of Enemies w/ Speedkill Drop Counts"
 
     def plot(self, ax, side2):
-        enemies = self.lastframe.enemies
+        enemies = [enemy for enemy in self.lastframe.enemies if not enemy.is_fake]
 
         if enemies and any(hasattr(enemy, 'speedkill_cur_drop_amt') for enemy in enemies):
             max_speedkill_drops = 0

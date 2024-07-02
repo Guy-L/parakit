@@ -17,7 +17,7 @@ except KeyboardInterrupt:
     exit()
 
 #For quick access
-analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, requires_curve_node_vels, section_sub_default_to_any, profiling = extraction_settings.values()
+analyzer, requires_bullets, requires_enemies, requires_items, requires_lasers, requires_player_shots, requires_screenshots, requires_side2_pvp, requires_curve_node_vels, section_sub_default_to_any, filter_fake_enemies, profiling = extraction_settings.values()
 exact = seqext_settings['exact']
 need_active = seqext_settings['need_active']
 profiling_times = []
@@ -252,12 +252,13 @@ def extract_enemies(enemy_manager):
             if zEnemyECLSub and (zEnemyECLSub.lower().startswith('main') or \
                                 (game_id == 19 and zEnemyECLSub.lower().startswith('world'))):
                 main_enemy_sub = zEnemyECLSub
-                continue
+                if filter_fake_enemies:
+                    continue
 
         # Filter invisible enemies (not bosses, they can sometimes be missed when switching ANMs)
         is_boss = zEnemyFlags & zEnemyFlags_is_boss != 0
         anm_vm_id = read_int(zEnemy + zEnemy_anm_vm_id)
-        if not anm_vm_id and not is_boss:
+        if filter_fake_enemies and not anm_vm_id and not is_boss:
             continue
 
         enemy = {
@@ -274,6 +275,7 @@ def extract_enemies(enemy_manager):
             'is_grazeable':     zEnemyFlags & zEnemyFlags_is_grazeable != 0,
             'is_rectangle':     zEnemyFlags & zEnemyFlags_is_rectangle != 0,
             'is_boss':          is_boss,
+            'is_fake':          not anm_vm_id and not is_boss,
             'subboss_id':       read_int(zEnemy + zEnemy_subboss_id, signed=True),
             'health_threshold': None, #only checked for boss & boss-related enemies
             'time_threshold':   None, #only checked for boss & boss-related enemies
@@ -1362,7 +1364,6 @@ def print_game_state(gs: GameState):
     elif game_id == 19: #UDoALG
         print(bar, f"UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
         print(bar, f"UDoALG Combo Hits: {gs.current_combo_hits}")
-        print(bar, f"UDoALG Item Spawn Total: {gs.item_spawn_total}")
 
         thresholds = [gs.env.charge_attack_threshold, gs.env.charge_skill_threshold, gs.env.ex_attack_threshold, gs.env.boss_attack_threshold]
         names = ["attack", "skill", "ex", "boss"]
@@ -1579,8 +1580,10 @@ def print_game_state(gs: GameState):
                         type = "Boss"
                     else:
                         type = f"Sub-boss #{enemy.subboss_id}"
-                else:
+                elif not enemy.is_fake:
                     type = "Boss-specific"
+                else:
+                    type = "ECL-only"
             else:
                 type = f"Unknown {enemy.anm_page}/{enemy.anm_id}"
             description += truncate(type, 18, 1)
@@ -1592,6 +1595,8 @@ def print_game_state(gs: GameState):
                 description += " (Hitbox Off)"
             if enemy.invincible:
                 description += " (Invincible)"
+            if enemy.is_fake:
+                description += " (Fake)"
             if enemy.intangible:
                 description += " (Intangible)"
             if enemy.is_grazeable:
