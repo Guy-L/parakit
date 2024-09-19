@@ -644,6 +644,7 @@ def extract_player_shots(player):
 
             player_shots.append(PlayerShot(
                 id          = player_shot,
+                array_id    = (player_shot - player_shot_array_start) // zPlayerShot_len,
                 position    = (read_float(player_shot + zPlayerShot_pos),    read_float(player_shot + zPlayerShot_pos + 0x4)),
                 velocity    = (read_float(player_shot + zPlayerShot_vel),    read_float(player_shot + zPlayerShot_vel + 0x4)),
                 hitbox      = (read_float(player_shot + zPlayerShot_hitbox), read_float(player_shot + zPlayerShot_hitbox + 0x4)),
@@ -653,6 +654,8 @@ def extract_player_shots(player):
                 alive_timer = read_int(player_shot + zPlayerShot_timer) + 1,
             ))
 
+    for shot in player_shots:
+        print(shot.array_id)
     return player_shots
 
 def extract_player(player, in_dialogue, game_thread_flags, side2=False):

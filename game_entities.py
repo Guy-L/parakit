@@ -134,6 +134,7 @@ class Bomb:
 @dataclass
 class PlayerShot:
     id: int
+    array_id: int #[0, player_shot_array_len - 1]; functionally the same as id
     position: Tuple[float, float]
     velocity: Tuple[float, float]
     hitbox: Tuple[float, float]
