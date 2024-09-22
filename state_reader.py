@@ -1683,9 +1683,10 @@ def print_game_state(gs: GameState):
         counter = 0
 
         print(bright(underline("\nList of player shots:")))
-        print(bright("  Position         Velocity         Hitbox          Speed   Angle   Damage  Timer"))
+        print(bright("  ID    Position         Velocity         Hitbox          Speed   Angle   Damage  Timer"))
         for shot in gs.player.shots:
             description = bp + " "
+            description += tabulate(shot.array_id, 6)
             description += tabulate(f"({round(shot.position[0], 1)}, {round(shot.position[1], 1)})", 17)
             description += tabulate(f"({round(shot.velocity[0], 1)}, {round(shot.velocity[1], 1)})", 17)
             description += tabulate(f"({round(shot.hitbox[0], 1)}, {round(shot.hitbox[1], 1)})", 16)
