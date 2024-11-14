@@ -85,19 +85,7 @@ print(darker(f'Found the {_module_name} game process with PID: {game_process.pid
 print(darker(f'Found the game window: {_game_window.title}'))
 
 
-# Step 3 - Unpack offsets from selected game into namespace
-for offset_category in offsets[_module_name].__dict__.values():
-    for name, val in (offset_category.items() if isinstance(offset_category, dict) else vars(offset_category).items()):
-        if 'zEnemyData_' in name:
-            globals()[name.replace('Data', '')] = (zEnemy_data + val if val != None else val)
-        elif any(classname in name for classname in ['zLaserLine_', 'zLaserInfinite_', 'zLaserCurve_', 'zLaserBeam_']):
-            globals()[name] = (zLaserBaseClass_len + val if val != None else val)
-        else:
-            globals()[name] = val
-del offsets #be kind to your namespace :)
-
-
-# Step 4 - Get the selected process's base address
+# Step 3 - Get the selected process's base address
 _base_address = None
 _module_handle = win32api.OpenProcess(win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ, False, game_process.pid)
 _module_list = win32process.EnumProcessModules(_module_handle)
@@ -116,7 +104,7 @@ else:
     exit()
 
 
-# Step 5 - Open the process handle
+# Step 4 - Open the process handle
 _PROCESS_VM_READ = 0x0010
 _PROCESS_QUERY_INFORMATION = 0x0400
 _process_handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_VM_READ | _PROCESS_QUERY_INFORMATION, False, game_process.pid)
@@ -390,7 +378,6 @@ def _read_memory(address, size, rel):
     if not _kernel32.ReadProcessMemory(_process_handle, address if not rel else _base_address + address, buffer, size, _byref):
         raise RuntimeError(f"Failed to read memory at address {hex(address if not rel else _base_address + address)} with size {size}")
     return buffer.raw
-global_timer += read_int(ascii_manager_ptr, rel=True)
 
 # Debug Method Definitions
 
@@ -431,3 +418,36 @@ def _scan_region(offset, size):
             desc += " | " + truncate(''.join(char for char in read_string(address, 8) if ord(char) > 32), 8)
             address = read_int(address)
         print(desc)
+
+
+# Step 5 - Check PE header for games with multiple supported versions (th19)
+if game_id == 19:
+    _pe_offset = read_int(0x3c, rel=True) #(technically this is enough to differentiate)
+    _pe_timestamp = read_int(_pe_offset + 0x8, rel=True)
+
+    if _pe_timestamp == 0x64c47c44:
+        _module_name += ' (v1.00a)'
+
+    elif _pe_timestamp == 0x668bac2a:
+        _module_name += ' (v1.10c)'
+
+    else:
+        print(color("Error:", 'red'), 'Unrecognized th19 version.')
+        print(bright("Please " + underline("report this error") + " to the developers!"))
+        exit()
+
+
+# Step 6 - Unpack offsets from selected game into namespace
+for offset_category in offsets[_module_name].__dict__.values():
+    for name, val in (offset_category.items() if isinstance(offset_category, dict) else vars(offset_category).items()):
+        if 'zEnemyData_' in name:
+            globals()[name.replace('Data', '')] = (zEnemy_data + val if val != None else val)
+        elif any(classname in name for classname in ['zLaserLine_', 'zLaserInfinite_', 'zLaserCurve_', 'zLaserBeam_']):
+            globals()[name] = (zLaserBaseClass_len + val if val != None else val)
+        else:
+            globals()[name] = val
+del offsets #be kind to your namespace :)
+
+
+# Step 7 - Define this here for waiting methods
+global_timer += read_int(ascii_manager_ptr, rel=True)

@@ -48,8 +48,8 @@ def load_extraction_context():
                 obj_name += part.capitalize()
 
             globals()[obj_name] = read_int(value, rel=True)
-            if not globals()[obj_name]:
-                return False
+            if not globals()[obj_name] and not obj_name == 'zAiP2':
+                return False #notify & redo if any ptr is null, except optional ones (ie. P2 AI)
 
     ecl_sub_arrs = {} #extract ECL sub name & offsets from ECL file
     if 'zEnemyManagerP2' in globals():
@@ -286,8 +286,8 @@ def extract_enemies(enemy_manager):
             'ecl_sub_name':     zEnemyECLSub if zEnemyECLSub is not None else get_sub_name_from_ref(read_int(zEnemy + zEnemy_ecl_ref), ecl_sub_arrs[enemy_manager]),
             'ecl_sub_timer':    read_int(zEnemy + zEnemy_ecl_timer),
             'alive_timer':      read_int(zEnemy + zEnemy_alive_timer),
-            'health':           read_int(zEnemy + zEnemy_hp),
-            'health_max':       read_int(zEnemy + zEnemy_hp_max),
+            'health':           read_int(zEnemy + zEnemy_hp, signed=True),
+            'health_max':       read_int(zEnemy + zEnemy_hp_max, signed=True),
             'revenge_ecl_sub':  extract_sub_name(zEnemy + zEnemy_revenge_ecl_sub),
             'drops':            extract_enemy_drops(zEnemy + zEnemy_drops),
             'iframes':          read_int(zEnemy + zEnemy_iframes),
@@ -654,8 +654,6 @@ def extract_player_shots(player):
                 alive_timer = read_int(player_shot + zPlayerShot_timer) + 1,
             ))
 
-    for shot in player_shots:
-        print(shot.array_id)
     return player_shots
 
 def extract_player(player, in_dialogue, game_thread_flags, side2=False):
@@ -680,7 +678,7 @@ def extract_player(player, in_dialogue, game_thread_flags, side2=False):
     if player_state == 4:
         deathbomb_f = max(0, game_constants.deathbomb_window_frames - read_int(zPlayer + zPlayer_db_timer))
 
-    player = {
+    player_dict = {
         'position':    (read_float(player + zPlayer_pos), read_float(player + zPlayer_pos + 0x4)),
         'hitbox_rad':  read_float(player + zPlayer_hit_rad),
         'iframes':     read_int(player + zPlayer_iframes),
@@ -694,11 +692,18 @@ def extract_player(player, in_dialogue, game_thread_flags, side2=False):
     #Game-specific attributes
     if game_id == 14:
         return ScalablePlayer(
-            **player,
-            scale = read_float(zPlayer + zPlayer_scale),
+            **player_dict,
+            scale = read_float(player + zPlayer_scale),
         )
 
-    return Player(**player)
+    elif game_id == 19:
+        return StunnableShieldPlayer(
+            **player_dict,
+            hitstunned = (player_state == 5),
+            shield_up  = (read_int(player + zPlayer_shield_status) == 1),
+        )
+
+    return Player(**player_dict)
 
 def extract_spell_card(spell_card):
     if read_int(spell_card + zSpellCard_indicator) != 0:
@@ -1057,8 +1062,6 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
                 enemies             = enemies,
                 items               = extract_items(zItemManagerP2) if requires_items else [],
                 lasers              = extract_lasers(zLaserManagerP2) if requires_lasers else [],
-                hitstun_status      = read_int(zPlayerP2 + zPlayer_hitstun_status),
-                shield_status       = read_int(zPlayerP2 + zPlayer_shield_status),
                 last_combo_hits     = read_int(zPlayerP2 + zPlayer_last_combo_hits),
                 current_combo_hits  = read_int(zPlayerP2 + zPlayer_current_combo_hits),
                 current_combo_chain = read_int(zPlayerP2 + zPlayer_current_combo_chain),
@@ -1075,8 +1078,6 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
         return GameStateUDoALG(
             **state_base,
             lives_max             = read_int(lives_max, rel=True),
-            hitstun_status        = read_int(zPlayer + zPlayer_hitstun_status),
-            shield_status         = read_int(zPlayer + zPlayer_shield_status),
             last_combo_hits       = read_int(zPlayer + zPlayer_last_combo_hits),
             current_combo_hits    = read_int(zPlayer + zPlayer_current_combo_hits),
             current_combo_chain   = read_int(zPlayer + zPlayer_current_combo_chain),
@@ -1089,6 +1090,7 @@ def extract_game_state(extraction_status, run_environment, stage_frame):
             pvp_timer_start       = read_int(pvp_timer_start, rel=True),
             pvp_timer             = read_int(pvp_timer, rel=True),
             pvp_wins              = read_int(pvp_wins, rel=True),
+            rank_max              = read_int(rank_max, rel=True),
             story_boss_difficulty = read_int(zEnemyManager + zEnemyManager_story_boss_difficulty),
             story_fight_phase     = story_fight_phase,
             story_progress_meter  = story_progress_meter,
@@ -1127,7 +1129,7 @@ def print_game_state(gs: GameState):
     print(bar, bright("Input bitflag:"), f"{gs.input:08b},", bright("RNG value:"), f"{gs.rng},", bright("FPS:"), f"{round_down(gs.fps, 1) + 0.1:.1f}fps")
 
     if game_id in uses_rank:
-        print(bar, bright("Rank value:" ), f"{gs.rank}")
+        print(bar, bright("Rank value:" ), gs.rank, f"/ {gs.rank_max}" if game_id == 19 else '')
 
     #======================================
     # Situational prints ==================
@@ -1365,7 +1367,9 @@ def print_game_state(gs: GameState):
                 print(description.strip())
 
     elif game_id == 19: #UDoALG
-        print(bar, f"UDoALG Shield: {'Active' if gs.shield_status == 1 else 'Broken'}; Max Lives: {gs.lives_max}")
+        print(bar, f"UDoALG Shield: {'Active' if gs.player.shield_up else 'Broken'}" + \
+              ("; Hitstunned" if gs.player.hitstunned else '') + \
+              f"; Max Lives: {gs.lives_max}")
         print(bar, f"UDoALG Combo Hits: {gs.current_combo_hits}")
 
         thresholds = [gs.env.charge_attack_threshold, gs.env.charge_skill_threshold, gs.env.ex_attack_threshold, gs.env.boss_attack_threshold]
@@ -1391,7 +1395,7 @@ def print_game_state(gs: GameState):
         print(bar, f"UDoALG Gauge Thresholds: attack @ {thresholds[0]}, skill @ {thresholds[1]}, ex @ {thresholds[2]} (Lv{gs.ex_attack_level + 1}), boss @ {thresholds[3]} (Lv{gs.boss_attack_level + 1})")
 
         if gs.pvp_timer_start:
-            print(bar, f"UDoALG PvP Timer: {round(gs.pvp_timer/60)} / {round(gs.pvp_timer_start/60)}")
+            print(bar, f"UDoALG PvP Timer: {math.ceil(gs.pvp_timer/60)} / {round(gs.pvp_timer_start/60)}")
 
         if gs.story_fight_phase != None and gs.story_progress_meter != None:
             print(bar, f"UDoALG Story Mode Fight Phase {gs.story_fight_phase} Progress Meter: {gs.story_progress_meter}")
@@ -1827,6 +1831,8 @@ except KeyboardInterrupt:
 except Exception as e:
     handle_extraction_error(e, f"{bright(analyzer_name)}.init")
     exit()
+
+set_status(f"Starting extraction...")
 
 try:
     start_time = time.perf_counter()

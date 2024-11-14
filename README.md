@@ -8,12 +8,38 @@ If you have feature requests or need help making your own custom analyzer, feel 
 
 ### [Settings Documentation](./settings.md)
 ### Supported games:
-||||||
-|-|-|-|-|-|
-|❌ EoSD |❌ *StB* |❌ *DS*    |❌ *ISC*     |✅ **WBaWC**  |
-|❌ PCB  |❌ MoF   |❌ *GFW*   |✅ **LoLK**  |✅ **UM**     |
-|❌ IN   |❌ SA    |✅ **TD**  |✅ **HSiFS** |❌ *HBM*      |
-|❌ PoFV |❌ UFO   |✅ **DDC** |❌ *VD*      |✅ **UDoALG** |
+<table>
+    <tr>
+        <td>❌ EoSD</td>
+        <td>❌ MoF</td>
+        <td>✅ <b>TD</b><t/d>
+        <td>❌ <i>VD</i></td>
+    </tr>
+    <tr>
+        <td>❌ PCB</td>
+        <td>❌ SA</td>
+        <td>✅ <b>DDC</b></td>
+        <td>✅ <b>WBaWC</b></td>
+    </tr>
+    <tr>
+        <td>❌ IN</td>
+        <td>❌ UFO</td>
+        <td>❌ <i>ISC</i></td>
+        <td>✅ <b>UM</b></td>
+    <tr>
+        <td>❌ PoFV</td>
+        <td>❌ <i>DS</i></td>
+        <td>✅ <b>LoLK</b></td>
+        <td>❌ <i>HBM</i></td>
+    </tr>
+    <tr>
+        <td>❌ <i>StB</i></td>
+        <td>❌ <i>GFW</i></td>
+        <td>✅ <b>HSiFS</b></td>
+        <td>✅ <b>UDoALG*</b></td>
+    </tr>
+    <tr><td colspan=5><i><b>*</b> = Both 1.00a and 1.10c are supported!</i></td></tr>
+</table>
 
 ### Goals:
 * Faster inter-process reads

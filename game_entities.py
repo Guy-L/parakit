@@ -269,6 +269,11 @@ class CanGenItemsTimerBullet(Bullet):
     can_gen_items_timer: int #set to 0 when grazed/scoped, ticks up otherwise
     #bullet can be grazed/scoped for items again at 60f (stored in bullet.is_grazeable)
 
+@dataclass
+class StunnableShieldPlayer(Player):
+    hitstunned: bool
+    shield_up: bool
+
 # ================================================
 # Game specific objects ==========================
 # ================================================
@@ -336,8 +341,6 @@ class P2Side:
     enemies: List[Enemy]
     items: List[Item]
     lasers: List[Laser]
-    hitstun_status: int
-    shield_status: int
     last_combo_hits: int
     current_combo_hits: int
     current_combo_chain: int
@@ -470,8 +473,6 @@ class GameStateUM(GameState):
 @dataclass
 class GameStateUDoALG(GameState):
     lives_max: int
-    hitstun_status: int
-    shield_status: int
     last_combo_hits: int
     current_combo_hits: int
     current_combo_chain: int
@@ -481,10 +482,11 @@ class GameStateUDoALG(GameState):
     gauge_fill: int
     ex_attack_level: int
     boss_attack_level: int
-    pvp_wins: int
     side2: Optional[P2Side]
     story_boss_difficulty: int
-    story_fight_phase: Optional[int]
-    story_progress_meter: Optional[int]
+    story_fight_phase: Optional[int]     #important for story mode AI fight progress, both are None if not in story mode
+    story_progress_meter: Optional[int]  #more info: https://docs.google.com/document/d/1HCCxLkN9KAW4tOu1196CA40S2tugd3DCPUh-pT4Nr8c
     pvp_timer_start: int
     pvp_timer: int
+    pvp_wins: int
+    rank_max: int
