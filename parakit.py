@@ -62,8 +62,8 @@ def get_venv_py_version(cfg_file):
 try:
     _venv_path = 'venv'
     _reqs_path = 'requirements.txt'
-    _worker_script_path = 'state_reader.py'
-    _vcheck_script_path = 'version_check.py'
+    _worker_script_path = 'state_reader'
+    _vcheck_script_path = 'version_check'
     cur_py_version = (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
     min_py_version = (3, 7, 4)
 
@@ -140,13 +140,13 @@ finally:
 
 #Run state-reader
 try:
-    subprocess.run([_python_exe, _worker_script_path] + sys.argv[1:])
+    subprocess.run([_python_exe, "-m", _worker_script_path] + sys.argv[1:])
 except KeyboardInterrupt:
     pass #keyboard interrupts are processed by the script, but propagate here for some reason
 
 #Inform users if running non-latest version
 try:
-    subprocess.run([_python_exe, _vcheck_script_path])
+    subprocess.run([_python_exe, "-m", _vcheck_script_path])
 except KeyboardInterrupt:
     pass
 

@@ -329,7 +329,7 @@ enemy_anms_post_ddc = {**enemy_anms_pre_ddc, 80: "Red Inverted Spirit", 84: "Gre
 enemy_anms_post_wbawc = {**enemy_anms_post_ddc, 172: "Glowing Blue Fairy", 177: "Glowing Red Fairy", 202: "Glowing Maroon Fairy", 212: "Glowing Sunflower Fairy"}
 enemy_anms_post_um = {**enemy_anms_post_wbawc, 77: "Red Yin-Yang", 80: "Green Yin-Yang", 91: "Red Spirit", 99: "Blue Spirit", 184: "Blue Glowing Fairy", 189: "Red Glowing Fairy", 214: "Maroon Glowing Fairy", 224: "Glowing Sunflower Fairy"}
 
-item_types_td = {1: "Power", 2: "Point", 3:"Big Power", 4:"Big Point", 5:"Bomb Piece", 6: "Life", 7: "Bomb", 8: "Full Power", 9: "Cancel", 10: "LifeP. Spirit", 11: "Blue Spirit", 12: "BombP. Spirit", 13: "Grey Spirit", 14: "Blue Spirit"} #TD
+item_types_td = {1: "Power", 2: "Point", 3:"Big Power", 4:"Big Point", 5:"Bomb Piece", 6: "Life", 7: "Bomb", 8: "Full Power", 9: "Cancel", 10: "LifeP. Spirit", 11: "Blue Spirit", 12: "BombP. Spirit", 13: "Grey Spirit", 14: "Yoshika Blue Spirit"} #TD
 item_types_post_ddc = {1: "Power", 2: "Point", 3:"Big Power", 4:"Life Piece", 5:"Life", 6:"Bomb Piece", 7:"Bomb", 8:"Full Power", 9:"Green", 10:"Cancel", 11:"Big Cancel", 12:"Undiff. Piece"} #shared DDC-LoLK
 item_types_post_hsifs = {**item_types_post_ddc, 10:"Green++", 11:"Cancel", 12:"Cancel++", 13:"Big Cancel", 14:"Big Cancel++", 15:"Bomb Piece"} #shared HSiFS-WBaWC
 item_types_post_um = {**item_types_post_hsifs, 2:"Gold"} #shared UM/HBM(?)/UDoALG
@@ -2323,7 +2323,7 @@ offsets = {
         player = PlayerOffsets(
             player_pointer   = 0x1d1a64,
             zPlayer_pos      = 0x68c,
-            zPlayer_db_timer = 0x6b8, 
+            zPlayer_db_timer = 0x6b8,
             zPlayer_state    = 0x10,
             zPlayer_hit_rad  = 0x20c4,
             zPlayer_iframes  = 0x2078,

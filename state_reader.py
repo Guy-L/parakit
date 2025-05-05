@@ -314,11 +314,11 @@ def extract_enemies(enemy_manager):
                 anm_vm = find_anm_vm_by_id(anm_vm_id)
 
             if game_id in uses_pivot_angle:
-                enemy['pivot_angle'] = read_float(anm_vm + zAnmVm_rotation_z)
+                enemy['pivot_angle'] = read_float(anm_vm + zAnmVm_rotation_z) if anm_vm else -math.pi/2
 
             if not zEnemy_rotation:
                 #so far only seen TD where enemy rotation exists but is only stored in AnmVM
-                enemy['rotation'] = read_float(anm_vm + zAnmVm_rotation_z)
+                enemy['rotation'] = read_float(anm_vm + zAnmVm_rotation_z) if anm_vm else 0 #not relevant, game should crash
             else:
                 enemy['rotation'] = read_float(zEnemy + zEnemy_rotation)
 
