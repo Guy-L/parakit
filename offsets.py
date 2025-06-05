@@ -1975,6 +1975,9 @@ offsets = {
             'zPlayer_poc_line_height': 0x47998, #224 with Kanako card, 128 otherwise
             'zPlayer_sakuya_knives_angle': 0x4790c,
             'zPlayer_sakuya_knives_spread': 0x47910,
+            'zEnemyData_speedkill_drops_max_cnt': 0x5064,
+            'zEnemyData_speedkill_drops_max_time': 0x50b4,
+            'zEnemyData_speedkill_drops_timer': 0x50bc,
             'asylum_func': 0x438d90,
         }
     ),
@@ -2797,7 +2800,7 @@ offsets = {
 #            zLaserCurveNode_speed = None,
 #            zLaserCurveNode_size  = None,
 #        ),
-#        anm = AnmOffsets
+#        anm = AnmOffsets(
 #            anm_manager_pointer  = None,
 #            zAnmManager_list     = None,
 #            zAnmManager_fast_arr = None,

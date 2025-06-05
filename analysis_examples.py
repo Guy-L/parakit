@@ -1135,7 +1135,7 @@ class AnalysisPlotTD(AnalysisPlot):
             if not self.lastframe.kyouko_echo:
                 return DONT_PLOT
 
-# TD/HSiFS: "Plot enemy with color intensity based on speedkill drop count" [only requires enemies]
+# TD/HSiFS/UM: "Plot enemy with color intensity based on speedkill drop count" [only requires enemies]
 class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
 
     @property
@@ -1146,12 +1146,15 @@ class AnalysisPlotEnemiesSpeedkillDrops(AnalysisPlot):
         if game_id == 16:
             return 'Scatter Plot of Enemies w/ Season Drop Counts'
 
+        if game_id == 18:
+            return 'Scatter Plot of Enemies w/ Extra Gold Counts'
+
         return f"Scatter Plot of Enemies w/ Speedkill Drop Counts"
 
     def plot(self, ax, side2):
         enemies = [enemy for enemy in self.lastframe.enemies if not enemy.is_fake]
 
-        if enemies and any(hasattr(enemy, 'speedkill_cur_drop_amt') for enemy in enemies):
+        if enemies and all(hasattr(enemy, 'speedkill_cur_drop_amt') for enemy in enemies):
             max_speedkill_drops = 0
             for enemy in enemies:
                 if enemy.speedkill_cur_drop_amt > max_speedkill_drops:

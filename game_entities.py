@@ -263,6 +263,15 @@ class SeasonDroppingEnemy(Enemy):
     damage_per_season_drop: int
     damage_taken_for_season_drops: int
 
+# Unconnected Marketeers & (TODO) UDoALG
+@dataclass
+class SpeedkillDropEnemy(Enemy):
+    speedkill_cur_drop_amt: int #gold only, to make it work with AnalysisPlotEnemiesSpeedkillDrops (this sucks)
+    speedkill_time_left_for_amt: int #gold only, to make it work with AnalysisPlotEnemiesSpeedkillDrops (this sucks)
+    speedkill_drops_max_cnt: Dict[int, int] #key: item type, value: count
+    speedkill_drops_max_time: int
+    speedkill_drops_timer: int
+
 # Unfinished Dream of All Living Ghost
 @dataclass
 class CanGenItemsTimerBullet(Bullet):

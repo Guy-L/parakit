@@ -378,6 +378,38 @@ def extract_enemies(enemy_manager):
 
             enemies.append(SeasonDroppingEnemy(**enemy))
 
+        elif game_id == 18: #TODO: Seems the same in 19. Factorize
+            speedkill_drops_max = {}
+            for item_id in item_types:
+                drop_count = read_int(zEnemy + zEnemy_speedkill_drops_max_cnt + 0x4*(item_id-1))
+                if drop_count:
+                    speedkill_drops_max[item_id] = drop_count
+
+            speedkill_drops_max_time = read_int(zEnemy + zEnemy_speedkill_drops_max_time)
+            speedkill_drops_timer = read_int(zEnemy + zEnemy_speedkill_drops_timer)
+
+            enemy['speedkill_drops_max_cnt'] = speedkill_drops_max
+            enemy['speedkill_drops_max_time'] = speedkill_drops_max_time
+            enemy['speedkill_drops_timer'] = speedkill_drops_timer
+
+            # gold only
+            enemy['speedkill_cur_drop_amt'] = 0
+            enemy['speedkill_time_left_for_amt'] = 0
+
+            if 2 in speedkill_drops_max and speedkill_drops_max_time:
+                T_max = speedkill_drops_max_time
+                T_cur = min(T_max, speedkill_drops_timer)
+                G_max = speedkill_drops_max[2]
+
+                G_cur = (G_max * (T_max - T_cur) + T_max - 1) // T_max
+                enemy['speedkill_cur_drop_amt'] = G_cur
+
+                if G_cur:
+                    T_cutoff = ((G_max - (G_cur - 1)) * T_max + G_max - 1) // G_max
+                    enemy['speedkill_time_left_for_amt'] = max(0, T_cutoff - T_cur)
+
+            enemies.append(SpeedkillDropEnemy(**enemy))
+
         else:
             enemies.append(Enemy(**enemy))
 
