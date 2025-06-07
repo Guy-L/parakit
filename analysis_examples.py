@@ -1329,7 +1329,7 @@ class AnalysisBestMallet(AnalysisPlot, AnalysisMostBulletsCircleFrame):
         ax.add_patch(Circle((self.best_position[0], self.best_position[1]), self.circle_radius, color='red', fill=False))
 
         print(f"Best mallet @ stage frame {self.best_frame.stage_frame} {'('+str(self.best_frame.boss_timer_shown)+' on boss timer)' if self.best_frame.boss_timer_shown else ''}")
-        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]}); required player position ({self.best_position[0]}, {self.best_position[1] - self.mallet_player_distance})")
+        print(f"Best mallet encompases {self.best_bullet_count} bullets at ({self.best_position[0]}, {self.best_position[1]}); required player position ({self.best_position[0]}, {self.best_position[1] + self.mallet_player_distance})")
         print(f"Vanilla expected gold gain ~= {int(self.best_bullet_count*0.365692)}") #thanks to Dai for ZUN-rng distribution analysis
         print(f"Static mallet gold gain = {int(self.best_bullet_count*(11/30))}")
 
