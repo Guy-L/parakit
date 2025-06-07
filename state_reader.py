@@ -1146,7 +1146,7 @@ def print_game_state(gs: GameState):
     print(bright(f"[Global Frame #{gs.global_frame} | Stage Frame #{gs.stage_frame} | {shottype} {difficulties[gs.env.difficulty]} {stage}] Score:"), f"{gs.score:,}")
 
     # Player status
-    print(bar, bright("Player status:" ), f"Player at ({round(gs.player.position[0], 2)}, {round(gs.player.position[1], 2)}); hitbox radius {gs.player.hitbox_rad}; {gs.player.iframes} iframes; {'un' if not gs.player.focused else ''}focused{'; can\'t shoot' if not gs.player.can_shoot else ''}")
+    print(bar, bright("Player status:" ), f"Player at ({round(gs.player.position[0], 2)}, {round(gs.player.position[1], 2)}); hitbox radius {gs.player.hitbox_rad}; {gs.player.iframes} iframes; {'un' if not gs.player.focused else ''}focused{"; can't shoot" if not gs.player.can_shoot else ''}")
 
     # Basic resources
     basic_resources = bar + bright(" Resources: ") + f"{gs.lives} lives"
