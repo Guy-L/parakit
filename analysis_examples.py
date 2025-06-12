@@ -74,6 +74,7 @@ class AnalysisMostBulletsFrame(Analysis):
 # Ex4: "Find the frame and position of a circle with set radius covering the most bullets" [only requires bullets]
 class AnalysisMostBulletsCircleFrame():
     circle_radius = 50
+    pointlike_bullets = False #true = only care abt bullet centers, not radii
     step_size = 10
 
     best_frame = None
@@ -87,14 +88,25 @@ class AnalysisMostBulletsCircleFrame():
                 count += 1
         return count
 
+    def __count_circle_bullets(self, center_x, center_y, bullets):
+        count = 0
+        for bullet in bullets:
+            dx = bullet.position[0] - center_x
+            dy = bullet.position[1] - center_y
+            radius_sum = (bullet.hitbox_radius * bullet.scale) + self.circle_radius
+            if (dx * dx + dy * dy) <= (radius_sum * radius_sum):
+                count += 1
+        return count
+
     def step(self, state: GameState):
-        bullet_positions = [bullet.position for bullet in state.bullets if -world_width/2 <= bullet.position[0] <= world_width/2 and 0 <= bullet.position[1] <= world_height]
+        bullets = [bullet for bullet in state.bullets if -world_width/2 <= bullet.position[0] <= world_width/2 and 0 <= bullet.position[1] <= world_height]
 
         frame_best_count = 0
 
         for x in range(int(-world_width/2), int(world_width/2), self.step_size):
             for y in range(0, world_height, self.step_size):
-                count = self.__count_circle_points(x, y, bullet_positions)
+                if self.pointlike_bullets: count = self.__count_circle_points(x, y, [bullet.position for bullet in bullets])
+                else: count = self.__count_circle_bullets(x, y, bullets)
 
                 if count > frame_best_count:
                     frame_best_count = count
